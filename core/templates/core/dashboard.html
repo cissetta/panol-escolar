@@ -1,0 +1,111 @@
+{% extends 'base.html' %}
+{% block title %}Dashboard{% endblock %}
+{% block page_title %}Dashboard{% endblock %}
+
+{% block content %}
+<!-- Indicadores -->
+<div class="row g-3 mb-4">
+  <div class="col-sm-6 col-xl-3">
+    <div class="card border-0 shadow-sm h-100">
+      <div class="card-body">
+        <div class="text-muted small">Herramientas disponibles</div>
+        <div class="fs-2 fw-bold text-success">{{ disponibles }}</div>
+      </div>
+    </div>
+  </div>
+  <div class="col-sm-6 col-xl-3">
+    <div class="card border-0 shadow-sm h-100">
+      <div class="card-body">
+        <div class="text-muted small">Préstamos activos</div>
+        <div class="fs-2 fw-bold text-primary">{{ prestamos_activos }}</div>
+        {% if prestamos_vencidos > 0 %}
+          <div class="text-danger small">⚠ {{ prestamos_vencidos }} vencidos</div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+  <div class="col-sm-6 col-xl-3">
+    <div class="card border-0 shadow-sm h-100">
+      <div class="card-body">
+        <div class="text-muted small">En reparación</div>
+        <div class="fs-2 fw-bold text-warning">{{ reparacion }}</div>
+      </div>
+    </div>
+  </div>
+  <div class="col-sm-6 col-xl-3">
+    <div class="card border-0 shadow-sm h-100">
+      <div class="card-body">
+        <div class="text-muted small">Insumos con stock crítico</div>
+        <div class="fs-2 fw-bold text-danger">{{ criticos }}</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="row g-3">
+  <!-- Últimos préstamos -->
+  <div class="col-lg-8">
+    <div class="card border-0 shadow-sm">
+      <div class="card-header bg-white fw-semibold">📤 Últimos Préstamos</div>
+      <div class="card-body p-0">
+        <table class="table table-sm table-hover mb-0">
+          <thead class="table-light">
+            <tr>
+              <th>Alumno</th><th>Herramienta</th><th>Docente</th><th>Fecha</th><th>Estado</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for p in ultimos_prestamos %}
+            <tr>
+              <td>{{ p.alumno }}</td>
+              <td>{{ p.herramienta.nombre }}</td>
+              <td>{{ p.docente }}</td>
+              <td>{{ p.fecha_prestamo|date:"d/m H:i" }}</td>
+              <td>
+                {% if p.esta_activo %}
+                  {% if p.esta_vencido %}
+                    <span class="badge bg-danger">Vencido</span>
+                  {% else %}
+                    <span class="badge bg-primary">Activo</span>
+                  {% endif %}
+                {% else %}
+                  <span class="badge bg-success">Devuelto</span>
+                {% endif %}
+              </td>
+            </tr>
+            {% empty %}
+            <tr><td colspan="5" class="text-center text-muted py-3">Sin préstamos registrados.</td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- Mantenimientos -->
+  <div class="col-lg-4">
+    <div class="card border-0 shadow-sm">
+      <div class="card-header bg-white fw-semibold">🗓️ Mantenimientos Pendientes</div>
+      <div class="card-body p-0">
+        {% if lista_vencidos %}
+          <ul class="list-group list-group-flush">
+            {% for plan in lista_vencidos %}
+            <li class="list-group-item d-flex justify-content-between align-items-start">
+              <div>
+                <div class="fw-semibold small">{{ plan.herramienta.nombre }}</div>
+                <div class="text-muted" style="font-size:.78rem">{{ plan.nombre }}</div>
+              </div>
+              <span class="badge bg-danger">Vencido</span>
+            </li>
+            {% endfor %}
+          </ul>
+        {% else %}
+          <div class="text-center text-muted py-4" style="font-size:.9rem">
+            ✅ Sin mantenimientos vencidos
+          </div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
