@@ -1,0 +1,33 @@
+{% extends 'base.html' %}
+{% block title %}Grupo 5 - Configuracion{% endblock %}
+{% block page_title %}Grupo 5 - Configuracion{% endblock %}
+
+{% block content %}
+<!-- Indicadores -->
+<div class="row g-3 mb-4">
+  <!-- Últimos préstamos -->
+  <div class="col-lg-100">
+    <div class="card border-0 shadow-sm">
+      <div class="card-header bg-white fw-semibold">📤 Configuracion</div>
+      <div class="card-body p-0">
+        <table class="table table-sm table-hover mb-0">
+          <thead class="table-light">
+            <tr>
+              <th>Nombre de Institucion</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>
+                {{ nombre }}
+                <input type="text" title="Inserte el nombre de institucion aqui.">
+                <input type="button" onclick="" title="Guarda el texto escrito como el nombre de la institucion. (No cambia si esta vacio)">
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
