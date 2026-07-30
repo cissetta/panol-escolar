@@ -1,31 +1,35 @@
 {% extends 'base.html' %}
-{% block title %}Grupo 5 - Configuracion{% endblock %}
-{% block page_title %}Grupo 5 - Configuracion{% endblock %}
+{% block title %}Grupo 5 - Configuración{% endblock %}
+{% block page_title %}Grupo 5 - Configuración{% endblock %}
 
 {% block content %}
-<!-- Indicadores -->
 <div class="row g-3 mb-4">
-  <!-- Últimos préstamos -->
-  <div class="col-lg-100">
+  <div class="col-12">
     <div class="card border-0 shadow-sm">
-      <div class="card-header bg-white fw-semibold">📤 Configuracion</div>
-      <div class="card-body p-0">
-        <table class="table table-sm table-hover mb-0">
-          <thead class="table-light">
-            <tr>
-              <th>Nombre de Institucion</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td>
-                {{ nombre }}
-                <input type="text" title="Inserte el nombre de institucion aqui.">
-                <input type="button" onclick="" title="Guarda el texto escrito como el nombre de la institucion. (No cambia si esta vacio)">
-              </td>
-            </tr>
-          </tbody>
-        </table>
+      <div class="card-header bg-white fw-semibold">⚙️ Configuración del sistema</div>
+      <div class="card-body">
+        {% if success %}
+          <div class="alert alert-success">Configuración guardada correctamente.</div>
+        {% endif %}
+
+        <form method="post">
+          {% csrf_token %}
+          <div class="row g-3">
+            {% for field in form %}
+              <div class="col-md-6">
+                <label for="{{ field.id_for_label }}" class="form-label">{{ field.label }}</label>
+                {{ field }}
+                {% if field.errors %}
+                  <div class="text-danger small">{{ field.errors|join:", " }}</div>
+                {% endif %}
+              </div>
+            {% endfor %}
+          </div>
+
+          <div class="mt-4">
+            <button type="submit" class="btn btn-primary">Guardar cambios</button>
+          </div>
+        </form>
       </div>
     </div>
   </div>
