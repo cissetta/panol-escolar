@@ -1,0 +1,123 @@
+{% extends 'base.html' %}
+
+{% block title %}Hoja de Vida{% endblock %}
+{% block page_title %}Hoja de Vida de la Herramienta{% endblock %}
+
+{% block content %}
+
+<div class="screen">
+
+    <div class="groups-bar">
+        <div class="group-chip">
+            🗓️ Grupo 4 – Mantenimiento
+        </div>
+    </div>
+
+    <div class="card">
+
+        <div class="card-title">
+            📄 Historial de Mantenimientos
+        </div>
+
+        {% if historial %}
+
+        <ul class="timeline">
+
+            {% for evento in historial %}
+
+            <li style="margin-bottom:20px;">
+
+                <div class="tl-date">
+                    📅 {{ evento.fecha|date:"d/m/Y" }}
+                </div>
+
+                <div class="tl-text"
+                     style="background:#f8f9fa;
+                            border-left:5px solid #0d6efd;
+                            padding:15px;
+                            border-radius:8px;
+                            margin-top:6px;">
+
+                    <h5 style="margin:0 0 10px 0;">
+                        🔧 {{ evento.plan.nombre }}
+                    </h5>
+
+                    <table style="width:100%;">
+
+                        <tr>
+                            <td><strong>Tipo:</strong></td>
+                            <td>{{ evento.plan.get_tipo_display }}</td>
+                        </tr>
+
+                        <tr>
+                            <td><strong>Responsable:</strong></td>
+                            <td>{{ evento.realizado_por|default:"No especificado" }}</td>
+                        </tr>
+
+                        <tr>
+                            <td><strong>Costo:</strong></td>
+                            <td>${{ evento.costo }}</td>
+                        </tr>
+
+                        <tr>
+                            <td><strong>Servicio:</strong></td>
+                            <td>
+                                {% if evento.es_externo %}
+                                    <span class="badge badge-orange">Externo</span>
+                                {% else %}
+                                    <span class="badge badge-green">Interno</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+
+                    </table>
+
+                    {% if evento.notas %}
+
+                    <hr>
+
+                    <strong>📝 Observaciones</strong>
+
+                    <p style="margin-top:8px;">
+                        {{ evento.notas }}
+                    </p>
+
+                    {% endif %}
+
+                </div>
+
+            </li>
+
+            {% endfor %}
+
+        </ul>
+
+        {% else %}
+
+        <div style="text-align:center;padding:50px;color:gray;">
+
+            <div style="font-size:60px;">📂</div>
+
+            <h3>No hay mantenimientos registrados</h3>
+
+            <p>
+                Esta herramienta todavía no posee historial de mantenimientos.
+            </p>
+
+        </div>
+
+        {% endif %}
+
+    </div>
+
+    <div style="margin-top:20px;">
+
+        <a href="{% url 'mantenimiento:index' %}" class="btn btn-secondary">
+            ← Volver
+        </a>
+
+    </div>
+
+</div>
+
+{% endblock %}
