@@ -5,42 +5,49 @@
 
 {% block content %}
 
-<div class="container">
+<div class="screen">
 
-    <div class="card shadow-sm">
+    <div class="groups-bar">
+        <div class="group-chip">
+            🔧 Grupo 4 – Ejecutar Mantenimiento
+        </div>
+    </div>
 
-        <div class="card-header bg-primary text-white">
-            <h4>🔧 Ejecutar Plan de Mantenimiento</h4>
+    <div class="card">
+
+        <div class="card-title">
+            {{ plan.nombre }}
         </div>
 
-        <div class="card-body">
+        <!-- Información del plan -->
 
-            <h5>{{ plan.nombre }}</h5>
+        <div style="display:grid;
+                    grid-template-columns:repeat(auto-fit,minmax(250px,1fr));
+                    gap:20px;
+                    margin-bottom:25px;">
 
-            <hr>
+            <div class="card" style="padding:15px;">
 
-            <div class="row mb-3">
+                <h5>🛠 Información General</h5>
 
-                <div class="col-md-6">
+                <hr>
+
+                <p>
                     <strong>Herramienta:</strong><br>
                     {{ plan.herramienta.nombre }}
-                </div>
+                </p>
 
-                <div class="col-md-6">
+                <p>
                     <strong>Tipo:</strong><br>
                     {{ plan.get_tipo_display }}
-                </div>
+                </p>
 
-            </div>
-
-            <div class="row mb-3">
-
-                <div class="col-md-6">
+                <p>
                     <strong>Próxima ejecución:</strong><br>
                     {{ plan.proxima_ejecucion|date:"d/m/Y" }}
-                </div>
+                </p>
 
-                <div class="col-md-6">
+                <p>
                     <strong>Frecuencia:</strong><br>
 
                     {% if plan.frecuencia_dias %}
@@ -49,167 +56,232 @@
                         Correctivo
                     {% endif %}
 
-                </div>
+                </p>
 
             </div>
 
-            <hr>
+            <div class="card" style="padding:15px;">
 
-            <form method="post">
+                <h5>📋 Estado del mantenimiento</h5>
 
-                {% csrf_token %}
+                <hr>
 
-                <div class="mb-3">
+                {% if plan.esta_vencido %}
 
-                    <label class="form-label">
-                        Realizado por
-                    </label>
+                    <span class="badge badge-red">
+                        ⚠ Mantenimiento vencido
+                    </span>
 
-                    <input
-                        type="text"
-                        name="realizado_por"
-                        class="form-control"
-                        placeholder="Nombre del responsable"
-                        required>
+                {% elif plan.esta_proximo %}
 
-                </div>
+                    <span class="badge badge-orange">
+                        ⏳ Próximo a vencer
+                    </span>
 
-                <!-- TAREAS DEL PLAN -->
+                {% else %}
 
-                <div class="mb-4">
+                    <span class="badge badge-green">
+                        ✔ Plan al día
+                    </span>
 
-                    <label class="form-label">
-                        <strong>Tareas del mantenimiento</strong>
-                    </label>
+                {% endif %}
 
-                    {% if tareas %}
+                <br><br>
 
-                        <div class="list-group">
+                <p style="color:gray">
 
-                            {% for tarea in tareas %}
+                    Complete el formulario para registrar la ejecución del mantenimiento.
 
-                                <label class="list-group-item">
+                </p>
 
-                                    <input
-                                        class="form-check-input me-2"
-                                        type="checkbox"
-                                        name="tareas"
-                                        value="{{ tarea.id }}">
-
-                                    <strong>{{ tarea.descripcion }}</strong>
-
-                                    <br>
-
-                                    {% if tarea.responsable %}
-                                        <small class="text-muted">
-                                            Responsable:
-                                            {{ tarea.responsable }}
-                                        </small>
-                                    {% endif %}
-
-                                    {% if tarea.duracion_estimada_min %}
-                                        <br>
-                                        <small class="text-muted">
-                                            Duración estimada:
-                                            {{ tarea.duracion_estimada_min }} minutos
-                                        </small>
-                                    {% endif %}
-
-                                </label>
-
-                            {% endfor %}
-
-                        </div>
-
-                    {% else %}
-
-                        <div class="alert alert-warning">
-
-                            Este plan no tiene tareas cargadas.
-
-                        </div>
-
-                    {% endif %}
-
-                </div>
-
-                <!-- FIN TAREAS -->
-
-                <div class="mb-3 form-check">
-
-                    <input
-                        class="form-check-input"
-                        type="checkbox"
-                        name="es_externo"
-                        id="externo">
-
-                    <label
-                        class="form-check-label"
-                        for="externo">
-
-                        Técnico externo
-
-                    </label>
-
-                </div>
-
-                <div class="mb-3">
-
-                    <label class="form-label">
-
-                        Costo
-
-                    </label>
-
-                    <input
-                        type="number"
-                        step="0.01"
-                        min="0"
-                        name="costo"
-                        class="form-control"
-                        value="0">
-
-                </div>
-
-                <div class="mb-3">
-
-                    <label class="form-label">
-
-                        Notas
-
-                    </label>
-
-                    <textarea
-                        name="notas"
-                        rows="5"
-                        class="form-control"
-                        placeholder="Observaciones del mantenimiento..."></textarea>
-
-                </div>
-
-                <div class="d-flex gap-2">
-
-                    <button
-                        type="submit"
-                        class="btn btn-success">
-
-                        Registrar Mantenimiento
-
-                    </button>
-
-                    <a
-                        href="{% url 'mantenimiento:index' %}"
-                        class="btn btn-secondary">
-
-                        Cancelar
-
-                    </a>
-
-                </div>
-
-            </form>
+            </div>
 
         </div>
+
+        <form method="post">
+
+            {% csrf_token %}
+
+            <!-- Responsable -->
+
+            <div class="form-group">
+
+                <label>
+                    <strong>👤 Responsable</strong>
+                </label>
+
+                <input
+                    type="text"
+                    name="realizado_por"
+                    class="form-control"
+                    placeholder="Nombre del responsable"
+                    required>
+
+            </div>
+
+            <br>
+
+            <!-- Tareas -->
+
+            <div class="card">
+
+                <div class="card-title">
+                    📋 Tareas Programadas
+                </div>
+
+                {% if tareas %}
+
+                    {% for tarea in tareas %}
+
+                    <div style="
+                        border:1px solid #ddd;
+                        border-radius:8px;
+                        padding:12px;
+                        margin-bottom:10px;">
+
+                        <label style="cursor:pointer;display:block;">
+
+                            <input
+                                type="checkbox"
+                                name="tareas"
+                                value="{{ tarea.id }}">
+
+                            <strong>
+                                {{ tarea.descripcion }}
+                            </strong>
+
+                            <br>
+
+                            {% if tarea.responsable %}
+
+                                <small style="color:gray;">
+                                    👤 Responsable:
+                                    {{ tarea.responsable }}
+                                </small>
+
+                            {% endif %}
+
+                            {% if tarea.duracion_estimada_min %}
+
+                                <br>
+
+                                <small style="color:gray;">
+                                    ⏱ {{ tarea.duracion_estimada_min }} minutos
+                                </small>
+
+                            {% endif %}
+
+                        </label>
+
+                    </div>
+
+                    {% endfor %}
+
+                {% else %}
+
+                    <div class="alert alert-warning">
+
+                        ⚠ Este plan no tiene tareas programadas.
+
+                    </div>
+
+                {% endif %}
+
+            </div>
+
+            <br>
+
+            <!-- Servicio externo -->
+
+            <div class="form-check">
+
+                <input
+                    class="form-check-input"
+                    type="checkbox"
+                    id="externo"
+                    name="es_externo">
+
+                <label
+                    class="form-check-label"
+                    for="externo">
+
+                    🌐 Servicio realizado por técnico externo
+
+                </label>
+
+            </div>
+
+            <br>
+
+            <!-- Costo -->
+
+            <div class="form-group">
+
+                <label>
+
+                    <strong>💲Costo del mantenimiento</strong>
+
+                </label>
+
+                <input
+                    type="number"
+                    step="0.01"
+                    min="0"
+                    value="0"
+                    name="costo"
+                    class="form-control">
+
+            </div>
+
+            <br>
+
+            <!-- Notas -->
+
+            <div class="form-group">
+
+                <label>
+
+                    <strong>📝 Observaciones</strong>
+
+                </label>
+
+                <textarea
+                    name="notas"
+                    rows="5"
+                    class="form-control"
+                    placeholder="Escriba aquí cualquier observación del mantenimiento..."></textarea>
+
+            </div>
+
+            <br>
+
+            <!-- Botones -->
+
+            <div style="
+                display:flex;
+                justify-content:flex-end;
+                gap:12px;
+                margin-top:20px;">
+
+                <a
+                    href="{% url 'mantenimiento:index' %}"
+                    class="btn btn-outline">
+
+                    ← Cancelar
+
+                </a>
+
+                <button
+                    type="submit"
+                    class="btn btn-success">
+
+                    ✔ Registrar mantenimiento
+
+                </button>
+
+            </div>
+
+        </form>
 
     </div>
 

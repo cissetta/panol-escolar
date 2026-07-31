@@ -34,5 +34,15 @@ urlpatterns = [
         views.plan_de_vida,
         name="plan_de_vida",
     ),
+    path(
+        "editar/<int:plan_id>/",
+        views.editar_plan,
+        name="editar_plan",
+    ),
 
+    path(
+        "eliminar/<int:plan_id>/",
+        views.eliminar_plan,
+        name="eliminar_plan",
+    ),
 ]
