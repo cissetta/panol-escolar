@@ -68,6 +68,8 @@ class Alumno(models.Model):
         ('3A','3° A'), ('3B','3° B'),
         ('4A','4° A'), ('4B','4° B'),
         ('5A','5° A'), ('5B','5° B'),
+        ('6A','6° A'), ('6B','6° B'), # <-- Agregados 6to año
+        ('7A','7° A'), ('7B','7° B'), # <-- Agregados 7mo año
     ]
     legajo   = models.CharField(max_length=10, unique=True, blank=True)
     nombre   = models.CharField(max_length=50)
@@ -101,8 +103,6 @@ class Alumno(models.Model):
         config = ConfiguracionSistema.get()
         limite = timezone.now() - timedelta(days=config.dias_maximo_prestamo)
         return self.prestamos_activos().filter(fecha_prestamo__lt=limite).exists()
-
-
 # ══════════════════════════════════════════════════════════════════
 #  INVENTARIO  (Grupo 2)
 # ══════════════════════════════════════════════════════════════════
