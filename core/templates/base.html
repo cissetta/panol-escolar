@@ -105,7 +105,7 @@
     <a href="{% url 'prestamos:nuevo' %}" class="nav-link {% if 'prestamos/nuevo' in request.path %}active{% endif %}">
       <span class="icon">📷</span> Registrar Préstamo
     </a>
-    <a href="{% url 'prestamos:lista' %}" class="nav-link {% if 'prestamos' in request.path and 'nuevo' not in request.path and 'devolucion' not in request.path %}active{% endif %}">
+    <a href="{% url 'prestamos:activos' %}" class="nav-link {% if 'prestamos/activos' in request.path %}active{% endif %}">
       <span class="icon">📤</span> Préstamos Activos
     </a>
     <a href="{% url 'prestamos:devolucion' %}" class="nav-link {% if 'devolucion' in request.path %}active{% endif %}">
