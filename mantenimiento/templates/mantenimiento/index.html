@@ -2,10 +2,187 @@
 {% block title %}Grupo 4 – Mantenimiento{% endblock %}
 {% block page_title %}Grupo 4 – Mantenimiento{% endblock %}
 {% block content %}
-<div class="card border-0 shadow-sm">
-  <div class="card-body text-center py-5">
-    <h2 class="text-muted">🚧 Módulo en desarrollo</h2>
-    <p class="text-muted mt-2">Este es el punto de partida del módulo. ¡A programar!</p>
-  </div>
-</div>
+ <div id="s-mant-plan" class="screen">
+      <div class="groups-bar"><div class="group-chip">🗓️ Grupo 4 – Mantenimiento</div></div>
+      <div class="tab-bar">
+        <div class="tab active" onclick="switchTab(this,'tab-mant-planes')">Planes</div>
+        <div class="tab" onclick="switchTab(this,'tab-mant-tareas')">Tareas Programadas</div>
+        <div class="tab" onclick="switchTab(this,'tab-mant-historial')">Historial</div>
+      </div>
+      <form method="get" style="margin-bottom:20px;">
+        <label><strong>Filtrar por herramienta:</strong></label>
+    
+  <form method="get" style="margin-bottom:20px; display:flex; gap:20px; align-items:end; flex-wrap:wrap;">
+
+    <div>
+        <label><strong>Herramienta:</strong></label><br>
+        <select name="herramienta" class="form-select">
+            <option value="">Todas</option>
+
+            {% for h in herramientas %}
+                <option value="{{ h.id }}"
+                    {% if request.GET.herramienta == h.id|stringformat:"s" %}
+                        selected
+                    {% endif %}>
+                    {{ h.nombre }}
+                </option>
+            {% endfor %}
+        </select>
+    </div>
+
+    <div>
+        <label><strong>Mes:</strong></label><br>
+        <select name="mes" class="form-select">
+            <option value="">Todos</option>
+            <option value="1" {% if request.GET.mes == "1" %}selected{% endif %}>Enero</option>
+            <option value="2" {% if request.GET.mes == "2" %}selected{% endif %}>Febrero</option>
+            <option value="3" {% if request.GET.mes == "3" %}selected{% endif %}>Marzo</option>
+            <option value="4" {% if request.GET.mes == "4" %}selected{% endif %}>Abril</option>
+            <option value="5" {% if request.GET.mes == "5" %}selected{% endif %}>Mayo</option>
+            <option value="6" {% if request.GET.mes == "6" %}selected{% endif %}>Junio</option>
+            <option value="7" {% if request.GET.mes == "7" %}selected{% endif %}>Julio</option>
+            <option value="8" {% if request.GET.mes == "8" %}selected{% endif %}>Agosto</option>
+            <option value="9" {% if request.GET.mes == "9" %}selected{% endif %}>Septiembre</option>
+            <option value="10" {% if request.GET.mes == "10" %}selected{% endif %}>Octubre</option>
+            <option value="11" {% if request.GET.mes == "11" %}selected{% endif %}>Noviembre</option>
+            <option value="12" {% if request.GET.mes == "12" %}selected{% endif %}>Diciembre</option>
+        </select>
+    </div>
+
+    <div>
+        <button type="submit" class="btn btn-primary">
+            Filtrar
+        </button>
+    </div>
+
+</form>
+      
+   
+      <!-- PESTAÑA: PLANES -->
+    
+</a>
+      <div id="tab-mant-planes">
+        <div class="btn-group">
+          <a href="{% url 'mantenimiento:crear_plan' %}" class="btn btn-primary">➕ Nuevo Plan</a>
+        </div>
+
+        <div class="card" style="padding:0;overflow:hidden"> 
+          <table>
+            <thead>
+              <tr>
+                <th>Plan (Nombre)</th>
+                <th>Herramienta</th>
+                <th>Tipo</th>
+                <th>Frecuencia</th>
+                <th>Próxima Ejecución</th>
+                <th>Estado</th>
+                <th>Acciones</th>
+                <th>observaciones</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for plan in planes %}
+              {% if plan.activo %}
+              <tr>
+                <td><strong>{{ plan.nombre }}</strong></td>
+                <td>{{ plan.herramienta.nombre }}</td>
+                <td>{{ plan.get_tipo_display }}</td>
+                <td>{% if plan.frecuencia_dias %}{{ plan.frecuencia_dias }} días{% else %}—{% endif %}</td>
+                <td>
+                  {% if plan.esta_vencido %}
+                    <span style="color:var(--danger);font-weight:600">{{ plan.proxima_ejecucion|date:"d/m/Y" }} ⚠</span>
+                  {% elif plan.esta_proximo %}
+                    <span style="color:var(--orange);font-weight:600">{{ plan.proxima_ejecucion|date:"d/m/Y" }} ⏳</span>
+                  {% else %}
+                    {{ plan.proxima_ejecucion|date:"d/m/Y" }}
+                  {% endif %}
+                </td>
+                <td>
+                  {% if plan.esta_vencido %}
+                    <span class="badge badge-red">Vencido</span>
+                  {% elif plan.esta_proximo %}
+                    <span class="badge badge-orange">Próximo</span>
+                  {% else %}
+                    <span class="badge badge-green">Al día</span>
+                  {% endif %}
+                </td>
+              <td>
+            <a href="{% url 'mantenimiento:ejecutar_plan' plan.id %}" class="btn btn-sm btn-primary">
+                Ejecutar
+             </a>
+
+            <a href="{% url 'mantenimiento:detalle_plan' plan.id %}" class="btn btn-sm btn-outline">
+                Ver detalle
+            </a>
+            
+            <a href="{% url 'mantenimiento:plan_de_vida' plan.herramienta.id %}" class="btn btn-sm btn-outline">
+                Hoja de Vida
+            </a>
+            <td>{{ plan.descripcion }}</td>
+        </td>
+        
+    </tr>
+    {% endif %}
+{% empty %}
+<tr>
+    <td colspan="7" style="text-align:center;">
+        No hay planes de mantenimiento registrados.
+    </td>
+</tr>
+
+           
+          
+              <tr>
+                <td colspan="7" style="text-align: center; padding: 20px;">No hay planes de mantenimiento registrados.</td>
+              </tr>
+             
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- PESTAÑA: TAREAS PROGRAMADAS -->
+      <div id="tab-mant-tareas" style="display:none">
+        <div class="card">
+          <div class="card-title">Tareas Requeridas por Plan Activo</div>
+          <table>
+            <thead>
+              <tr>
+                <th>Plan Vinculado</th>
+                <th>Descripción de Tarea</th>
+                <th>Responsable Asignado</th>
+                <th>Duración Est.</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for plan in planes %}
+                {% for tarea in plan.tareas.all %}
+                <tr>
+                  <td>{{ plan.nombre }}</td>
+                  <td>{{ tarea.descripcion }}</td>
+                  <td>{{ tarea.responsable|default:"No especificado" }}</td>
+                  <td>{% if tarea.duracion_estimada_min %}{{ tarea.duracion_estimada_min }} min{% else %}—{% endif %}</td>
+                </tr>
+                {% endfor %}
+              {% empty %}
+                <tr>
+                  <td colspan="4" style="text-align: center; padding: 20px;">No se encontraron tareas cargadas en el sistema.</td>
+                </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- PESTAÑA: HISTORIAL -->
+  <!-- PESTAÑA: HISTORIAL -->
+<div id="tab-mant-historial" style="display:none">
+
+    <div class="card">
+
+        <div class="card-title">
+            Historial de Mantenimientos Realizados
+        </div>
+
 {% endblock %}

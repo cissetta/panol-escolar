@@ -72,6 +72,34 @@
     .badge-docente  { background: #27ae60; color: #fff; }
     .badge-alumno   { background: #2e86de; color: #fff; }
 
+
+    /* ── Badges de estado ── */
+.badge {
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+
+.badge-green {
+    background-color: #d4edda;
+    color: #000 !important;
+    border: 1px solid #28a745;
+}
+
+.badge-red {
+    background-color: #f8d7da;
+    color: #000 !important;
+    border: 1px solid #dc3545;
+}
+
+.badge-orange {
+    background-color: #fff3cd;
+    color: #000 !important;
+    border: 1px solid #fd7e14;
+}
+
     {% block extra_css %}{% endblock %}
   </style>
 </head>
@@ -123,12 +151,11 @@
     </a>
 
     <div class="nav-section">Grupo 4 – Mantenimiento</div>
-    <a href="{% url 'mantenimiento:planes' %}" class="nav-link {% if 'mantenimiento' in request.path and 'hoja' not in request.path %}active{% endif %}">
+    <a href="{% url 'mantenimiento:index' %}" class="nav-link {% if 'mantenimiento' in request.path and 'hoja' not in request.path %}active{% endif %}">
       <span class="icon">🗓️</span> Planes
     </a>
-    <a href="{% url 'mantenimiento:hoja_vida' %}" class="nav-link {% if 'hoja' in request.path %}active{% endif %}">
-      <span class="icon">📄</span> Hoja de Vida
-    </a>
+
+
 
     <div class="nav-section">Grupo 5 – Reportes</div>
     <a href="{% url 'reportes:index' %}" class="nav-link {% if 'reportes' in request.path %}active{% endif %}">

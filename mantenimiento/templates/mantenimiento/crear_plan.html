@@ -1,0 +1,155 @@
+{% extends 'base.html' %}
+{% block title %}Grupo 4 – Mantenimiento{% endblock %}
+{% block page_title %}Grupo 4 – Mantenimiento{% endblock %}
+
+{% block content %}
+<div class="screen">
+    <div class="groups-bar">
+        <div class="group-chip">🗓️ Grupo 4 – Mantenimiento</div>
+    </div>
+
+    {% if messages %}
+        {% for message in messages %}
+            <div class="alert alert-danger" style="margin-bottom:15px;color:var(--danger);">
+                {{ message }}
+            </div>
+        {% endfor %}
+    {% endif %}
+
+    <div class="card">
+
+        <div class="card-title">
+            Crear Nuevo Plan de Mantenimiento
+        </div>
+
+        <form method="post" action="{% url 'mantenimiento:crear_plan' %}">
+            {% csrf_token %}
+
+            <div class="form-group">
+                <label>Nombre del Plan</label>
+                <input type="text" name="nombre" required>
+            </div>
+
+            <div class="form-group">
+                <label>Herramienta</label>
+                <select name="herramienta" required>
+                    <option value="">Seleccione...</option>
+
+                    {% for h in herramientas %}
+                        <option value="{{ h.id }}">
+                            {{ h.nombre }}
+                        </option>
+                    {% endfor %}
+
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label>Tipo</label>
+                <select name="tipo" required>
+                    <option value="">Seleccione...</option>
+                    <option value="PREV">Preventivo</option>
+                    <option value="CORR">Correctivo</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label>Descripción</label>
+                <textarea name="descripcion"></textarea>
+            </div>
+
+            <div class="form-group">
+                <label>Frecuencia (días)</label>
+                <input type="number" name="frecuencia_dias">
+            </div>
+
+            <div class="form-group">
+                <label>Próxima ejecución</label>
+                <input type="date" name="proxima_ejecucion" required>
+            </div>
+
+            <hr>
+
+            <h3>Tareas del mantenimiento</h3>
+
+            <div id="contenedor-tareas">
+
+                <div class="tarea card" style="padding:15px;margin-bottom:10px;">
+
+                    <div class="form-group">
+                        <label>Descripción</label>
+                        <input type="text" name="descripcion_tarea[]">
+                    </div>
+
+                    <div class="form-group">
+                        <label>Responsable</label>
+                        <input type="text" name="responsable_tarea[]">
+                    </div>
+
+                    <div class="form-group">
+                        <label>Duración (min)</label>
+                        <input type="number" name="duracion_tarea[]">
+                    </div>
+
+                </div>
+
+            </div>
+
+            <button type="button"
+                    class="btn btn-outline"
+                    onclick="agregarTarea()">
+                + Agregar otra tarea
+            </button>
+
+            <br><br>
+
+            <button class="btn btn-primary">
+                Crear Plan
+            </button>
+
+            <button type="button"
+                    class="btn btn-outline"
+                    onclick="history.back()">
+                Cancelar
+            </button>
+
+        </form>
+
+    </div>
+
+</div>
+
+<script>
+
+function agregarTarea(){
+
+    const contenedor = document.getElementById("contenedor-tareas");
+
+    contenedor.insertAdjacentHTML("beforeend",`
+
+        <div class="tarea card" style="padding:15px;margin-top:10px;">
+
+            <div class="form-group">
+                <label>Descripción</label>
+                <input type="text" name="descripcion_tarea[]">
+            </div>
+
+            <div class="form-group">
+                <label>Responsable</label>
+                <input type="text" name="responsable_tarea[]">
+            </div>
+
+            <div class="form-group">
+                <label>Duración (min)</label>
+                <input type="number" name="duracion_tarea[]">
+            </div>
+
+        </div>
+
+    `);
+
+}
+
+</script>
+
+{% endblock %}
