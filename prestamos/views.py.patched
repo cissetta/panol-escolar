@@ -30,7 +30,7 @@ def activos(request):
 @login_required
 def registrar_prestamo(request):
     alumnos = Alumno.objects.filter(activo=True).order_by("apellido", "nombre")
-    herramientas = Herramienta.objects.filter(activo=True).order_by("nombre")
+    herramientas = Herramienta.objects.filter(activo=True, estado='DISPONIBLE').order_by("nombre")
     docentes = Docente.objects.filter(activo=True).order_by("apellido", "nombre")
 
     if request.method == "POST":
