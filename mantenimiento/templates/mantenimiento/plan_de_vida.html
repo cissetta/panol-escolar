@@ -1,0 +1,236 @@
+{% extends 'base.html' %}
+
+{% block title %}Hoja de Vida{% endblock %}
+{% block page_title %}Hoja de Vida de la Herramienta{% endblock %}
+
+{% block content %}
+
+<div class="screen">
+
+    <div class="groups-bar">
+        <div class="group-chip">
+            🔨 Grupo 4 – Hoja de Vida
+        </div>
+    </div>
+
+    <!-- DATOS -->
+
+    <div class="card" style="margin-bottom:25px;">
+
+        <div class="card-title">
+            Información de la Herramienta
+        </div>
+
+        <div style="
+            display:grid;
+            grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
+            gap:20px;">
+
+            <div>
+                <strong>🔨 Herramienta</strong><br>
+                {{ herramienta.nombre }}
+            </div>
+
+            <div>
+                <strong>🏷 Código</strong><br>
+                {{ herramienta.codigo }}
+            </div>
+
+            <div>
+                <strong>📂 Categoría</strong><br>
+
+                {% if herramienta.categoria %}
+                    {{ herramienta.categoria.nombre }}
+                {% else %}
+                    Sin categoría
+                {% endif %}
+            </div>
+
+            <div>
+                <strong>🛠 Planes registrados</strong><br>
+                {{ planes.count }}
+            </div>
+
+            <div>
+                <strong>📄 Eventos registrados</strong><br>
+                {{ logs.count }}
+            </div>
+
+            <div>
+
+                <strong>📍 Estado actual</strong><br>
+
+                {% if herramienta.estado == "DISPONIBLE" %}
+                    <span class="badge badge-green">Disponible</span>
+
+                {% elif herramienta.estado == "PRESTADA" %}
+                    <span class="badge badge-orange">Prestada</span>
+
+                {% elif herramienta.estado == "REPARACION" %}
+                    <span class="badge badge-red">En reparación</span>
+
+                {% else %}
+                    <span class="badge badge-secondary">
+                        {{ herramienta.estado }}
+                    </span>
+
+                {% endif %}
+
+            </div>
+
+        </div>
+
+    </div>
+
+    <!-- HOJA DE VIDA -->
+
+    <div class="card">
+
+        <div class="card-title">
+            📄 Historial Completo de la Herramienta
+        </div>
+
+        {% if logs %}
+
+        <ul class="timeline">
+
+            {% for evento in logs %}
+
+            <li style="margin-bottom:25px;">
+
+                <div class="tl-date">
+
+                    {{ evento.fecha|date:"d/m/Y H:i" }}
+
+                </div>
+
+             {% if evento.tipo == 'ALTA' %}
+    <div class="tl-text" style="background:#fff;border-radius:12px;padding:18px;box-shadow:0 3px 12px rgba(0,0,0,.08);border-left:6px solid #28a745;">
+{% elif evento.tipo == 'PRESTAMO' %}
+    <div class="tl-text" style="background:#fff;border-radius:12px;padding:18px;box-shadow:0 3px 12px rgba(0,0,0,.08);border-left:6px solid #fd7e14;">
+{% elif evento.tipo == 'DEVOLUCION' %}
+    <div class="tl-text" style="background:#fff;border-radius:12px;padding:18px;box-shadow:0 3px 12px rgba(0,0,0,.08);border-left:6px solid #20c997;">
+{% elif evento.tipo == 'MANTENIMIENTO' %}
+    <div class="tl-text" style="background:#fff;border-radius:12px;padding:18px;box-shadow:0 3px 12px rgba(0,0,0,.08);border-left:6px solid #0d6efd;">
+{% elif evento.tipo == 'ESTADO' %}
+    <div class="tl-text" style="background:#fff;border-radius:12px;padding:18px;box-shadow:0 3px 12px rgba(0,0,0,.08);border-left:6px solid #6f42c1;">
+{% elif evento.tipo == 'BAJA' %}
+    <div class="tl-text" style="background:#fff;border-radius:12px;padding:18px;box-shadow:0 3px 12px rgba(0,0,0,.08);border-left:6px solid #dc3545;">
+{% else %}
+    <div class="tl-text" style="background:#fff;border-radius:12px;padding:18px;box-shadow:0 3px 12px rgba(0,0,0,.08);border-left:6px solid #6c757d;">
+{% endif %}
+                    <h4 style="margin-bottom:15px;">
+
+                        {% if evento.tipo == "ALTA" %}
+                            ➕ Alta en inventario
+
+                        {% elif evento.tipo == "PRESTAMO" %}
+                            📤 Préstamo
+
+                        {% elif evento.tipo == "DEVOLUCION" %}
+                            📥 Devolución
+
+                        {% elif evento.tipo == "MANTENIMIENTO" %}
+                            🔧 Mantenimiento
+
+                        {% elif evento.tipo == "ESTADO" %}
+                            ⚙ Cambio de estado
+
+                        {% elif evento.tipo == "BAJA" %}
+                            ❌ Baja
+
+                        {% else %}
+                            📄 Evento
+
+                        {% endif %}
+
+                    </h4>
+
+                    <div style="
+                        display:grid;
+                        grid-template-columns:180px 1fr;
+                        gap:12px;
+                        margin-bottom:15px;">
+
+                        <strong>Fecha</strong>
+                        <span>{{ evento.fecha|date:"d/m/Y H:i" }}</span>
+
+                        <strong>Tipo</strong>
+                        <span>{{ evento.get_tipo_display }}</span>
+
+                        {% if evento.usuario %}
+                        <strong>Usuario</strong>
+                        <span>{{ evento.usuario }}</span>
+                        {% endif %}
+
+                    </div>
+
+                    <div style="
+                        background:#f8f9fa;
+                        border-radius:8px;
+                        padding:15px;
+                        border:1px solid #e5e5e5;">
+
+                        {{ evento.descripcion }}
+
+                    </div>
+
+                </div>
+
+            </li>
+
+            {% endfor %}
+
+        </ul>
+
+        {% else %}
+
+        <div style="text-align:center;padding:60px;color:#888;">
+
+            <div style="font-size:70px;">
+                📂
+            </div>
+
+            <h3>No existen eventos registrados</h3>
+
+            <p>
+                Esta herramienta todavía no posee movimientos registrados.
+            </p>
+
+        </div>
+
+        {% endif %}
+
+    </div>
+
+    <!-- BOTONES -->
+
+    <div style="
+        display:flex;
+        justify-content:flex-end;
+        gap:12px;
+        margin-top:25px;">
+
+        <a href="{% url 'mantenimiento:index' %}"
+           class="btn btn-outline">
+
+            ← Volver
+
+        </a>
+
+        {% if planes.first %}
+
+        <a href="{% url 'mantenimiento:ejecutar_plan' planes.first.id %}"
+           class="btn btn-primary">
+
+            🔧 Registrar mantenimiento
+
+        </a>
+
+        {% endif %}
+
+    </div>
+
+</div>
+
+{% endblock %}

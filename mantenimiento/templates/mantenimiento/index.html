@@ -1,11 +1,366 @@
 {% extends 'base.html' %}
 {% block title %}Grupo 4 – Mantenimiento{% endblock %}
 {% block page_title %}Grupo 4 – Mantenimiento{% endblock %}
+
 {% block content %}
-<div class="card border-0 shadow-sm">
-  <div class="card-body text-center py-5">
-    <h2 class="text-muted">🚧 Módulo en desarrollo</h2>
-    <p class="text-muted mt-2">Este es el punto de partida del módulo. ¡A programar!</p>
-  </div>
+
+<div class="screen">
+
+    <div class="groups-bar">
+        <div class="group-chip">🗓️ Grupo 4 – Mantenimiento</div>
+    </div>
+
+    <!-- Tabs -->
+    <div class="tab-bar">
+        <div class="tab active" onclick="switchTab(this,'tab-mant-planes')">
+            Planes
+        </div>
+
+        <div class="tab" onclick="switchTab(this,'tab-mant-tareas')">
+            Tareas Programadas
+        </div>
+
+        <div class="tab" onclick="switchTab(this,'tab-mant-historial')">
+            Historial
+        </div>
+    </div>
+
+    <!-- FILTROS -->
+
+    <div class="card" style="margin:20px 0">
+
+        <form method="get"
+              style="display:flex;
+                     gap:20px;
+                     align-items:end;
+                     flex-wrap:wrap;">
+
+            <div>
+
+                <label><strong>Herramienta</strong></label>
+
+                <select name="herramienta" class="form-select">
+
+                    <option value="">Todas</option>
+
+                    {% for h in herramientas %}
+                    <option value="{{ h.id }}"
+                    {% if request.GET.herramienta == h.id|stringformat:"s" %}
+                        selected
+                    {% endif %}
+                    >
+                        {{ h.nombre }}
+                    </option>
+                    {% endfor %}
+
+                </select>
+
+            </div>
+
+            <div>
+
+                <label><strong>Mes</strong></label>
+
+                <select name="mes" class="form-select">
+
+                    <option value="">Todos</option>
+
+                    {% for i in "123456789101112"|make_list %}
+                    {% endfor %}
+
+                    <option value="1">Enero</option>
+                    <option value="2">Febrero</option>
+                    <option value="3">Marzo</option>
+                    <option value="4">Abril</option>
+                    <option value="5">Mayo</option>
+                    <option value="6">Junio</option>
+                    <option value="7">Julio</option>
+                    <option value="8">Agosto</option>
+                    <option value="9">Septiembre</option>
+                    <option value="10">Octubre</option>
+                    <option value="11">Noviembre</option>
+                    <option value="12">Diciembre</option>
+
+                </select>
+
+            </div>
+
+            <button class="btn btn-primary">
+                🔍 Filtrar
+            </button>
+
+            <a href="{% url 'mantenimiento:index' %}"
+               class="btn btn-outline">
+                Limpiar
+            </a>
+
+        </form>
+
+    </div>
+
+    <!-- PLANES -->
+
+    <div id="tab-mant-planes">
+
+        <div class="btn-group" style="margin-bottom:15px;">
+
+            <a href="{% url 'mantenimiento:crear_plan' %}"
+               class="btn btn-primary">
+
+                ➕ Nuevo Plan
+
+            </a>
+
+        </div>
+
+        <div class="card" style="padding:0;overflow:auto;">
+
+            <table>
+
+                <thead>
+
+                <tr>
+
+                    <th>Plan</th>
+                    <th>Herramienta</th>
+                    <th>Tipo</th>
+                    <th>Frecuencia</th>
+                    <th>Próxima ejecución</th>
+                    <th>Estado</th>
+                    <th>Observaciones</th>
+                    <th>Acciones</th>
+
+                </tr>
+
+                </thead>
+
+                <tbody>
+
+                {% for plan in planes %}
+
+                {% if plan.activo %}
+
+                <tr>
+
+                    <td><strong>{{ plan.nombre }}</strong></td>
+
+                    <td>{{ plan.herramienta.nombre }}</td>
+
+                    <td>{{ plan.get_tipo_display }}</td>
+
+                    <td>
+
+                        {% if plan.frecuencia_dias %}
+                            {{ plan.frecuencia_dias }} días
+                        {% else %}
+                            —
+                        {% endif %}
+
+                    </td>
+
+                    <td>
+
+                        {% if plan.esta_vencido %}
+
+                            <span style="color:red;font-weight:bold;">
+                                {{ plan.proxima_ejecucion|date:"d/m/Y" }}
+                            </span>
+
+                        {% elif plan.esta_proximo %}
+
+                            <span style="color:orange;font-weight:bold;">
+                                {{ plan.proxima_ejecucion|date:"d/m/Y" }}
+                            </span>
+
+                        {% else %}
+
+                            {{ plan.proxima_ejecucion|date:"d/m/Y" }}
+
+                        {% endif %}
+
+                    </td>
+
+                    <td>
+
+                        {% if plan.esta_vencido %}
+
+                            <span class="badge badge-red">
+                                Vencido
+                            </span>
+
+                        {% elif plan.esta_proximo %}
+
+                            <span class="badge badge-orange">
+                                Próximo
+                            </span>
+
+                        {% else %}
+
+                            <span class="badge badge-green">
+                                Al día
+                            </span>
+
+                        {% endif %}
+
+                    </td>
+
+                    <td>
+
+                        {{ plan.descripcion|default:"Sin observaciones" }}
+
+                    </td>
+
+                    <td style="display:flex;gap:5px;flex-wrap:wrap;">
+
+                        <a href="{% url 'mantenimiento:ejecutar_plan' plan.id %}"
+                           class="btn btn-sm btn-primary">
+
+                            Ejecutar
+
+                        </a>
+
+                        <a href="{% url 'mantenimiento:plan_de_vida' plan.herramienta.id %}"
+                           class="btn btn-sm btn-outline">
+
+                            Hoja de Vida
+
+                        </a>
+
+                        <a href="{% url 'mantenimiento:editar_plan' plan.id %}"
+                           class="btn btn-sm btn-warning">
+
+                            ✏ Editar
+
+                        </a>
+
+                        <a href="{% url 'mantenimiento:eliminar_plan' plan.id %}"
+                           class="btn btn-sm btn-danger">
+
+                            🗑 Eliminar
+
+                        </a>
+
+                    </td>
+
+                </tr>
+
+                {% endif %}
+
+                {% empty %}
+
+                <tr>
+
+                    <td colspan="8" style="text-align:center;padding:20px;">
+
+                        No existen planes registrados.
+
+                    </td>
+
+                </tr>
+
+                {% endfor %}
+
+                </tbody>
+
+            </table>
+
+        </div>
+
+    </div>
+
+    <!-- TAREAS -->
+
+    <div id="tab-mant-tareas" style="display:none">
+
+        <div class="card">
+
+            <div class="card-title">
+                Tareas Programadas
+            </div>
+
+            <table>
+
+                <thead>
+
+                <tr>
+
+                    <th>Plan</th>
+                    <th>Tarea</th>
+                    <th>Responsable</th>
+                    <th>Duración</th>
+
+                </tr>
+
+                </thead>
+
+                <tbody>
+
+                {% for plan in planes %}
+
+                    {% for tarea in plan.tareas.all %}
+
+                    <tr>
+
+                        <td>{{ plan.nombre }}</td>
+
+                        <td>{{ tarea.descripcion }}</td>
+
+                        <td>{{ tarea.responsable|default:"-" }}</td>
+
+                        <td>
+
+                            {{ tarea.duracion_estimada_min|default:"-" }} min
+
+                        </td>
+
+                    </tr>
+
+                    {% endfor %}
+
+                {% empty %}
+
+                <tr>
+
+                    <td colspan="4">
+
+                        No existen tareas.
+
+                    </td>
+
+                </tr>
+
+                {% endfor %}
+
+                </tbody>
+
+            </table>
+
+        </div>
+
+    </div>
+
+    <!-- HISTORIAL -->
+
+    <div id="tab-mant-historial" style="display:none">
+
+        <div class="card">
+
+            <div class="card-title">
+
+                Historial de mantenimientos
+
+            </div>
+
+            <p style="color:gray">
+
+                Seleccione una herramienta para consultar su historial completo.
+
+            </p>
+
+        </div>
+
+    </div>
+
 </div>
+
 {% endblock %}
