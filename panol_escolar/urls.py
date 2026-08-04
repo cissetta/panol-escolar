@@ -29,3 +29,8 @@ urlpatterns = [
     path('reportes/',      include('reportes.urls')),       # Grupo 5
 
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+from django.urls import include, path
+path(
+    "mantenimiento/",
+    include("mantenimiento.urls"),
+),

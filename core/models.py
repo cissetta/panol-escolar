@@ -68,6 +68,8 @@ class Alumno(models.Model):
         ('3A','3° A'), ('3B','3° B'),
         ('4A','4° A'), ('4B','4° B'),
         ('5A','5° A'), ('5B','5° B'),
+        ('6A','6° A'), ('6B','6° B'), 
+        ('7A','7° A'), ('7B','7° B'), 
     ]
     legajo   = models.CharField(max_length=10, unique=True, blank=True)
     nombre   = models.CharField(max_length=50)
@@ -102,7 +104,12 @@ class Alumno(models.Model):
         limite = timezone.now() - timedelta(days=config.dias_maximo_prestamo)
         return self.prestamos_activos().filter(fecha_prestamo__lt=limite).exists()
 
-
+    
+    def delete(self, *args, **kwargs):
+        if self.qr_code:
+            self.qr_code.delete(save=False)
+            
+        super().delete(*args, **kwargs)
 # ══════════════════════════════════════════════════════════════════
 #  INVENTARIO  (Grupo 2)
 # ══════════════════════════════════════════════════════════════════
@@ -297,6 +304,27 @@ class Prestamo(models.Model):
 
     def esta_activo(self):
         return self.fecha_devolucion is None
+
+    def estado_label(self):
+        """Devuelve una tupla (texto, clase_badge) para mostrar el estado en las vistas.
+
+        - Si está devuelto: 'Devuelto (Estado)' con clase 'success'.
+        - Si está activo y vencido según la configuración: '+{horas}h préstamo vencido' con 'danger'.
+        - Si está activo y no vencido: 'Activo' con 'primary'.
+        """
+        if not self.esta_activo():
+            estado = self.get_estado_devolucion_display() if self.estado_devolucion else 'Devuelto'
+            return (f'Devuelto ({estado})', 'success')
+
+        # Está activo
+        config = ConfiguracionSistema.get()
+        limite = self.fecha_prestamo + timedelta(days=config.dias_maximo_prestamo)
+        ahora = timezone.now()
+        if ahora > limite:
+            exceso = ahora - limite
+            horas = int(exceso.total_seconds() // 3600)
+            return (f'+{horas}h préstamo vencido', 'danger')
+        return ('Activo', 'primary')
 
     def esta_vencido(self):
         if not self.esta_activo():
