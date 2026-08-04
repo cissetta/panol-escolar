@@ -1,11 +1,58 @@
 {% extends 'base.html' %}
-{% block title %}Grupo 3 – Préstamos y Devoluciones{% endblock %}
-{% block page_title %}Grupo 3 – Préstamos y Devoluciones{% endblock %}
+{% block title %}Grupo 3  Préstamos y Devoluciones{% endblock %}
+{% block page_title %}Grupo 3  Préstamos y Devoluciones{% endblock %}
 {% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+  <div>
+    <h2 class="h4 mb-1">Registro de devoluciones</h2>
+    <p class="text-muted mb-0">Consultá el estado en que regresó cada herramienta.</p>
+  </div>
+  <a href="{% url 'prestamos:devolucion' %}" class="btn btn-primary">
+    📥 Registrar devolución
+  </a>
+</div>
+
 <div class="card border-0 shadow-sm">
-  <div class="card-body text-center py-5">
-    <h2 class="text-muted">🚧 Módulo en desarrollo</h2>
-    <p class="text-muted mt-2">Este es el punto de partida del módulo. ¡A programar!</p>
+  <div class="card-body p-0">
+    {% if devoluciones %}
+      <div class="table-responsive">
+        <table class="table table-hover align-middle mb-0">
+          <thead class="table-light">
+            <tr>
+              <th>Fecha</th>
+              <th>Alumno</th>
+              <th>Herramienta</th>
+              <th>Docente</th>
+              <th>Estado de la herramienta</th>
+              <th>Defecto / observaciones</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for devolucion in devoluciones %}
+              <tr>
+                <td>{{ devolucion.fecha_devolucion|date:"d/m/Y H:i" }}</td>
+                <td>{{ devolucion.alumno.apellido }}, {{ devolucion.alumno.nombre }}</td>
+                <td><strong>{{ devolucion.herramienta.nombre }}</strong><br><small class="text-muted">{{ devolucion.herramienta.codigo }}</small></td>
+                <td>{{ devolucion.docente }}</td>
+                <td>
+                  {% if devolucion.estado_devolucion == 'BUEN_ESTADO' %}
+                    <span class="badge text-bg-success">✓ Buen estado</span>
+                  {% else %}
+                    <span class="badge text-bg-danger">✕ No está en buen estado</span>
+                  {% endif %}
+                </td>
+                <td>{{ devolucion.observaciones|default:"Sin observaciones" }}</td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    {% else %}
+      <div class="text-center text-muted py-5">
+        <div class="fs-1">📋</div>
+        <p class="mb-0">Todavía no hay devoluciones registradas.</p>
+      </div>
+    {% endif %}
   </div>
 </div>
 {% endblock %}
