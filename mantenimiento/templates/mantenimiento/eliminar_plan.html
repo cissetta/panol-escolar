@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+
+{% block title %}Eliminar Plan{% endblock %}
+
+{% block page_title %}Eliminar Plan{% endblock %}
+
+{% block content %}
+
+<div class="card">
+
+    <h3>¿Desea eliminar este plan?</h3>
+
+    <p><strong>{{ plan.nombre }}</strong></p>
+
+    <p>Herramienta: {{ plan.herramienta.nombre }}</p>
+
+    <form method="post">
+
+        {% csrf_token %}
+
+        <button class="btn btn-danger">
+            Sí, eliminar
+        </button>
+
+        <a href="{% url 'mantenimiento:index' %}"
+           class="btn btn-secondary">
+
+            Cancelar
+
+        </a>
+
+    </form>
+
+</div>
+
+{% endblock %}

@@ -195,6 +195,7 @@ def ejecutar_plan(request, plan_id):
     )
 
 
+
 def plan_de_vida(request, herramienta_id):
 
     herramienta = get_object_or_404(
@@ -210,6 +211,10 @@ def plan_de_vida(request, herramienta_id):
         plan__herramienta=herramienta
     ).order_by("-fecha")
 
+    logs = LogHerramienta.objects.filter(
+        herramienta=herramienta
+    ).order_by("-fecha")
+
     return render(
         request,
         "mantenimiento/plan_de_vida.html",
@@ -217,6 +222,7 @@ def plan_de_vida(request, herramienta_id):
             "herramienta": herramienta,
             "planes": planes,
             "historial": historial,
+            "logs": logs,
         }
     )
 
@@ -242,5 +248,64 @@ def detalle_plan(request, plan_id):
             "plan": plan,
             "tareas": tareas,
             "ejecuciones": ejecuciones,
+        }
+    )
+def editar_plan(request, plan_id):
+
+    plan = get_object_or_404(
+        PlanMantenimiento,
+        pk=plan_id
+    )
+
+    herramientas = Herramienta.objects.filter(activo=True)
+
+    if request.method == "POST":
+
+        plan.nombre = request.POST.get("nombre")
+        plan.herramienta = Herramienta.objects.get(
+            pk=request.POST.get("herramienta")
+        )
+        plan.tipo = request.POST.get("tipo")
+        plan.descripcion = request.POST.get("descripcion")
+        plan.frecuencia_dias = request.POST.get("frecuencia_dias") or None
+        plan.proxima_ejecucion = request.POST.get("proxima_ejecucion")
+
+        plan.save()
+
+        messages.success(request, "Plan actualizado correctamente.")
+
+        return redirect("mantenimiento:index")
+
+    return render(
+        request,
+        "mantenimiento/editar_plan.html",
+        {
+            "plan": plan,
+            "herramientas": herramientas,
+        },
+    )
+def eliminar_plan(request, plan_id):
+
+    plan = get_object_or_404(
+        PlanMantenimiento,
+        pk=plan_id
+    )
+
+    if request.method == "POST":
+
+        plan.delete()
+
+        messages.success(
+            request,
+            "Plan eliminado correctamente."
+        )
+
+        return redirect("mantenimiento:index")
+
+    return render(
+        request,
+        "mantenimiento/eliminar_plan.html",
+        {
+            "plan": plan
         }
     )

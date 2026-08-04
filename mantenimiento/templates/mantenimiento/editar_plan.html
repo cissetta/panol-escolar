@@ -1,0 +1,165 @@
+{% extends 'base.html' %}
+
+{% block title %}Editar Plan{% endblock %}
+{% block page_title %}Editar Plan de Mantenimiento{% endblock %}
+
+{% block content %}
+
+<div class="screen">
+
+    <div class="groups-bar">
+        <div class="group-chip">
+            ✏️ Grupo 4 – Editar Plan
+        </div>
+    </div>
+
+    <div class="card">
+
+        <div class="card-title">
+            Editar Plan de Mantenimiento
+        </div>
+
+        <form method="post">
+
+            {% csrf_token %}
+
+            <div class="form-group">
+                <label>Nombre del plan</label>
+                <input
+                    type="text"
+                    name="nombre"
+                    class="form-control"
+                    value="{{ plan.nombre }}"
+                    required>
+            </div>
+
+            <br>
+
+            <div class="form-group">
+
+                <label>Herramienta</label>
+
+                <select
+                    name="herramienta"
+                    class="form-select"
+                    required>
+
+                    {% for h in herramientas %}
+
+                        <option
+                            value="{{ h.id }}"
+                            {% if h.id == plan.herramienta.id %}
+                                selected
+                            {% endif %}>
+
+                            {{ h.nombre }}
+
+                        </option>
+
+                    {% endfor %}
+
+                </select>
+
+            </div>
+
+            <br>
+
+            <div class="form-group">
+
+                <label>Tipo de mantenimiento</label>
+
+                <select
+                    name="tipo"
+                    class="form-select"
+                    required>
+
+                    <option
+                        value="PREV"
+                        {% if plan.tipo == "PREV" %}
+                        selected
+                        {% endif %}>
+                        Preventivo
+                    </option>
+
+                    <option
+                        value="CORR"
+                        {% if plan.tipo == "CORR" %}
+                        selected
+                        {% endif %}>
+                        Correctivo
+                    </option>
+
+                </select>
+
+            </div>
+
+            <br>
+
+            <div class="form-group">
+
+                <label>Descripción</label>
+
+                <textarea
+                    name="descripcion"
+                    rows="4"
+                    class="form-control">{{ plan.descripcion }}</textarea>
+
+            </div>
+
+            <br>
+
+            <div class="form-group">
+
+                <label>Frecuencia (días)</label>
+
+                <input
+                    type="number"
+                    name="frecuencia_dias"
+                    class="form-control"
+                    value="{{ plan.frecuencia_dias }}">
+
+            </div>
+
+            <br>
+
+            <div class="form-group">
+
+                <label>Próxima ejecución</label>
+
+                <input
+                    type="date"
+                    name="proxima_ejecucion"
+                    class="form-control"
+                    value="{{ plan.proxima_ejecucion|date:'Y-m-d' }}">
+
+            </div>
+
+            <br>
+
+            <div class="d-flex justify-content-end gap-2">
+
+                <a
+                    href="{% url 'mantenimiento:index' %}"
+                    class="btn btn-outline">
+
+                    Cancelar
+
+                </a>
+
+                <button
+                    type="submit"
+                    class="btn btn-warning">
+
+                    💾 Guardar cambios
+
+                </button>
+
+            </div>
+
+        </form>
+
+    </div>
+
+</div>
+
+{% endblock %}
