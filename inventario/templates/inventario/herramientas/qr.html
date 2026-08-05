@@ -1,0 +1,50 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+<div class="container mt-4 text-center">
+
+    <h2>QR de herramienta</h2>
+
+    <h3>
+        {{ herramienta.nombre }}
+    </h3>
+
+    <p>
+        Código: {{ herramienta.codigo }}
+    </p>
+
+
+    {% if herramienta.qr_code %}
+
+        <img 
+            src="{{ herramienta.qr_code.url }}"
+            width="300"
+            class="img-thumbnail"
+        >
+
+        <br><br>
+
+        <button 
+            onclick="window.print()"
+            class="btn btn-success">
+
+            Imprimir QR
+
+        </button>
+
+
+    {% else %}
+
+        <div class="alert alert-warning">
+
+            Esta herramienta no tiene QR generado.
+
+        </div>
+
+    {% endif %}
+
+
+</div>
+
+{% endblock %}
