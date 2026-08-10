@@ -133,6 +133,9 @@
     <a href="{% url 'reportes:index' %}" class="nav-link {% if 'reportes' in request.path %}active{% endif %}">
       <span class="icon">📈</span> Reportes
     </a>
+    <a href="{% url 'reportes:reportes' %}" class="nav-link {% if 'reportes' in request.path %}active{% endif %}">
+      <span class="icon">📋</span> Reportes
+    </a>
     <a href="{% url 'reportes:docentes' %}" class="nav-link {% if 'docentes' in request.path %}active{% endif %}">
       <span class="icon">👨‍🏫</span> Docentes
     </a>
