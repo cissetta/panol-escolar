@@ -10,7 +10,7 @@
   <style>
     :root {
       --sidebar-w: 230px;
-      --azul:       #1e3a5f;
+      --azul:       #751966;
       --azul-claro: #2e86de;
     }
     body    { background: #f4f6f9; font-family: 'Segoe UI', sans-serif; }
@@ -97,9 +97,6 @@
     </a>
     <a href="{% url 'alumnos:nuevo' %}" class="nav-link {% if request.resolver_match.url_name == 'nuevo' %}active{% endif %}">
       <span class="icon"><i class="bi bi-plus-lg"></i></span> Nuevo Alumno
-    </a>
-    <a href="{% url 'alumnos:lista' %}" class="nav-link">
-      <span class="icon"><i class="bi bi-clipboard-check"></i></span> Historial Alumno
     </a>
     <!-- FIN SECCIÓN GRUPO 1 -->
 

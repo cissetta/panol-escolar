@@ -1,20 +1,41 @@
 {% extends 'base.html' %}
 
 {% block content %}
-<div class="container mt-5">
-    <div class="card shadow-sm border-danger">
-        <div class="card-header bg-danger text-white">
-            <h4 class="mb-0">Confirmar Baja</h4>
-        </div>
-        <div class="card-body">
-            <p>¿Estás seguro de que deseas dar de baja al alumno <strong>{{ alumno.nombre }} {{ alumno.apellido }}</strong> (DNI: {{ alumno.dni }})?</p>
-            <p class="text-muted small">Esta acción no elimina el registro de la base de datos, solo lo oculta del sistema (baja lógica).</p>
-            
-            <form method="post">
-                {% csrf_token %}
-                <button type="submit" class="btn btn-danger"><i class="bi bi-trash"></i> Sí, dar de baja</button>
-                <a href="{% url 'alumnos:lista' %}" class="btn btn-secondary">Cancelar</a>
-            </form>
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card shadow-sm border-danger">
+                <div class="card-header bg-danger text-white text-center py-3">
+                    <h5 class="mb-0"><i class="bi bi-exclamation-triangle-fill"></i> Confirmar Baja de Alumno</h5>
+                </div>
+                <div class="card-body p-4 text-center">
+                    <h4 class="mb-3">{{ alumno.apellido }}, {{ alumno.nombre }}</h4>
+                    <p class="mb-2">Legajo: <strong>{{ alumno.legajo }}</strong> | DNI: <strong>{{ alumno.dni }}</strong></p>
+                    
+                    <div class="alert alert-warning text-start mt-4 mb-4">
+                        <strong>¿Qué sucederá?</strong>
+                        <ul class="mb-0 mt-2">
+                            <li>El alumno pasará a estado <strong>Inactivo</strong>.</li>
+                            <li>Su código QR actual será <strong>eliminado del sistema</strong> permanentemente.</li>
+                            <li>Su historial de préstamos <strong>se conservará</strong> para futuras auditorías.</li>
+                        </ul>
+                    </div>
+
+                    <p class="text-muted small">Esta acción no elimina el registro de la base de datos, pero el alumno ya no podrá solicitar herramientas.</p>
+                </div>
+                <div class="card-footer bg-light p-3 d-flex justify-content-between">
+                    <a href="{% url 'alumnos:detalle' alumno.pk %}" class="btn btn-outline-secondary">
+                        <i class="bi bi-arrow-left"></i> Cancelar y Volver
+                    </a>
+                    
+                    <form method="post" class="m-0 p-0">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-danger">
+                            <i class="bi bi-person-x"></i> Confirmar Baja
+                        </button>
+                    </form>
+                </div>
+            </div>
         </div>
     </div>
 </div>

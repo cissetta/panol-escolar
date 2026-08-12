@@ -67,7 +67,15 @@
                     </td>
                     <td>
                         <a href="{% url 'alumnos:detalle' alumno.pk %}" class="btn btn-sm btn-outline-primary rounded-pill px-3">Ver</a>
-                        <a href="{% url 'alumnos:eliminar' alumno.pk %}" class="btn btn-sm btn-danger rounded-pill"><i class="bi bi-trash"></i></a>
+                        
+                        <!-- NUEVO BOTÓN DE EDITAR -->
+                        <a href="{% url 'alumnos:editar' alumno.pk %}" class="btn btn-sm btn-warning rounded-pill px-3">
+                            <i class="bi bi-pencil"></i>
+                        </a>
+                        
+                        <a href="{% url 'alumnos:eliminar' alumno.pk %}" class="btn btn-sm btn-danger rounded-pill">
+                            <i class="bi bi-trash"></i>
+                        </a>
                     </td>
                 </tr>
                 {% empty %}
@@ -79,26 +87,47 @@
         </table>
     </div>
     
-    <!-- Paginación -->
-    <div class="mt-4 d-flex justify-content-center">
-        <div class="pagination">
-            <span class="step-links">
-                {% if page_obj.has_previous %}
-                    <a href="?page=1{% if q %}&q={{ q }}{% endif %}" class="btn btn-sm btn-outline-secondary">&laquo; Primera</a>
-                    <a href="?page={{ page_obj.previous_page_number }}{% if q %}&q={{ q }}{% endif %}" class="btn btn-sm btn-outline-secondary">Anterior</a>
-                {% endif %}
+    <!-- Paginación Estilo Bootstrap -->
+    {% if page_obj.paginator.num_pages > 1 %}
+    <nav aria-label="Navegación de páginas" class="mt-4 d-flex justify-content-center">
+        <ul class="pagination shadow-sm">
+            
+            <!-- Primera / Anterior -->
+            {% if page_obj.has_previous %}
+                <li class="page-item">
+                    <a class="page-link text-primary" href="?page=1{% if q %}&q={{ q }}{% endif %}" aria-label="Primera">&laquo; Primera</a>
+                </li>
+                <li class="page-item">
+                    <a class="page-link text-primary" href="?page={{ page_obj.previous_page_number }}{% if q %}&q={{ q }}{% endif %}">Anterior</a>
+                </li>
+            {% else %}
+                <li class="page-item disabled"><span class="page-link">&laquo; Primera</span></li>
+                <li class="page-item disabled"><span class="page-link">Anterior</span></li>
+            {% endif %}
 
-                <span class="current mx-2 text-muted small">
-                    Página {{ page_obj.number }} de {{ page_obj.paginator.num_pages }}.
+            <!-- Página Actual -->
+            <li class="page-item active" aria-current="page">
+                <span class="page-link bg-primary border-primary">
+                    Página {{ page_obj.number }} de {{ page_obj.paginator.num_pages }}
                 </span>
+            </li>
 
-                {% if page_obj.has_next %}
-                    <a href="?page={{ page_obj.next_page_number }}{% if q %}&q={{ q }}{% endif %}" class="btn btn-sm btn-outline-secondary">Siguiente</a>
-                    <a href="?page={{ page_obj.paginator.num_pages }}{% if q %}&q={{ q }}{% endif %}" class="btn btn-sm btn-outline-secondary">Última &raquo;</a>
-                {% endif %}
-            </span>
-        </div>
-    </div>
+            <!-- Siguiente / Última -->
+            {% if page_obj.has_next %}
+                <li class="page-item">
+                    <a class="page-link text-primary" href="?page={{ page_obj.next_page_number }}{% if q %}&q={{ q }}{% endif %}">Siguiente</a>
+                </li>
+                <li class="page-item">
+                    <a class="page-link text-primary" href="?page={{ page_obj.paginator.num_pages }}{% if q %}&q={{ q }}{% endif %}" aria-label="Última">Última &raquo;</a>
+                </li>
+            {% else %}
+                <li class="page-item disabled"><span class="page-link">Siguiente</span></li>
+                <li class="page-item disabled"><span class="page-link">Última &raquo;</span></li>
+            {% endif %}
+            
+        </ul>
+    </nav>
+    {% endif %}
 </div>
 
 <!-- Modal para Importar CSV -->
