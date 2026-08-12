@@ -5,10 +5,12 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>{% block title %}Sistema Pañol{% endblock %} – PROA</title>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <!-- Agregada la librería de Bootstrap Icons -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
   <style>
     :root {
       --sidebar-w: 230px;
-      --azul:       #1e3a5f;
+      --azul:       #751966;
       --azul-claro: #2e86de;
     }
     body    { background: #f4f6f9; font-family: 'Segoe UI', sans-serif; }
@@ -70,35 +72,6 @@
     .badge-docente  { background: #27ae60; color: #fff; }
     .badge-alumno   { background: #2e86de; color: #fff; }
 
-
-    /* ── Badges de estado ── */
-.badge {
-    padding: 4px 8px;
-    border-radius: 4px;
-    font-size: 12px;
-    font-weight: 600;
-}
-
-
-.badge-green {
-    background-color: #d4edda;
-    color: #000 !important;
-    border: 1px solid #28a745;
-}
-
-.badge-red {
-    background-color: #f8d7da;
-    color: #000 !important;
-    border: 1px solid #dc3545;
-}
-
-.badge-orange {
-    background-color: #fff3cd;
-    color: #000 !important;
-    border: 1px solid #fd7e14;
-}
-
-    {% block extra_css %}{% endblock %}
   </style>
 </head>
 <body>
@@ -116,10 +89,15 @@
       <span class="icon">📊</span> Dashboard
     </a>
 
+    <!-- SECCIÓN GRUPO 1 MODIFICADA -->
     <div class="nav-section">Grupo 1 – Alumnos</div>
-    <a href="{% url 'alumnos:lista' %}" class="nav-link {% if 'alumnos' in request.path %}active{% endif %}">
-      <span class="icon">👥</span> Alumnos
+    <a href="{% url 'alumnos:lista' %}" class="nav-link {% if request.resolver_match.url_name == 'lista' %}active{% endif %}">
+      <span class="icon"><i class="bi bi-people"></i></span> Lista de Alumnos
     </a>
+    <a href="{% url 'alumnos:nuevo' %}" class="nav-link {% if request.resolver_match.url_name == 'nuevo' %}active{% endif %}">
+      <span class="icon"><i class="bi bi-plus-lg"></i></span> Nuevo Alumno
+    </a>
+    <!-- FIN SECCIÓN GRUPO 1 -->
 
     <div class="nav-section">Grupo 2 – Inventario</div>
     <a href="{% url 'inventario:herramientas' %}" class="nav-link {% if 'inventario' in request.path and 'insumos' not in request.path %}active{% endif %}">
@@ -133,7 +111,7 @@
     <a href="{% url 'prestamos:nuevo' %}" class="nav-link {% if 'prestamos/nuevo' in request.path %}active{% endif %}">
       <span class="icon">📷</span> Registrar Préstamo
     </a>
-    <a href="{% url 'prestamos:lista' %}" class="nav-link {% if 'prestamos' in request.path and 'nuevo' not in request.path and 'devolucion' not in request.path %}active{% endif %}">
+    <a href="{% url 'prestamos:activos' %}" class="nav-link {% if 'prestamos/activos' in request.path %}active{% endif %}">
       <span class="icon">📤</span> Préstamos Activos
     </a>
     <a href="{% url 'prestamos:devolucion' %}" class="nav-link {% if 'devolucion' in request.path %}active{% endif %}">
@@ -150,6 +128,12 @@
     <div class="nav-section">Grupo 5 – Reportes</div>
     <a href="{% url 'reportes:index' %}" class="nav-link {% if 'reportes' in request.path %}active{% endif %}">
       <span class="icon">📈</span> Reportes
+    </a>
+    <a href="{% url 'reportes:docentes' %}" class="nav-link {% if 'docentes' in request.path %}active{% endif %}">
+      <span class="icon">👨‍🏫</span> Docentes
+    </a>
+    <a href="{% url 'reportes:categorias' %}" class="nav-link {% if 'categorias' in request.path %}active{% endif %}">
+      <span class="icon">🏷️</span> Categorias
     </a>
     <a href="{% url 'reportes:configuracion' %}" class="nav-link {% if 'configuracion' in request.path %}active{% endif %}">
       <span class="icon">⚙️</span> Configuración

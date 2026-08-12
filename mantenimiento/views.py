@@ -195,7 +195,6 @@ def ejecutar_plan(request, plan_id):
     )
 
 
-
 def plan_de_vida(request, herramienta_id):
 
     herramienta = get_object_or_404(
@@ -205,11 +204,7 @@ def plan_de_vida(request, herramienta_id):
 
     planes = PlanMantenimiento.objects.filter(
         herramienta=herramienta
-    )
-
-    historial = EjecucionMantenimiento.objects.filter(
-        plan__herramienta=herramienta
-    ).order_by("-fecha")
+    ).order_by("proxima_ejecucion")
 
     logs = LogHerramienta.objects.filter(
         herramienta=herramienta
@@ -221,7 +216,6 @@ def plan_de_vida(request, herramienta_id):
         {
             "herramienta": herramienta,
             "planes": planes,
-            "historial": historial,
             "logs": logs,
         }
     )

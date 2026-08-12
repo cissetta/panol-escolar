@@ -21,6 +21,7 @@
     <div class="card-title">
         🔨 Información de la Herramienta
     </div>
+</div>
 
     <div style="
         display:grid;
@@ -255,6 +256,7 @@
                 </div>
 
             </div>
+        </div>
 
             {% endfor %}
 
@@ -271,6 +273,7 @@
             <div style="font-size:45px;">
                 🗓️
             </div>
+        </div>
 
             <h3>
                 No hay planes registrados
@@ -314,6 +317,7 @@
                 📋 {{ plan.nombre }}
 
             </div>
+        </div>
 
 
             <div style="
@@ -378,7 +382,46 @@
                 {% endfor %}
 
             </div>
+        </div>
 
+        <div>
+            <strong>Fecha de alta</strong>
+            <div>
+                {{ herramienta.fecha_alta|date:"d/m/Y" }}
+            </div>
+        </div>
+
+    </div>
+
+</div>
+
+
+
+<!-- RESUMEN -->
+
+<div style="
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(180px,1fr));
+    gap:15px;
+    margin-bottom:20px;
+">
+
+    <div class="card" style="text-align:center;">
+
+        <div style="font-size:28px;">
+            📋
+        </div>
+
+        <strong>
+            Planes registrados
+        </strong>
+
+        <div style="
+            font-size:24px;
+            font-weight:bold;
+            margin-top:5px;
+        ">
+            {{ planes.count }}
         </div>
 
         {% endif %}
@@ -463,23 +506,30 @@
 
                     <strong>
 
-                        {% if evento.tipo == "ALTA" %}
-                            ➕ Alta en inventario
+                {% if evento.tipo == "ALTA" %}
 
-                        {% elif evento.tipo == "PRESTAMO" %}
-                            📤 Préstamo
+                    <span class="badge badge-green">
+                        ➕ Alta
+                    </span>
 
-                        {% elif evento.tipo == "DEVOLUCION" %}
-                            📥 Devolución
+                {% elif evento.tipo == "PRESTAMO" %}
 
-                        {% elif evento.tipo == "MANTENIMIENTO" %}
-                            🔧 Mantenimiento
+                    <span class="badge badge-orange">
+                        📤 Préstamo
+                    </span>
+
+                {% elif evento.tipo == "DEVOLUCION" %}
+
+                    <span class="badge badge-green">
+                        📥 Devolución
+                    </span>
+
+                {% elif evento.tipo == "MANTENIMIENTO" %}
 
                         {% elif evento.tipo == "ESTADO" %}
                             ⚙️ Cambio de estado
 
-                        {% elif evento.tipo == "BAJA" %}
-                            ❌ Baja
+                {% elif evento.tipo == "ESTADO" %}
 
                         {% else %}
                             📄 Evento
@@ -524,13 +574,14 @@
                         👤 Usuario:
                         {{ evento.usuario }}
 
-                    </div>
+                <strong>
+                    {{ evento.get_tipo_display }}
+                </strong>
 
                 {% endif %}
 
             </div>
 
-            {% endfor %}
 
         </div>
 
@@ -551,10 +602,16 @@
                 No existen eventos registrados
             </h3>
 
-            <p>
-                Esta herramienta todavía no posee movimientos registrados.
-            </p>
+    {% else %}
 
+    <div style="
+        text-align:center;
+        padding:50px 20px;
+        color:#888;
+    ">
+
+        <div style="font-size:55px;">
+            📂
         </div>
 
     {% endif %}
@@ -588,6 +645,51 @@
         >
             🔧 Registrar mantenimiento
         </a>
+
+    {% endif %}
+
+
+    {% else %}
+
+    <p style="
+        text-align:center;
+        padding:25px;
+        color:#888;
+    ">
+        Esta herramienta no tiene planes de mantenimiento registrados.
+    </p>
+
+    {% endif %}
+
+</div>
+
+
+
+<!-- BOTONES -->
+
+<div style="
+    display:flex;
+    justify-content:flex-end;
+    gap:10px;
+    margin-top:20px;
+">
+
+    <a
+        href="{% url 'mantenimiento:index' %}"
+        class="btn btn-outline"
+    >
+        ← Volver
+    </a>
+
+
+    {% if planes.first %}
+
+    <a
+        href="{% url 'mantenimiento:ejecutar_plan' planes.first.id %}"
+        class="btn btn-primary"
+    >
+        🔧 Ejecutar mantenimiento
+    </a>
 
     {% endif %}
 

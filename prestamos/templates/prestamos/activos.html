@@ -1,0 +1,76 @@
+{% extends 'base.html' %}
+{% block title %}Grupo 3 - Préstamos Activos{% endblock %}
+{% block page_title %}Grupo 3 - Préstamos Activos{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+  <div>
+    <h2 class="h4 mb-1">Préstamos activos</h2>
+    <p class="text-muted mb-0">Consultá las herramientas que actualmente se encuentran prestadas.</p>
+  </div>
+  <a href="{% url 'prestamos:nuevo' %}" class="btn btn-primary">
+    ➕ Registrar préstamo
+  </a>
+</div>
+
+<div class="card border-0 shadow-sm">
+  <div class="card-body p-0">
+    {% if prestamos_activos %}
+      <div class="table-responsive">
+        <table class="table table-hover align-middle mb-0">
+          <thead class="table-light">
+            <tr>
+              <th>Fecha préstamo</th>
+              <th>Alumno</th>
+              <th>Herramienta</th>
+              <th>Docente</th>
+              <th>Estado</th>
+              <th class="text-end">Acción</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for prestamo in prestamos_activos %}
+              <tr>
+                <td>{{ prestamo.fecha_prestamo|date:"d/m/Y H:i" }}</td>
+
+                <td>
+                  {{ prestamo.alumno.apellido }},
+                  {{ prestamo.alumno.nombre }}
+                </td>
+
+                <td>
+                  <strong>{{ prestamo.herramienta.nombre }}</strong><br>
+                  <small class="text-muted">
+                    {{ prestamo.herramienta.codigo }}
+                    {% if prestamo.herramienta.ubicacion %}
+                      • <em>Ubicación:</em> {{ prestamo.herramienta.ubicacion }}
+                    {% endif %}
+                  </small>
+                </td>
+
+                <td>{{ prestamo.docente }}</td>
+
+                <td>
+                  <span class="badge text-bg-primary">{{ prestamo.herramienta.get_estado_display }}</span>
+                </td>
+
+                <td class="text-end">
+                  <a href="{% url 'prestamos:devolucion_seleccionada' prestamo.pk %}"
+                     class="btn btn-sm btn-success">
+                    Devolver
+                  </a>
+                </td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    {% else %}
+      <div class="text-center text-muted py-5">
+        <div class="fs-1">🔧</div>
+        <p class="mb-0">No hay préstamos activos en este momento.</p>
+      </div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}
