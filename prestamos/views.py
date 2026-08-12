@@ -30,14 +30,27 @@ def activos(request):
 @login_required
 def registrar_prestamo(request):
     alumnos = Alumno.objects.filter(activo=True).order_by("apellido", "nombre")
-    herramientas = Herramienta.objects.filter(activo=True).order_by("nombre")
+    herramientas = Herramienta.objects.filter(activo=True, estado="DISPONIBLE").order_by("nombre")
     docentes = Docente.objects.filter(activo=True).order_by("apellido", "nombre")
 
     if request.method == "POST":
         try:
             alumno = get_object_or_404(Alumno, legajo=request.POST.get("alumno_qr"))
-            herr = get_object_or_404(Herramienta, codigo=request.POST.get("herr_qr"))
             docente_id = request.POST.get("docente")
+            selected_codes = request.POST.getlist("herramientas")
+            if not selected_codes:
+                selected_codes = request.POST.getlist("herr_qr")
+            if not selected_codes:
+                messages.error(request, "Seleccioná al menos una herramienta.")
+                return render(
+                    request,
+                    "prestamos/prestamos.html",
+                    {
+                        "alumnos": alumnos,
+                        "herramientas": herramientas,
+                        "docentes": docentes,
+                    },
+                )
 
             if not docente_id:
                 messages.error(request, "Seleccioná un docente.")
@@ -51,34 +64,43 @@ def registrar_prestamo(request):
                     },
                 )
 
-            if not herr.esta_disponible():
-                messages.error(request, "La herramienta no está disponible.")
-                return render(
-                    request,
-                    "prestamos/prestamos.html",
-                    {
-                        "alumnos": alumnos,
-                        "herramientas": herramientas,
-                        "docentes": docentes,
-                    },
-                )
+            herramientas_seleccionadas = []
+            for codigo in selected_codes:
+                if not codigo:
+                    continue
+                herramienta = get_object_or_404(Herramienta, codigo=codigo)
+                if not herramienta.esta_disponible():
+                    messages.error(request, f"La herramienta {herramienta.nombre} no está disponible.")
+                    return render(
+                        request,
+                        "prestamos/prestamos.html",
+                        {
+                            "alumnos": alumnos,
+                            "herramientas": herramientas,
+                            "docentes": docentes,
+                        },
+                    )
+                herramientas_seleccionadas.append(herramienta)
 
             if alumno.tiene_prestamo_vencido():
                 messages.warning(request, "Atención: el alumno tiene préstamos vencidos.")
 
-            Prestamo.objects.create(
-                alumno=alumno,
-                herramienta=herr,
-                docente_id=docente_id,
-                fecha_prestamo=timezone.now(),
-                observaciones=request.POST.get("observaciones", ""),
-            )
-            herr.estado = "PRESTADA"
-            herr.save()
-            messages.success(request, "Préstamo registrado correctamente.")
+            prestamos_creados = []
+            for herramienta in herramientas_seleccionadas:
+                prestamo = Prestamo.objects.create(
+                    alumno=alumno,
+                    herramienta=herramienta,
+                    docente_id=docente_id,
+                    fecha_prestamo=timezone.now(),
+                    observaciones=request.POST.get("observaciones", ""),
+                )
+                prestamos_creados.append(prestamo)
+                herramienta.estado = "PRESTADA"
+                herramienta.save()
+
+            messages.success(request, f"Préstamo registrado correctamente para {len(prestamos_creados)} herramienta(s).")
             return redirect("prestamos:activos")
         except Exception as e:
-            # Mostrar el error en pantalla y registrar en la consola para depuración.
             messages.error(request, f"Error al registrar préstamo: {e}")
             import traceback
 
