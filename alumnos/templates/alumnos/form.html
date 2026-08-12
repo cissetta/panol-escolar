@@ -1,81 +1,125 @@
 {% extends 'base.html' %}
 
 {% block content %}
-<div class="container-fluid mt-4">
-    <div class="card shadow-sm mb-4">
-        <div class="card-header bg-white border-bottom-0 pt-4 pb-0">
-            <h5 class="text-secondary"><i class="bi bi-file-earmark-person"></i> {{ accion }}</h5>
-        </div>
-        <div class="card-body">
-            
-            {% if form.errors %}
-                <div class="alert alert-danger pb-0">
-                    <p><strong>Por favor, corrige los siguientes errores:</strong></p>
-                    <ul>
-                    {% for field in form %}
-                        {% for error in field.errors %}
-                            <li>{{ field.label }}: {{ error }}</li>
-                        {% endfor %}
-                    {% endfor %}
-                    </ul>
+<!-- Usamos 'container' y centramos el contenido para eliminar columnas laterales -->
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-lg-10"> <!-- Controla el ancho máximo de la tarjeta -->
+            <div class="card shadow-sm mb-4 border-top border-primary border-4">
+                <div class="card-header bg-white border-bottom-0 pt-4 pb-0">
+                    <h5 class="text-secondary">
+                        {% if accion == 'Editar Alumno' %}
+                            <i class="bi bi-pencil-square"></i> {{ accion }}
+                        {% else %}
+                            <i class="bi bi-person-plus"></i> {{ accion }}
+                        {% endif %}
+                    </h5>
                 </div>
-            {% endif %}
-
-            <form method="post" enctype="multipart/form-data">
-                {% csrf_token %}
-                
-                <div class="row g-4 mb-4">
-                    <!-- Fila 1 -->
-                    <div class="col-md-6">
-                        <label class="text-muted small fw-bold mb-1">NOMBRE</label>
-                        {{ form.nombre }}
-                    </div>
-                    <div class="col-md-6">
-                        <label class="text-muted small fw-bold mb-1">APELLIDO</label>
-                        {{ form.apellido }}
-                    </div>
+                <div class="card-body">
                     
-                    <!-- Fila 2 -->
-                    <div class="col-md-6">
-                        <label class="text-muted small fw-bold mb-1">DNI</label>
-                        {{ form.dni }}
-                    </div>
-                    <div class="col-md-6">
-                        <label class="text-muted small fw-bold mb-1">LEGAJO</label>
-                        <input type="text" class="form-control" placeholder="Auto-generado" disabled>
-                    </div>
+                    {% if form.errors %}
+                        <div class="alert alert-danger pb-0">
+                            <p><strong>Por favor, corrige los siguientes errores:</strong></p>
+                            <ul>
+                            {% for field in form %}
+                                {% for error in field.errors %}
+                                    <li>{{ field.label }}: {{ error }}</li>
+                                {% endfor %}
+                            {% endfor %}
+                            </ul>
+                        </div>
+                    {% endif %}
 
-                    <!-- Fila 3 -->
-                    <div class="col-md-6">
-                        <label class="text-muted small fw-bold mb-1">CURSO</label>
-                        {{ form.curso }}
-                    </div>
-                    <div class="col-md-6">
-                        <label class="text-muted small fw-bold mb-1">EMAIL (OPCIONAL)</label>
-                        {{ form.email }}
-                    </div>
+                    <form method="post" enctype="multipart/form-data">
+                        {% csrf_token %}
+                        
+                        <div class="row g-4 mb-4">
+                            <!-- Fila 1 -->
+                            <div class="col-md-6">
+                                <label class="text-muted small fw-bold mb-1">NOMBRE</label>
+                                {{ form.nombre }}
+                            </div>
+                            <div class="col-md-6">
+                                <label class="text-muted small fw-bold mb-1">APELLIDO</label>
+                                {{ form.apellido }}
+                            </div>
+                            
+                            <!-- Fila 2 -->
+                            <div class="col-md-6">
+                                <label class="text-muted small fw-bold mb-1">DNI</label>
+                                {{ form.dni }}
+                            </div>
+                            <div class="col-md-6">
+                                <label class="text-muted small fw-bold mb-1">LEGAJO</label>
+                                <!-- Renderizamos form.legajo para que se pueda editar y dispare el cambio de QR -->
+                                {{ form.legajo }}
+                            </div>
 
-                    <!-- Fila 4 -->
-                    <div class="col-md-12">
-                        <label class="text-muted small fw-bold mb-1">OBSERVACIONES</label>
-                        {{ form.observaciones }}
-                    </div>
+                            <!-- Fila 3 -->
+                            <div class="col-md-6">
+                                <label class="text-muted small fw-bold mb-1">CURSO</label>
+                                {{ form.curso }}
+                            </div>
+                            <div class="col-md-6">
+                                <label class="text-muted small fw-bold mb-1">EMAIL (OPCIONAL)</label>
+                                {{ form.email }}
+                            </div>
+
+                            <!-- Fila 4 -->
+                            <div class="col-md-12">
+                                <label class="text-muted small fw-bold mb-1">OBSERVACIONES</label>
+                                {{ form.observaciones }}
+                            </div>
+                        </div>
+                        
+                        <!-- Sección inferior: Información QR -->
+                        <div class="d-flex p-3 border rounded align-items-center mb-4 flex-wrap">
+                            
+                            {% if alumno.qr_code and accion == 'Editar Alumno' %}
+                                <!-- Si estamos editando, muestra el QR actual -->
+                                <div class="me-3 p-2 bg-light border rounded text-center" style="min-width: 120px;">
+                                    <img src="{{ alumno.qr_code.url }}" alt="QR Actual" style="width: 60px; height: 60px;">
+                                    <br>
+                                    <small class="text-muted" style="font-size: 0.70rem;">QR Actual</small>
+                                </div>
+                            {% else %}
+                                <!-- Si es nuevo, muestra el placeholder punteado -->
+                                <div class="me-3 p-3 bg-light border rounded border-dashed text-center" style="border-style: dashed !important; min-width: 120px;">
+                                    <i class="bi bi-grid-3x3-gap fs-4 text-secondary"></i><br>
+                                    <small class="text-muted" style="font-size: 0.75rem;">QR se genera al<br>guardar</small>
+                                </div>
+                            {% endif %}
+
+                            <p class="text-muted small mb-0 ms-3 flex-grow-1">
+                                {% if accion == 'Editar Alumno' %}
+                                    Si modificas el <strong>legajo</strong>, el sistema eliminará automáticamente el QR actual y generará uno nuevo asociado al nuevo legajo.<br><br>
+                                {% else %}
+                                    El código QR se genera automáticamente al registrar el alumno, utilizando su <strong>legajo único</strong>. Puede imprimirse o descargarse en PNG.<br><br>
+                                {% endif %}
+                                
+                                <button type="submit" class="btn btn-success me-2"><i class="bi bi-save"></i> Guardar</button>
+                                <a href="javascript:history.back()" class="btn btn-outline-primary">Cancelar</a>
+                            </p>
+                        </div>
+                    </form>
                 </div>
-                
-                <!-- Sección inferior: Información QR -->
-                <div class="d-flex p-3 border rounded align-items-center mb-4">
-                    <div class="me-3 p-3 bg-light border rounded border-dashed text-center" style="border-style: dashed !important; min-width: 120px;">
-                        <i class="bi bi-grid-3x3-gap fs-4 text-secondary"></i><br>
-                        <small class="text-muted" style="font-size: 0.75rem;">QR se genera al<br>guardar</small>
-                    </div>
-                    <p class="text-muted small mb-0 ms-3">
-                        El código QR se genera automáticamente al registrar el alumno, utilizando su <strong>legajo único</strong>. Puede imprimirse o descargarse en PNG.<br><br>
-                        <button type="submit" class="btn btn-success me-2"><i class="bi bi-save"></i> Guardar</button>
-                        <a href="{% url 'alumnos:lista' %}" class="btn btn-outline-primary">Cancelar</a>
-                    </p>
-                </div>
-            </form>
+            </div>
         </div>
     </div>
 </div>
+
+<!-- Script para inyectar la clase form-control a los inputs de Django automáticamente -->
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        let inputs = document.querySelectorAll('input, select, textarea');
+        inputs.forEach(function(input) {
+            // Ignoramos el token CSRF oculto y los checkboxes/radios
+            if (input.type !== 'checkbox' && input.type !== 'radio' && input.type !== 'hidden') {
+                input.classList.add('form-control');
+            } else if (input.type === 'checkbox' || input.type === 'radio') {
+                input.classList.add('form-check-input');
+            }
+        });
+    });
+</script>
 {% endblock %}
