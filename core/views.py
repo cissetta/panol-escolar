@@ -4,6 +4,43 @@ from django.db.models import F
 from .models import Herramienta, Insumo, Prestamo, PlanMantenimiento, ConfiguracionSistema
 
 
+INSUMO_CATEGORIAS = [
+    ('Insumos energéticos', '#34495E'),
+    ('Insumos digitales', '#F39C12'),
+    ('Insumos logísticos', '#7F8C8D'),
+]
+
+def asegurar_categorias_insumos():
+    for nombre in ['Herramienta', 'Maquina']:
+        Categoria.objects.filter(nombre__iexact=nombre).delete()
+
+    for nombre, color in INSUMO_CATEGORIAS:
+        Categoria.objects.get_or_create(nombre=nombre, defaults={'color_hex': color})
+
+
+def generar_qr_herramienta(herramienta):
+    if not herramienta.codigo:
+        return
+
+    if herramienta.qr_code:
+        herramienta.qr_code.delete(save=False)
+
+    qr = qrcode.QRCode(box_size=6, border=2)
+    qr.add_data(herramienta.codigo)
+    qr.make(fit=True)
+    imagen = qr.make_image(fill_color='black', back_color='white')
+
+    buffer = BytesIO()
+    imagen.save(buffer, format='PNG')
+    buffer.seek(0)
+
+    nombre_archivo = f'qr/herramientas/{herramienta.codigo}.png'
+    herramienta.qr_code.save(nombre_archivo, ContentFile(buffer.getvalue()), save=False)
+    herramienta.save(update_fields=['qr_code'])
+
+
+
+
 @login_required
 def dashboard(request):
     config = ConfiguracionSistema.get()

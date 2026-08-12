@@ -1,0 +1,491 @@
+{% extends 'base.html' %}
+
+{% block title %}Hoja de Vida{% endblock %}
+{% block page_title %}Hoja de Vida de la Herramienta{% endblock %}
+
+{% block content %}
+
+<div class="groups-bar">
+    <div class="group-chip">
+        🔨 Grupo 4 – Hoja de Vida
+    </div>
+</div>
+
+
+<!-- INFORMACIÓN DE LA HERRAMIENTA -->
+
+<div class="card" style="margin-bottom:20px;">
+
+    <div class="card-title">
+        🔨 Información de la Herramienta
+    </div>
+
+    <div style="
+        display:grid;
+        grid-template-columns:repeat(auto-fit,minmax(200px,1fr));
+        gap:15px;
+    ">
+
+        <div>
+            <strong>Nombre</strong>
+            <div>{{ herramienta.nombre }}</div>
+        </div>
+
+        <div>
+            <strong>Código</strong>
+            <div>{{ herramienta.codigo }}</div>
+        </div>
+
+        <div>
+            <strong>Categoría</strong>
+            <div>
+                {% if herramienta.categoria %}
+                    {{ herramienta.categoria.nombre }}
+                {% else %}
+                    Sin categoría
+                {% endif %}
+            </div>
+        </div>
+
+        <div>
+            <strong>Marca</strong>
+            <div>
+                {{ herramienta.marca|default:"Sin especificar" }}
+            </div>
+        </div>
+
+        <div>
+            <strong>Modelo</strong>
+            <div>
+                {{ herramienta.modelo|default:"Sin especificar" }}
+            </div>
+        </div>
+
+        <div>
+            <strong>Ubicación</strong>
+            <div>
+                {{ herramienta.ubicacion|default:"Sin especificar" }}
+            </div>
+        </div>
+
+        <div>
+            <strong>Estado</strong>
+<div style="margin-top:5px;">
+    {% if herramienta.estado == "DISPONIBLE" %}
+        <span style="
+            display:inline-block;
+            padding:5px 10px;
+            border-radius:6px;
+            background:#d1e7dd;
+            color:#0f5132 !important;
+            font-weight:bold;
+        ">
+            Disponible
+        </span>
+
+                {% elif herramienta.estado == "PRESTADA" %}
+
+                    <span class="badge badge-orange">
+                        Prestada
+                    </span>
+
+                {% elif herramienta.estado == "REPARACION" %}
+
+                    <span class="badge badge-red">
+                        En reparación
+                    </span>
+
+                {% elif herramienta.estado == "BAJA" %}
+
+                    <span class="badge badge-red">
+                        Baja
+                    </span>
+
+                {% else %}
+
+                    <span class="badge badge-secondary">
+                        {{ herramienta.estado }}
+                    </span>
+
+                {% endif %}
+
+            </div>
+        </div>
+
+        <div>
+            <strong>Fecha de alta</strong>
+            <div>
+                {{ herramienta.fecha_alta|date:"d/m/Y" }}
+            </div>
+        </div>
+
+    </div>
+
+</div>
+
+
+
+<!-- RESUMEN -->
+
+<div style="
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(180px,1fr));
+    gap:15px;
+    margin-bottom:20px;
+">
+
+    <div class="card" style="text-align:center;">
+
+        <div style="font-size:28px;">
+            📋
+        </div>
+
+        <strong>
+            Planes registrados
+        </strong>
+
+        <div style="
+            font-size:24px;
+            font-weight:bold;
+            margin-top:5px;
+        ">
+            {{ planes.count }}
+        </div>
+
+    </div>
+
+
+    <div class="card" style="text-align:center;">
+
+        <div style="font-size:28px;">
+            📄
+        </div>
+
+        <strong>
+            Eventos registrados
+        </strong>
+
+        <div style="
+            font-size:24px;
+            font-weight:bold;
+            margin-top:5px;
+        ">
+            {{ logs.count }}
+        </div>
+
+    </div>
+
+</div>
+
+
+
+<!-- LISTA DE EVENTOS -->
+
+<div class="card">
+
+    <div class="card-title">
+        📄 Historial de la Herramienta
+    </div>
+
+
+    {% if logs %}
+
+    <div style="
+        display:flex;
+        flex-direction:column;
+        gap:10px;
+    ">
+
+        {% for evento in logs %}
+
+        <div style="
+            display:grid;
+            grid-template-columns:140px 160px 1fr auto;
+            gap:15px;
+            align-items:center;
+            padding:15px;
+            border:1px solid #e5e5e5;
+            border-radius:10px;
+            background:#fff;
+        ">
+
+            <!-- FECHA -->
+
+            <div>
+
+                <strong>
+                    Fecha
+                </strong>
+
+                <div style="
+                    color:var(--muted);
+                    font-size:13px;
+                    margin-top:3px;
+                ">
+                    {{ evento.fecha|date:"d/m/Y H:i" }}
+                </div>
+
+            </div>
+
+
+            <!-- TIPO -->
+
+            <div>
+
+                {% if evento.tipo == "ALTA" %}
+
+                    <span class="badge badge-green">
+                        ➕ Alta
+                    </span>
+
+                {% elif evento.tipo == "PRESTAMO" %}
+
+                    <span class="badge badge-orange">
+                        📤 Préstamo
+                    </span>
+
+                {% elif evento.tipo == "DEVOLUCION" %}
+
+                    <span class="badge badge-green">
+                        📥 Devolución
+                    </span>
+
+                {% elif evento.tipo == "MANTENIMIENTO" %}
+
+                    <span class="badge badge-orange">
+                        🔧 Mantenimiento
+                    </span>
+
+                {% elif evento.tipo == "ESTADO" %}
+
+                    <span class="badge badge-orange">
+                        ⚙ Estado
+                    </span>
+
+                {% elif evento.tipo == "BAJA" %}
+
+                    <span class="badge badge-red">
+                        ❌ Baja
+                    </span>
+
+                {% else %}
+
+                    <span class="badge badge-secondary">
+                        📄 Evento
+                    </span>
+
+                {% endif %}
+
+            </div>
+
+
+            <!-- DESCRIPCIÓN -->
+
+            <div>
+
+                <strong>
+                    {{ evento.get_tipo_display }}
+                </strong>
+
+                <div style="
+                    color:var(--muted);
+                    font-size:13px;
+                    margin-top:4px;
+                ">
+                    {{ evento.descripcion }}
+                </div>
+
+            </div>
+
+
+            <!-- USUARIO -->
+
+            <div style="
+                font-size:13px;
+                color:var(--muted);
+                text-align:right;
+            ">
+
+                {% if evento.usuario %}
+                    👤 {{ evento.usuario }}
+                {% endif %}
+
+            </div>
+
+        </div>
+
+        {% endfor %}
+
+    </div>
+
+
+    {% else %}
+
+    <div style="
+        text-align:center;
+        padding:50px 20px;
+        color:#888;
+    ">
+
+        <div style="font-size:55px;">
+            📂
+        </div>
+
+        <h3>
+            No existen eventos registrados
+        </h3>
+
+        <p>
+            Esta herramienta todavía no posee movimientos registrados.
+        </p>
+
+    </div>
+
+    {% endif %}
+
+</div>
+
+
+
+<!-- PLANES DE MANTENIMIENTO -->
+
+<div class="card" style="margin-top:20px;">
+
+    <div class="card-title">
+        🔧 Planes de Mantenimiento
+    </div>
+
+
+    {% if planes %}
+
+    <div style="
+        display:flex;
+        flex-direction:column;
+        gap:10px;
+    ">
+
+        {% for plan in planes %}
+
+        <div style="
+            display:grid;
+            grid-template-columns:1fr 130px 130px 130px;
+            gap:15px;
+            align-items:center;
+            padding:14px;
+            border:1px solid #e5e5e5;
+            border-radius:10px;
+        ">
+
+            <div>
+
+                <strong>
+                    {{ plan.nombre }}
+                </strong>
+
+                <div style="
+                    color:var(--muted);
+                    font-size:13px;
+                    margin-top:3px;
+                ">
+                    {{ plan.descripcion|default:"Sin descripción" }}
+                </div>
+
+            </div>
+
+
+            <div>
+                <strong>Tipo</strong>
+
+                <div>
+                    {{ plan.get_tipo_display }}
+                </div>
+            </div>
+
+
+            <div>
+                <strong>Próxima</strong>
+
+                <div>
+                    {{ plan.proxima_ejecucion|date:"d/m/Y" }}
+                </div>
+            </div>
+
+
+            <div>
+
+                {% if plan.esta_vencido %}
+
+                    <span class="badge badge-red">
+                        Vencido
+                    </span>
+
+                {% elif plan.esta_proximo %}
+
+                    <span class="badge badge-orange">
+                        Próximo
+                    </span>
+
+                {% else %}
+
+                    <span class="badge badge-green">
+                        Al día
+                    </span>
+
+                {% endif %}
+
+            </div>
+
+        </div>
+
+        {% endfor %}
+
+    </div>
+
+
+    {% else %}
+
+    <p style="
+        text-align:center;
+        padding:25px;
+        color:#888;
+    ">
+        Esta herramienta no tiene planes de mantenimiento registrados.
+    </p>
+
+    {% endif %}
+
+</div>
+
+
+
+<!-- BOTONES -->
+
+<div style="
+    display:flex;
+    justify-content:flex-end;
+    gap:10px;
+    margin-top:20px;
+">
+
+    <a
+        href="{% url 'mantenimiento:index' %}"
+        class="btn btn-outline"
+    >
+        ← Volver
+    </a>
+
+
+    {% if planes.first %}
+
+    <a
+        href="{% url 'mantenimiento:ejecutar_plan' planes.first.id %}"
+        class="btn btn-primary"
+    >
+        🔧 Ejecutar mantenimiento
+    </a>
+
+    {% endif %}
+
+</div>
+
+{% endblock %}

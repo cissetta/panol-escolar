@@ -1,0 +1,55 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container-fluid mt-4">
+    <div class="row">
+        <!-- Tarjeta del Alumno -->
+        <div class="col-md-4">
+            <div class="card shadow-sm text-center p-4">
+                {% if alumno.qr_code %}
+                    <img src="{{ alumno.qr_code.url }}" class="img-fluid mx-auto d-block border rounded mb-3" style="max-width: 150px;" alt="Código QR">
+                {% else %}
+                    <div class="bg-light border rounded mx-auto mb-3 d-flex align-items-center justify-content-center" style="width: 150px; height: 150px;">
+                        <span class="text-muted">Sin QR</span>
+                    </div>
+                {% endif %}
+                
+                <h4 class="mb-0">{{ alumno.apellido }}, {{ alumno.nombre }}</h4>
+                <p class="text-muted small mb-3">Legajo {{ alumno.legajo }} • {{ alumno.curso }}<br>DNI {{ alumno.dni }}</p>
+                
+                {% if alumno.qr_code %}
+                <a href="{{ alumno.qr_code.url }}" download class="btn btn-outline-primary btn-sm rounded-pill px-4 mt-2">
+                    <i class="bi bi-download"></i> Descargar QR
+                </a>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Historial de Préstamos -->
+        <div class="col-md-8">
+            <div class="card shadow-sm p-4">
+                <h5 class="mb-4"><i class="bi bi-journal-text"></i> Historial de Préstamos</h5>
+                
+                <div class="timeline position-relative ps-4 border-start border-primary border-2">
+                    {% for prestamo in prestamos %}
+                    <div class="mb-4 position-relative">
+                        <span class="position-absolute translate-middle p-2 bg-primary border border-light rounded-circle" style="left: -1.6rem; top: 0.5rem;"></span>
+                        <p class="text-muted small mb-1">{{ prestamo.fecha_prestamo|date:"d/m/Y H:i" }} – Docente: {{ prestamo.docente.apellido }}</p>
+                        <p class="mb-0">
+                            <strong>{{ prestamo.herramienta.nombre }}</strong> · 
+                            {% if prestamo.fecha_devolucion %}
+                                <span class="badge bg-success-subtle text-success rounded-pill">Devuelto</span>
+                            {% else %}
+                                <span class="badge bg-primary-subtle text-primary rounded-pill">Activo</span>
+                            {% endif %}
+                        </p>
+                    </div>
+                    {% empty %}
+                        <p class="text-muted">No hay historial de préstamos para este alumno.</p>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
