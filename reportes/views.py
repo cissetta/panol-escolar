@@ -122,15 +122,32 @@ def _get_reportes_context():
     return context
 
 
-@login_required
 def index(request):
     context = _get_reportes_context()
     return render(request, 'reportes/index.html', context)
 
 
-@login_required
 def reportes(request):
+    orden = request.GET.get('orden', 'desc')
+    categoria_id = request.GET.get('categoria')
+
+    queryset = Prestamo.objects.select_related(
+        'alumno', 'herramienta', 'docente', 'herramienta__categoria'
+    )
+
+    if categoria_id:
+        queryset = queryset.filter(herramienta__categoria_id=categoria_id)
+
+    if orden == 'asc':
+        queryset = queryset.order_by('fecha_prestamo')
+    else:
+        queryset = queryset.order_by('-fecha_prestamo')
+
     context = _get_reportes_context()
+    context['reporte_prestamos'] = queryset
+    context['categorias'] = Categoria.objects.all().order_by('nombre')
+    context['categoria_actual'] = categoria_id or ''
+    context['orden_actual'] = orden
     return render(request, 'reportes/reportes.html', context)
 
 @login_required

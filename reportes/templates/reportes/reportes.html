@@ -3,6 +3,41 @@
 {% block page_title %}Grupo 5 - Reporte de préstamos{% endblock %}
 
 {% block content %}
+<div class="row g-3 mb-3">
+  <div class="col-12">
+    <div class="card border-0 shadow-sm">
+      <div class="card-body">
+        <form method="get" class="row g-2 align-items-end">
+          <div class="col-md-5">
+            <label for="categoria" class="form-label">Categoría</label>
+            <select name="categoria" id="categoria" class="form-select">
+              <option value="">Todas las categorías</option>
+              {% for categoria in categorias %}
+                <option value="{{ categoria.id }}" {% if categoria.id|stringformat:"s" == categoria_actual %}selected{% endif %}>
+                  {{ categoria.nombre }}
+                </option>
+              {% endfor %}
+            </select>
+          </div>
+
+          <div class="col-md-4">
+            <label for="orden" class="form-label">Orden</label>
+            <select name="orden" id="orden" class="form-select">
+              <option value="desc" {% if orden_actual == 'desc' %}selected{% endif %}>Más nuevo a más viejo</option>
+              <option value="asc" {% if orden_actual == 'asc' %}selected{% endif %}>Más viejo a más nuevo</option>
+            </select>
+          </div>
+
+          <div class="col-md-3 d-flex gap-2">
+            <button type="submit" class="btn btn-primary w-100">Aplicar</button>
+            <a href="{% url 'reportes:reportes' %}" class="btn btn-outline-secondary w-100">Limpiar</a>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
 <div class="row g-3">
   <div class="col-12">
     <div class="card border-0 shadow-sm">
