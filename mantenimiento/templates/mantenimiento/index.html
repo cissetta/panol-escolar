@@ -5,8 +5,35 @@
 
 {% block content %}
 
+<div class="groups-bar">
+    <div class="group-chip">
+        🗓️ Grupo 4 – Mantenimiento
+    </div>
+</div>
 
 
+<!-- ========================================================= -->
+<!-- TABS -->
+<!-- ========================================================= -->
+
+<div class="tab-bar">
+
+    <div class="tab active"
+        onclick="switchTab(this,'tab-mant-planes')">
+        Planes
+    </div>
+
+    <div class="tab"
+        onclick="switchTab(this,'tab-mant-tareas')">
+        Tareas Programadas
+    </div>
+
+    <div class="tab"
+         onclick="switchTab(this,'tab-mant-historial')">
+        Historial
+    </div>
+
+</div>
 
 
 <!-- ========================================================= -->
@@ -322,44 +349,29 @@
 
                         <!-- ESTADO -->
 
-                   <td>
-    {% if plan.esta_vencido %}
-        <span style="
-            display:inline-block;
-            padding:6px 12px;
-            border-radius:20px;
-            background:#dc3545 !important;
-            color:#ffffff !important;
-            font-weight:bold;
-        ">
-            🔴 Vencido
-        </span>
+                        <td>
 
-    {% elif plan.esta_proximo %}
-        <span style="
-            display:inline-block;
-            padding:6px 12px;
-            border-radius:20px;
-            background:#fd7e14 !important;
-            color:#ffffff !important;
-            font-weight:bold;
-        ">
-            🟠 Próximo
-        </span>
+                            {% if plan.esta_vencido %}
 
-    {% else %}
-        <span style="
-            display:inline-block;
-            padding:6px 12px;
-            border-radius:20px;
-            background:#28a745 !important;
-            color:#ffffff !important;
-            font-weight:bold;
-        ">
-            🟢 Al día
-        </span>
-    {% endif %}
-</td>
+                                <span class="badge badge-red">
+                                    Vencido
+                                </span>
+
+                            {% elif plan.esta_proximo %}
+
+                                <span class="badge badge-orange">
+                                    Próximo
+                                </span>
+
+                            {% else %}
+
+                                <span class="badge badge-green">
+                                    Al día
+                                </span>
+
+                            {% endif %}
+
+                        </td>
 
 
                         <!-- ACCIONES -->
