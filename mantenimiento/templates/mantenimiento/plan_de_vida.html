@@ -5,121 +5,463 @@
 
 {% block content %}
 
-<div class="screen">
+<div class="groups-bar">
+    <div class="group-chip">
+        🔨 Grupo 4 – Hoja de Vida
+    </div>
+</div>
 
-    <div class="groups-bar">
-        <div class="group-chip">
-            🔨 Grupo 4 – Hoja de Vida
-        </div>
+
+<!-- ===================================================== -->
+<!-- INFORMACIÓN DE LA HERRAMIENTA -->
+<!-- ===================================================== -->
+
+<div class="card">
+
+    <div class="card-title">
+        🔨 Información de la Herramienta
     </div>
 
-    <!-- DATOS -->
+    <div style="
+        display:grid;
+        grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
+        gap:18px;
+    ">
 
-    <div class="card" style="margin-bottom:25px;">
-
-        <div class="card-title">
-            Información de la Herramienta
+        <div>
+            <strong>Herramienta</strong><br>
+            {{ herramienta.nombre }}
         </div>
+
+        <div>
+            <strong>Código</strong><br>
+            {{ herramienta.codigo }}
+        </div>
+
+        <div>
+            <strong>Categoría</strong><br>
+            {% if herramienta.categoria %}
+                {{ herramienta.categoria.nombre }}
+            {% else %}
+                Sin categoría
+            {% endif %}
+        </div>
+
+        <div>
+            <strong>Marca</strong><br>
+            {{ herramienta.marca|default:"No especificada" }}
+        </div>
+
+        <div>
+            <strong>Modelo</strong><br>
+            {{ herramienta.modelo|default:"No especificado" }}
+        </div>
+
+        <div>
+            <strong>Ubicación</strong><br>
+            {{ herramienta.ubicacion|default:"No especificada" }}
+        </div>
+
+        <div>
+            <strong>Estado</strong><br>
+
+            {% if herramienta.estado == "DISPONIBLE" %}
+
+                <span class="badge badge-green">
+                    Disponible
+                </span>
+
+            {% elif herramienta.estado == "PRESTADA" %}
+
+                <span class="badge badge-orange">
+                    Prestada
+                </span>
+
+            {% elif herramienta.estado == "REPARACION" %}
+
+                <span class="badge badge-red">
+                    En reparación
+                </span>
+
+            {% elif herramienta.estado == "BAJA" %}
+
+                <span class="badge badge-red">
+                    Baja
+                </span>
+
+            {% else %}
+
+                <span class="badge badge-secondary">
+                    {{ herramienta.get_estado_display }}
+                </span>
+
+            {% endif %}
+
+        </div>
+
+    </div>
+
+</div>
+
+
+<!-- ===================================================== -->
+<!-- PLANES DE MANTENIMIENTO -->
+<!-- ===================================================== -->
+
+<div class="card" style="margin-top:20px;">
+
+    <div class="card-title">
+        🗓️ Planes de Mantenimiento
+    </div>
+
+    {% if planes %}
 
         <div style="
-            display:grid;
-            grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
-            gap:20px;">
+            display:flex;
+            flex-direction:column;
+            gap:12px;
+        ">
 
-            <div>
-                <strong>🔨 Herramienta</strong><br>
-                {{ herramienta.nombre }}
-            </div>
+            {% for plan in planes %}
 
-            <div>
-                <strong>🏷 Código</strong><br>
-                {{ herramienta.codigo }}
-            </div>
+            <div style="
+                border:1px solid #e5e5e5;
+                border-radius:10px;
+                padding:16px;
+                background:#fff;
+            ">
 
-            <div>
-                <strong>📂 Categoría</strong><br>
+                <div style="
+                    display:flex;
+                    justify-content:space-between;
+                    align-items:center;
+                    gap:15px;
+                    flex-wrap:wrap;
+                ">
 
-                {% if herramienta.categoria %}
-                    {{ herramienta.categoria.nombre }}
-                {% else %}
-                    Sin categoría
-                {% endif %}
-            </div>
+                    <div>
 
-            <div>
-                <strong>🛠 Planes registrados</strong><br>
-                {{ planes.count }}
-            </div>
+                        <strong style="font-size:16px;">
+                            {{ plan.nombre }}
+                        </strong>
 
-            <div>
-                <strong>📄 Eventos registrados</strong><br>
-                {{ logs.count }}
-            </div>
+                        <div style="
+                            margin-top:5px;
+                            color:#777;
+                            font-size:13px;
+                        ">
 
-            <div>
+                            {{ plan.get_tipo_display }}
 
-                <strong>📍 Estado actual</strong><br>
+                            {% if plan.frecuencia_dias %}
+                                · Cada {{ plan.frecuencia_dias }} días
+                            {% endif %}
 
-                {% if herramienta.estado == "DISPONIBLE" %}
-                    <span class="badge badge-green">Disponible</span>
+                        </div>
 
-                {% elif herramienta.estado == "PRESTADA" %}
-                    <span class="badge badge-orange">Prestada</span>
+                    </div>
 
-                {% elif herramienta.estado == "REPARACION" %}
-                    <span class="badge badge-red">En reparación</span>
 
-                {% else %}
-                    <span class="badge badge-secondary">
-                        {{ herramienta.estado }}
-                    </span>
+                    <!-- ESTADO -->
 
-                {% endif %}
+                    <div>
 
-            </div>
+                        {% if not plan.activo %}
 
-        </div>
+                            <span class="badge badge-secondary">
+                                Inactivo
+                            </span>
 
-    </div>
+                        {% elif plan.esta_vencido %}
 
-    <!-- HOJA DE VIDA -->
+                            <span class="badge badge-red">
+                                Vencido
+                            </span>
 
-    <div class="card">
+                        {% elif plan.esta_proximo %}
 
-        <div class="card-title">
-            📄 Historial Completo de la Herramienta
-        </div>
+                            <span class="badge badge-orange">
+                                Próximo
+                            </span>
 
-        {% if logs %}
+                        {% else %}
 
-        <ul class="timeline">
+                            <span class="badge badge-green">
+                                Al día
+                            </span>
 
-            {% for evento in logs %}
+                        {% endif %}
 
-            <li style="margin-bottom:25px;">
-
-                <div class="tl-date">
-
-                    {{ evento.fecha|date:"d/m/Y H:i" }}
+                    </div>
 
                 </div>
 
-             {% if evento.tipo == 'ALTA' %}
-    <div class="tl-text" style="background:#fff;border-radius:12px;padding:18px;box-shadow:0 3px 12px rgba(0,0,0,.08);border-left:6px solid #28a745;">
-{% elif evento.tipo == 'PRESTAMO' %}
-    <div class="tl-text" style="background:#fff;border-radius:12px;padding:18px;box-shadow:0 3px 12px rgba(0,0,0,.08);border-left:6px solid #fd7e14;">
-{% elif evento.tipo == 'DEVOLUCION' %}
-    <div class="tl-text" style="background:#fff;border-radius:12px;padding:18px;box-shadow:0 3px 12px rgba(0,0,0,.08);border-left:6px solid #20c997;">
-{% elif evento.tipo == 'MANTENIMIENTO' %}
-    <div class="tl-text" style="background:#fff;border-radius:12px;padding:18px;box-shadow:0 3px 12px rgba(0,0,0,.08);border-left:6px solid #0d6efd;">
-{% elif evento.tipo == 'ESTADO' %}
-    <div class="tl-text" style="background:#fff;border-radius:12px;padding:18px;box-shadow:0 3px 12px rgba(0,0,0,.08);border-left:6px solid #6f42c1;">
-{% elif evento.tipo == 'BAJA' %}
-    <div class="tl-text" style="background:#fff;border-radius:12px;padding:18px;box-shadow:0 3px 12px rgba(0,0,0,.08);border-left:6px solid #dc3545;">
-{% else %}
-    <div class="tl-text" style="background:#fff;border-radius:12px;padding:18px;box-shadow:0 3px 12px rgba(0,0,0,.08);border-left:6px solid #6c757d;">
-{% endif %}
-                    <h4 style="margin-bottom:15px;">
+
+                <div style="
+                    margin-top:14px;
+                    padding-top:12px;
+                    border-top:1px solid #eee;
+                    display:grid;
+                    grid-template-columns:repeat(auto-fit,minmax(180px,1fr));
+                    gap:10px;
+                    font-size:13px;
+                ">
+
+                    <div>
+                        <strong>Próxima ejecución:</strong><br>
+                        {{ plan.proxima_ejecucion|date:"d/m/Y" }}
+                    </div>
+
+                    <div>
+                        <strong>Tareas:</strong><br>
+                        {{ plan.tareas.count }}
+                    </div>
+
+                </div>
+
+
+                {% if plan.descripcion %}
+
+                    <div style="
+                        margin-top:12px;
+                        background:#f8f9fa;
+                        padding:10px;
+                        border-radius:7px;
+                        font-size:13px;
+                    ">
+
+                        <strong>Descripción:</strong>
+                        {{ plan.descripcion }}
+
+                    </div>
+
+                {% endif %}
+
+
+                <div style="
+                    margin-top:14px;
+                    display:flex;
+                    justify-content:flex-end;
+                    gap:8px;
+                ">
+
+                    <a
+                        href="{% url 'mantenimiento:ejecutar_plan' plan.id %}"
+                        class="btn btn-sm btn-primary"
+                    >
+                        🔧 Ejecutar
+                    </a>
+
+                </div>
+
+            </div>
+
+            {% endfor %}
+
+        </div>
+
+    {% else %}
+
+        <div style="
+            text-align:center;
+            padding:40px;
+            color:#888;
+        ">
+
+            <div style="font-size:45px;">
+                🗓️
+            </div>
+
+            <h3>
+                No hay planes registrados
+            </h3>
+
+            <p>
+                Esta herramienta todavía no tiene planes de mantenimiento.
+            </p>
+
+        </div>
+
+    {% endif %}
+
+</div>
+
+
+<!-- ===================================================== -->
+<!-- TAREAS PROGRAMADAS -->
+<!-- ===================================================== -->
+
+<div class="card" style="margin-top:20px;">
+
+    <div class="card-title">
+        🔧 Tareas Programadas
+    </div>
+
+
+    {% for plan in planes %}
+
+        {% if plan.tareas.all %}
+
+        <div style="margin-bottom:20px;">
+
+            <div style="
+                font-weight:bold;
+                margin-bottom:10px;
+                padding-bottom:8px;
+                border-bottom:1px solid #eee;
+            ">
+
+                📋 {{ plan.nombre }}
+
+            </div>
+
+
+            <div style="
+                display:flex;
+                flex-direction:column;
+                gap:8px;
+            ">
+
+                {% for tarea in plan.tareas.all %}
+
+                <div style="
+                    display:flex;
+                    align-items:center;
+                    gap:12px;
+                    padding:12px 14px;
+                    border:1px solid #e5e5e5;
+                    border-radius:8px;
+                    background:#fff;
+                ">
+
+                    <div style="
+                        width:30px;
+                        height:30px;
+                        border-radius:50%;
+                        background:#f1f3f5;
+                        display:flex;
+                        align-items:center;
+                        justify-content:center;
+                        flex-shrink:0;
+                    ">
+
+                        {{ forloop.counter }}
+
+                    </div>
+
+
+                    <div style="flex:1;">
+
+                        <strong>
+                            {{ tarea.descripcion }}
+                        </strong>
+
+                        <div style="
+                            margin-top:3px;
+                            color:#777;
+                            font-size:12px;
+                        ">
+
+                            Responsable:
+                            {{ tarea.responsable|default:"No especificado" }}
+
+                            {% if tarea.duracion_estimada_min %}
+                                · {{ tarea.duracion_estimada_min }} min
+                            {% endif %}
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+                {% endfor %}
+
+            </div>
+
+        </div>
+
+        {% endif %}
+
+    {% empty %}
+
+        <div style="
+            text-align:center;
+            padding:40px;
+            color:#888;
+        ">
+
+            <div style="font-size:45px;">
+                📋
+            </div>
+
+            <h3>
+                No hay tareas programadas
+            </h3>
+
+        </div>
+
+    {% endfor %}
+
+</div>
+
+
+<!-- ===================================================== -->
+<!-- HISTORIAL -->
+<!-- ===================================================== -->
+
+<div class="card" style="margin-top:20px;">
+
+    <div class="card-title">
+        📄 Historial de la Herramienta
+    </div>
+
+
+    {% if logs %}
+
+        <div style="
+            display:flex;
+            flex-direction:column;
+            gap:12px;
+        ">
+
+            {% for evento in logs %}
+
+            <div style="
+                padding:16px;
+                border-radius:10px;
+                background:#fff;
+                border:1px solid #e5e5e5;
+                border-left:5px solid
+
+                {% if evento.tipo == 'ALTA' %}
+                    #28a745
+                {% elif evento.tipo == 'PRESTAMO' %}
+                    #fd7e14
+                {% elif evento.tipo == 'DEVOLUCION' %}
+                    #28a745
+                {% elif evento.tipo == 'MANTENIMIENTO' %}
+                    #0d6efd
+                {% elif evento.tipo == 'ESTADO' %}
+                    #ffc107
+                {% elif evento.tipo == 'BAJA' %}
+                    #dc3545
+                {% else %}
+                    #6c757d
+                {% endif %}
+
+                ;
+            ">
+
+                <div style="
+                    display:flex;
+                    justify-content:space-between;
+                    align-items:center;
+                    gap:10px;
+                    flex-wrap:wrap;
+                ">
+
+                    <strong>
 
                         {% if evento.tipo == "ALTA" %}
                             ➕ Alta en inventario
@@ -134,64 +476,80 @@
                             🔧 Mantenimiento
 
                         {% elif evento.tipo == "ESTADO" %}
-                            ⚙ Cambio de estado
+                            ⚙️ Cambio de estado
 
                         {% elif evento.tipo == "BAJA" %}
                             ❌ Baja
 
                         {% else %}
                             📄 Evento
-
                         {% endif %}
 
-                    </h4>
+                    </strong>
 
-                    <div style="
-                        display:grid;
-                        grid-template-columns:180px 1fr;
-                        gap:12px;
-                        margin-bottom:15px;">
 
-                        <strong>Fecha</strong>
-                        <span>{{ evento.fecha|date:"d/m/Y H:i" }}</span>
+                    <span style="
+                        font-size:12px;
+                        color:#777;
+                    ">
 
-                        <strong>Tipo</strong>
-                        <span>{{ evento.get_tipo_display }}</span>
+                        {{ evento.fecha|date:"d/m/Y H:i" }}
 
-                        {% if evento.usuario %}
-                        <strong>Usuario</strong>
-                        <span>{{ evento.usuario }}</span>
-                        {% endif %}
-
-                    </div>
-
-                    <div style="
-                        background:#f8f9fa;
-                        border-radius:8px;
-                        padding:15px;
-                        border:1px solid #e5e5e5;">
-
-                        {{ evento.descripcion }}
-
-                    </div>
+                    </span>
 
                 </div>
 
-            </li>
+
+                <div style="
+                    margin-top:10px;
+                    background:#f8f9fa;
+                    padding:12px;
+                    border-radius:7px;
+                    font-size:13px;
+                ">
+
+                    {{ evento.descripcion }}
+
+                </div>
+
+
+                {% if evento.usuario %}
+
+                    <div style="
+                        margin-top:8px;
+                        font-size:12px;
+                        color:#777;
+                    ">
+
+                        👤 Usuario:
+                        {{ evento.usuario }}
+
+                    </div>
+
+                {% endif %}
+
+            </div>
 
             {% endfor %}
 
-        </ul>
+        </div>
 
-        {% else %}
 
-        <div style="text-align:center;padding:60px;color:#888;">
+    {% else %}
 
-            <div style="font-size:70px;">
+        <div style="
+            text-align:center;
+            padding:45px;
+            color:#888;
+        ">
+
+            <div style="font-size:55px;">
                 📂
             </div>
 
-            <h3>No existen eventos registrados</h3>
+            <h3>
+                No existen eventos registrados
+            </h3>
 
             <p>
                 Esta herramienta todavía no posee movimientos registrados.
@@ -199,37 +557,39 @@
 
         </div>
 
-        {% endif %}
+    {% endif %}
 
-    </div>
+</div>
 
-    <!-- BOTONES -->
 
-    <div style="
-        display:flex;
-        justify-content:flex-end;
-        gap:12px;
-        margin-top:25px;">
+<!-- ===================================================== -->
+<!-- BOTONES -->
+<!-- ===================================================== -->
 
-        <a href="{% url 'mantenimiento:index' %}"
-           class="btn btn-outline">
+<div style="
+    display:flex;
+    justify-content:flex-end;
+    gap:10px;
+    margin-top:20px;
+">
 
-            ← Volver
+    <a
+        href="{% url 'mantenimiento:index' %}"
+        class="btn btn-outline"
+    >
+        ← Volver
+    </a>
 
-        </a>
+    {% if planes.first %}
 
-        {% if planes.first %}
-
-        <a href="{% url 'mantenimiento:ejecutar_plan' planes.first.id %}"
-           class="btn btn-primary">
-
+        <a
+            href="{% url 'mantenimiento:ejecutar_plan' planes.first.id %}"
+            class="btn btn-primary"
+        >
             🔧 Registrar mantenimiento
-
         </a>
 
-        {% endif %}
-
-    </div>
+    {% endif %}
 
 </div>
 

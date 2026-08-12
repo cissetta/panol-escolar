@@ -257,24 +257,153 @@ def editar_plan(request, plan_id):
         pk=plan_id
     )
 
-    herramientas = Herramienta.objects.filter(activo=True)
+    herramientas = Herramienta.objects.filter(
+        activo=True
+    )
+
+    tareas = plan.tareas.all().order_by("orden", "id")
 
     if request.method == "POST":
 
+        # ==========================================
+        # ACTUALIZAR DATOS DEL PLAN
+        # ==========================================
+
         plan.nombre = request.POST.get("nombre")
-        plan.herramienta = Herramienta.objects.get(
-            pk=request.POST.get("herramienta")
-        )
         plan.tipo = request.POST.get("tipo")
-        plan.descripcion = request.POST.get("descripcion")
-        plan.frecuencia_dias = request.POST.get("frecuencia_dias") or None
-        plan.proxima_ejecucion = request.POST.get("proxima_ejecucion")
+        plan.descripcion = request.POST.get("descripcion", "")
+
+        herramienta_id = request.POST.get("herramienta")
+
+        if herramienta_id:
+            plan.herramienta = get_object_or_404(
+                Herramienta,
+                pk=herramienta_id
+            )
+
+        frecuencia = request.POST.get("frecuencia_dias")
+
+        if frecuencia:
+            plan.frecuencia_dias = frecuencia
+        else:
+            plan.frecuencia_dias = None
+
+        plan.proxima_ejecucion = request.POST.get(
+            "proxima_ejecucion"
+        )
 
         plan.save()
 
-        messages.success(request, "Plan actualizado correctamente.")
+        # ==========================================
+        # ACTUALIZAR TAREAS EXISTENTES
+        # ==========================================
 
-        return redirect("mantenimiento:index")
+        for tarea in tareas:
+
+            eliminar = request.POST.get(
+                f"tarea_eliminar_{tarea.id}"
+            )
+
+            if eliminar:
+
+                tarea.delete()
+
+            else:
+
+                tarea.descripcion = request.POST.get(
+                    f"tarea_descripcion_{tarea.id}",
+                    tarea.descripcion
+                )
+
+                tarea.responsable = request.POST.get(
+                    f"tarea_responsable_{tarea.id}",
+                    ""
+                )
+
+                duracion = request.POST.get(
+                    f"tarea_duracion_{tarea.id}"
+                )
+
+                if duracion:
+                    tarea.duracion_estimada_min = duracion
+                else:
+                    tarea.duracion_estimada_min = None
+
+                orden = request.POST.get(
+                    f"tarea_orden_{tarea.id}"
+                )
+
+                if orden:
+                    tarea.orden = orden
+                else:
+                    tarea.orden = 0
+
+                tarea.save()
+
+        # ==========================================
+        # CREAR NUEVAS TAREAS
+        # ==========================================
+
+        descripciones = request.POST.getlist(
+            "nueva_tarea_descripcion"
+        )
+
+        responsables = request.POST.getlist(
+            "nueva_tarea_responsable"
+        )
+
+        duraciones = request.POST.getlist(
+            "nueva_tarea_duracion"
+        )
+
+        ordenes = request.POST.getlist(
+            "nueva_tarea_orden"
+        )
+
+        for i, descripcion in enumerate(descripciones):
+
+            if not descripcion.strip():
+                continue
+
+            responsable = (
+                responsables[i]
+                if i < len(responsables)
+                else ""
+            )
+
+            duracion = (
+                duraciones[i]
+                if i < len(duraciones) and duraciones[i]
+                else None
+            )
+
+            orden = (
+                ordenes[i]
+                if i < len(ordenes) and ordenes[i]
+                else 0
+            )
+
+            TareaMantenimiento.objects.create(
+
+                plan=plan,
+
+                descripcion=descripcion,
+
+                responsable=responsable,
+
+                duracion_estimada_min=duracion,
+
+                orden=orden,
+            )
+
+        messages.success(
+            request,
+            "✅ Plan y tareas actualizados correctamente."
+        )
+
+        return redirect(
+            "mantenimiento:index"
+        )
 
     return render(
         request,
@@ -282,7 +411,8 @@ def editar_plan(request, plan_id):
         {
             "plan": plan,
             "herramientas": herramientas,
-        },
+            "tareas": tareas,
+        }
     )
 def eliminar_plan(request, plan_id):
 
