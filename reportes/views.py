@@ -11,6 +11,8 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.db.models import F
 from django.utils import timezone
 from core.models import Herramienta, Insumo, Prestamo, PlanMantenimiento, ConfiguracionSistema, Categoria, Docente
+import openpyxl
+from django.http import HttpResponse
 
 
 class ConfiguracionSistemaForm(forms.ModelForm):
@@ -127,9 +129,10 @@ def index(request):
     return render(request, 'reportes/index.html', context)
 
 
-def reportes(request):
+def _get_prestamos_queryset(request):
     orden = request.GET.get('orden', 'desc')
     categoria_id = request.GET.get('categoria')
+    estado = request.GET.get('estado', '')
 
     queryset = Prestamo.objects.select_related(
         'alumno', 'herramienta', 'docente', 'herramienta__categoria'
@@ -138,17 +141,77 @@ def reportes(request):
     if categoria_id:
         queryset = queryset.filter(herramienta__categoria_id=categoria_id)
 
-    if orden == 'asc':
+    if estado == 'activo':
+        queryset = queryset.filter(fecha_devolucion__isnull=True)
+        queryset = [p for p in queryset if not p.esta_vencido()]
+    elif estado == 'vencido':
+        queryset = queryset.filter(fecha_devolucion__isnull=True)
+        queryset = [p for p in queryset if p.esta_vencido()]
+    elif estado == 'devuelto':
+        queryset = queryset.filter(fecha_devolucion__isnull=False)
+
+    if isinstance(queryset, list):
+        queryset = sorted(queryset, key=lambda p: p.fecha_prestamo, reverse=(orden != 'asc'))
+    elif orden == 'asc':
         queryset = queryset.order_by('fecha_prestamo')
     else:
         queryset = queryset.order_by('-fecha_prestamo')
 
+    return queryset, categoria_id or '', orden, estado
+
+
+def reportes(request):
+    queryset, categoria_actual, orden_actual, estado_actual = _get_prestamos_queryset(request)
+
     context = _get_reportes_context()
     context['reporte_prestamos'] = queryset
     context['categorias'] = Categoria.objects.all().order_by('nombre')
-    context['categoria_actual'] = categoria_id or ''
-    context['orden_actual'] = orden
+    context['categoria_actual'] = categoria_actual
+    context['orden_actual'] = orden_actual
+    context['estado_actual'] = estado_actual
     return render(request, 'reportes/reportes.html', context)
+
+
+@login_required
+def exportar_reportes_excel(request):
+    queryset, _, _, _ = _get_prestamos_queryset(request)
+
+    wb = openpyxl.Workbook()
+    ws = wb.active
+    ws.title = 'ReportePrestamos'
+
+    headers = ['Alumno', 'Herramienta', 'Categoría', 'Docente', 'Fecha de préstamo', 'Fecha de devolución', 'Estado']
+    ws.append(headers)
+
+    for prestamo in queryset:
+        categoria = prestamo.herramienta.categoria.nombre if prestamo.herramienta.categoria else 'Sin categoría'
+        estado_label = 'Vencido' if prestamo.esta_activo() and prestamo.esta_vencido() else ('Activo' if prestamo.esta_activo() else 'Devuelto')
+        ws.append([
+            str(prestamo.alumno),
+            prestamo.herramienta.nombre,
+            categoria,
+            str(prestamo.docente),
+            prestamo.fecha_prestamo.strftime('%d/%m/%Y %H:%M'),
+            prestamo.fecha_devolucion.strftime('%d/%m/%Y %H:%M') if prestamo.fecha_devolucion else '',
+            estado_label,
+        ])
+
+    for col in ws.columns:
+        max_length = 0
+        column = col[0].column_letter
+        for cell in col:
+            try:
+                if len(str(cell.value)) > max_length:
+                    max_length = len(str(cell.value))
+            except Exception:
+                pass
+        adjusted_width = max_length + 2
+        ws.column_dimensions[column].width = adjusted_width
+
+    response = HttpResponse(content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+    response['Content-Disposition'] = 'attachment; filename="reporte_prestamos.xlsx"'
+    wb.save(response)
+    return response
 
 @login_required
 def configuracion(request):

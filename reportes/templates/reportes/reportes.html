@@ -20,7 +20,7 @@
             </select>
           </div>
 
-          <div class="col-md-4">
+          <div class="col-md-3">
             <label for="orden" class="form-label">Orden</label>
             <select name="orden" id="orden" class="form-select">
               <option value="desc" {% if orden_actual == 'desc' %}selected{% endif %}>Más nuevo a más viejo</option>
@@ -28,9 +28,20 @@
             </select>
           </div>
 
+          <div class="col-md-3">
+            <label for="estado" class="form-label">Estado</label>
+            <select name="estado" id="estado" class="form-select">
+              <option value="" {% if estado_actual == '' %}selected{% endif %}>Todos los estados</option>
+              <option value="activo" {% if estado_actual == 'activo' %}selected{% endif %}>Activos</option>
+              <option value="vencido" {% if estado_actual == 'vencido' %}selected{% endif %}>Vencidos</option>
+              <option value="devuelto" {% if estado_actual == 'devuelto' %}selected{% endif %}>Devueltos</option>
+            </select>
+          </div>
+
           <div class="col-md-3 d-flex gap-2">
             <button type="submit" class="btn btn-primary w-100">Aplicar</button>
             <a href="{% url 'reportes:reportes' %}" class="btn btn-outline-secondary w-100">Limpiar</a>
+            <a href="{% url 'reportes:exportar_reportes_excel' %}?categoria={{ categoria_actual }}&orden={{ orden_actual }}&estado={{ estado_actual }}" class="btn btn-success w-100">Excel</a>
           </div>
         </form>
       </div>
@@ -49,6 +60,7 @@
               <tr>
                 <th>Alumno</th>
                 <th>Herramienta</th>
+                <th>Categoría</th>
                 <th>Docente</th>
                 <th>Fecha de préstamo</th>
                 <th>Fecha de devolución</th>
@@ -60,6 +72,16 @@
               <tr>
                 <td>{{ p.alumno }}</td>
                 <td>{{ p.herramienta.nombre }}</td>
+                <td>
+                  {% if p.herramienta.categoria %}
+                    <span class="d-inline-flex align-items-center gap-2">
+                      <span class="rounded-circle border" style="width: 12px; height: 12px; background-color: {{ p.herramienta.categoria.color_hex|default:'#6c757d' }}; display: inline-block;"></span>
+                      {{ p.herramienta.categoria.nombre }}
+                    </span>
+                  {% else %}
+                    <span class="text-muted">Sin categoría</span>
+                  {% endif %}
+                </td>
                 <td>{{ p.docente }}</td>
                 <td>{{ p.fecha_prestamo|date:"d/m/Y H:i" }}</td>
                 <td>
@@ -83,7 +105,7 @@
               </tr>
               {% empty %}
               <tr>
-                <td colspan="6" class="text-center text-muted py-3">Sin préstamos registrados.</td>
+                <td colspan="7" class="text-center text-muted py-3">Sin préstamos registrados.</td>
               </tr>
               {% endfor %}
             </tbody>
