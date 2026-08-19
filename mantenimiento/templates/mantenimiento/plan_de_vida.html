@@ -27,7 +27,6 @@
         🔨 Información de la Herramienta
     </div>
 
-
     <div style="
         display:grid;
         grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
@@ -368,7 +367,7 @@
 
                     </div>
 
-                </div>
+            </div>
 
             {% endfor %}
 
@@ -385,6 +384,7 @@
             <div style="font-size:45px;">
                 🗓️
             </div>
+        </div>
 
             <h3>
                 No hay planes registrados
@@ -429,7 +429,7 @@
 
                         📋 {{ plan.nombre }}
 
-                    </div>
+            </div>
 
 
                     <div style="
@@ -495,9 +495,9 @@
 
                         {% endfor %}
 
-                    </div>
+            </div>
 
-                </div>
+        </div>
 
             {% endif %}
 
@@ -564,29 +564,17 @@
 
                         <strong>
 
-                            {% if evento.tipo == "ALTA" %}
+                        {% if evento.tipo == "ALTA" %}
+                            ➕ Alta en inventario
 
-                                <span class="badge badge-green">
-                                    ➕ Alta
-                                </span>
+                        {% elif evento.tipo == "PRESTAMO" %}
+                            📤 Préstamo
 
-                            {% elif evento.tipo == "PRESTAMO" %}
+                        {% elif evento.tipo == "DEVOLUCION" %}
+                            📥 Devolución
 
-                                <span class="badge badge-orange">
-                                    📤 Préstamo
-                                </span>
-
-                            {% elif evento.tipo == "DEVOLUCION" %}
-
-                                <span class="badge badge-green">
-                                    📥 Devolución
-                                </span>
-
-                            {% elif evento.tipo == "MANTENIMIENTO" %}
-
-                                <span class="badge badge-green">
-                                    🔧 Mantenimiento
-                                </span>
+                        {% elif evento.tipo == "MANTENIMIENTO" %}
+                            🔧 Mantenimiento
 
                             {% elif evento.tipo == "ESTADO" %}
 
@@ -594,11 +582,8 @@
                                     ⚙️ Cambio de estado
                                 </span>
 
-                            {% elif evento.tipo == "BAJA" %}
-
-                                <span class="badge badge-red">
-                                    ❌ Baja
-                                </span>
+                        {% elif evento.tipo == "BAJA" %}
+                            ❌ Baja
 
                             {% else %}
 
@@ -647,13 +632,12 @@
                             👤 Usuario:
                             {{ evento.usuario }}
 
-                        </div>
+                    </div>
 
                     {% endif %}
 
                 </div>
 
-            {% endfor %}
 
         </div>
 
@@ -674,7 +658,7 @@
             </h3>
 
             <p>
-                Esta herramienta todavía no tiene eventos registrados.
+                Esta herramienta todavía no posee movimientos registrados.
             </p>
 
         </div>
@@ -709,7 +693,7 @@
             href="{% url 'mantenimiento:ejecutar_plan' planes.first.id %}"
             class="btn btn-primary"
         >
-            🔧 Ejecutar mantenimiento
+            🔧 Registrar mantenimiento
         </a>
 
     {% endif %}

@@ -1,3 +1,4 @@
-# Grupo 2 – Inventario
-# Los modelos centrales están en core/models.py
-# Podés agregar modelos auxiliares propios de esta app si los necesitás
+from django.db import models
+
+# Los modelos del inventario se encuentran en core.models.
+# Este archivo se deja vacío para evitar duplicar modelos.

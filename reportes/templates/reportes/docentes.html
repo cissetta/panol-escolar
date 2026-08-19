@@ -1,0 +1,79 @@
+{% extends 'base.html' %}
+{% block title %}Grupo 5 - Docentes{% endblock %}
+{% block page_title %}Grupo 5 - Docentes{% endblock %}
+
+{% block content %}
+<div class="row g-3">
+  <div class="col-lg-7">
+    <div class="card border-0 shadow-sm">
+      <div class="card-header bg-white fw-semibold">👩‍🏫 Docentes cargados</div>
+      <div class="card-body">
+        {% if docentes %}
+          <div class="table-responsive">
+            <table class="table table-sm table-hover mb-0">
+              <thead class="table-light">
+                <tr>
+                  <th>Apellido</th>
+                  <th>Nombre</th>
+                  <th>Email</th>
+                  <th>Estado</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for docente in docentes %}
+                  <tr>
+                    <td>{{ docente.apellido }}</td>
+                    <td>{{ docente.nombre }}</td>
+                    <td>{{ docente.email }}</td>
+                    <td>
+                      {% if docente.activo %}
+                        <span class="badge bg-success">Activo</span>
+                      {% else %}
+                        <span class="badge bg-secondary">Inactivo</span>
+                      {% endif %}
+                    </td>
+                  </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        {% else %}
+          <div class="text-center text-muted py-4">No hay docentes cargados aún.</div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+
+  <div class="col-lg-5">
+    <div class="card border-0 shadow-sm">
+      <div class="card-header bg-white fw-semibold">➕ Agregar docente</div>
+      <div class="card-body">
+        {% if success %}
+          <div class="alert alert-success">Docente agregado correctamente.</div>
+        {% endif %}
+
+        <form method="post">
+          {% csrf_token %}
+          <div class="mb-3">
+            <label for="{{ form.nombre.id_for_label }}" class="form-label">Nombre</label>
+            {{ form.nombre }}
+          </div>
+          <div class="mb-3">
+            <label for="{{ form.apellido.id_for_label }}" class="form-label">Apellido</label>
+            {{ form.apellido }}
+          </div>
+          <div class="mb-3">
+            <label for="{{ form.email.id_for_label }}" class="form-label">Email</label>
+            {{ form.email }}
+          </div>
+          <div class="form-check mb-3">
+            {{ form.activo }}
+            <label class="form-check-label" for="{{ form.activo.id_for_label }}">Activo</label>
+          </div>
+          <button type="submit" class="btn btn-primary">Guardar docente</button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
