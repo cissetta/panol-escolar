@@ -131,11 +131,11 @@
                     </div>
 
 
-                    <!-- BOTONES -->
+                    <!-- BOTONES (REORDENADOS Y CON CLASE CORRECTA) -->
 
-                    <div class="d-flex justify-content-end gap-2">
+                    <div class="form-actions">
 
-                        <!-- GUARDAR -->
+                        <!-- IZQUIERDA: GUARDAR -->
                         <button type="submit"
                                 class="btn btn-primary">
 
@@ -144,9 +144,9 @@
                         </button>
 
 
-                        <!-- CANCELAR -->
+                        <!-- DERECHA: CANCELAR (Se usó 'btn-cancel' para coincidir con CSS) -->
                         <a href="{% url 'prestamos:activos' %}"
-                           class="btn btn-cancelar">
+                           class="btn btn-cancel">
 
                             Cancelar
 

@@ -1,89 +1,81 @@
-body {
-    background-color: #f4f6f9;
-    color: #212529;
-    font-family: Arial, Helvetica, sans-serif;
+/* Variables de Colores y Estilos Globales */
+:root {
+  --color-primary: #0d6efd;
+  --color-primary-hover: #0b5ed7;
+  --color-primary-active: #0a58ca;
+
+  /* Estilos del Botón Cancelar */
+  --color-cancel: #dc3545;        /* Rojo Normal */
+  --color-cancel-hover: #bb2d3b;  /* Rojo Oscuro (hover) */
+  --color-cancel-active: #b02a37; /* Rojo Más Oscuro (click) */
+
+  --color-bg-surface: #ffffff;
+  --color-border: #e2e8f0;
+  --color-text-main: #1e293b;
+  --color-text-muted: #64748b;
+  --radius-md: 6px;
 }
 
-
-/* ===== TÍTULOS ===== */
-
-h1,
-h2,
-h3,
-h4,
-h5,
-h6 {
-    font-weight: 600;
-    color: #212529;
+/* Contenedor de Botones de Formulario */
+.form-actions {
+  display: flex !important;
+  align-items: center;
+  gap: 12px;
+  margin-top: 24px;
 }
 
-
-/* ===== BOTÓN PRINCIPAL AZUL ===== */
-
-.btn-primary {
-    background-color: #0d6efd;
-    border-color: #0d6efd;
-    color: white;
-}
-
-.btn-primary:hover {
-    background-color: #0b5ed7;
-    border-color: #0b5ed7;
-    color: white;
-}
-
-.btn-primary:active {
-    background-color: #084298 !important;
-    border-color: #084298 !important;
-}
-
-
-/* ===== BOTÓN CANCELAR ROJO ===== */
-
-.btn-cancelar {
-    background-color: #dc3545;
-    border-color: #dc3545;
-    color: white;
-}
-
-.btn-cancelar:hover {
-    background-color: #bb2d3b;
-    border-color: #bb2d3b;
-    color: white;
-}
-
-.btn-cancelar:active {
-    background-color: #842029 !important;
-    border-color: #842029 !important;
-}
-
-
-/* ===== TODOS LOS BOTONES ===== */
-
+/* Estilo Base de Botones */
 .btn {
-    border-radius: 6px;
-    font-weight: 500;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 10px 20px;
+  font-size: 14px;
+  font-weight: 500;
+  border-radius: var(--radius-md);
+  border: none;
+  cursor: pointer;
+  transition: background-color 0.2s ease, transform 0.1s ease;
+  user-select: none;
+  text-decoration: none;
 }
 
-
-/* ===== TEXTO SECUNDARIO ===== */
-
-.text-muted {
-    color: #6c757d !important;
+/* 1. BOTÓN PRINCIPAL (Guardar / Confirmar) -> IZQUIERDA */
+.btn-primary, 
+.btn-confirm {
+  order: 1 !important;
+  background-color: var(--color-primary) !important;
+  color: #ffffff !important;
 }
 
-
-/* ===== TARJETAS ===== */
-
-.card {
-    background-color: white;
-    border-radius: 8px;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+.btn-primary:hover, 
+.btn-confirm:hover {
+  background-color: var(--color-primary-hover) !important;
+  color: #ffffff !important;
 }
 
+.btn-primary:active, 
+.btn-confirm:active {
+  background-color: var(--color-primary-active) !important;
+  transform: translateY(1px);
+}
 
-/* ===== TABLAS ===== */
+/* 2. BOTÓN CANCELAR -> DERECHA, ROJO Y OSCURO EN HOVER */
+.btn-cancel {
+  order: 2 !important;
+  background-color: var(--color-cancel) !important;
+  color: #ffffff !important;
+  border: none !important;
+}
 
-.table {
-    background-color: white;
+/* Estado Hover: Se pone más oscuro al pasar el mouse */
+.btn-cancel:hover {
+  background-color: var(--color-cancel-hover) !important;
+  color: #ffffff !important;
+}
+
+/* Estado Active: Se oscurece más al hacer click */
+.btn-cancel:active {
+  background-color: var(--color-cancel-active) !important;
+  transform: translateY(1px);
 }
