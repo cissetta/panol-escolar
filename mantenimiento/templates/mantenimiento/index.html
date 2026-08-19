@@ -1,830 +1,936 @@
 {% extends 'base.html' %}
 
-{% block title %}Grupo 4 – Mantenimiento{% endblock %}
-{% block page_title %}Grupo 4 – Mantenimiento{% endblock %}
+{% block title %}
+    Grupo 4 – Mantenimiento
+{% endblock %}
+
+{% block page_title %}
+    Grupo 4 – Mantenimiento
+{% endblock %}
+
 
 {% block content %}
 
-<div class="groups-bar">
-    <div class="group-chip">
-        🗓️ Grupo 4 – Mantenimiento
-    </div>
-</div>
+<div class="container-fluid">
 
 
-<!-- ========================================================= -->
-<!-- TABS -->
-<!-- ========================================================= -->
+    <!-- ========================================================= -->
+    <!-- ENCABEZADO -->
+    <!-- ========================================================= -->
 
-<div class="tab-bar">
+    <div class="mb-4">
 
-    <div class="tab active"
-        onclick="switchTab(this,'tab-mant-planes')">
-        Planes
+        <span class="badge bg-primary">
+            🗓️ Grupo 4 – Mantenimiento
+        </span>
+
     </div>
 
-    <div class="tab"
-        onclick="switchTab(this,'tab-mant-tareas')">
-        Tareas Programadas
-    </div>
 
-    <div class="tab"
-         onclick="switchTab(this,'tab-mant-historial')">
-        Historial
-    </div>
+    <!-- ========================================================= -->
+    <!-- TABS -->
+    <!-- ========================================================= -->
 
-</div>
+    <div class="card mb-4">
+
+        <div class="card-body">
+
+            <div class="d-flex gap-2 flex-wrap">
+
+                <button
+                    type="button"
+                    class="btn btn-primary"
+                    onclick="switchTab(this,'tab-mant-planes')">
+
+                    Planes
+
+                </button>
 
 
-<!-- ========================================================= -->
-<!-- FILTROS -->
-<!-- ========================================================= -->
+                <button
+                    type="button"
+                    class="btn btn-secondary"
+                    onclick="switchTab(this,'tab-mant-tareas')">
 
-<div class="card" style="margin-bottom:20px;">
+                    Tareas Programadas
 
-    <form method="get"
-          style="
-            display:flex;
-            gap:20px;
-            align-items:end;
-            flex-wrap:wrap;
-          ">
+                </button>
 
-        <div>
 
-            <label>
-                <strong>Herramienta:</strong>
-            </label>
+                <button
+                    type="button"
+                    class="btn btn-secondary"
+                    onclick="switchTab(this,'tab-mant-historial')">
 
-            <select name="herramienta"
-                    class="form-select">
+                    Historial
 
-                <option value="">
-                    Todas
-                </option>
+                </button>
 
-                {% for h in herramientas %}
-
-                    <option value="{{ h.id }}"
-                        {% if request.GET.herramienta == h.id|stringformat:"s" %}
-                            selected
-                        {% endif %}>
-
-                        {{ h.nombre }}
-
-                    </option>
-
-                {% endfor %}
-
-            </select>
+            </div>
 
         </div>
 
+    </div>
 
-        <div>
 
-            <label>
-                <strong>Mes:</strong>
-            </label>
+    <!-- ========================================================= -->
+    <!-- FILTROS -->
+    <!-- ========================================================= -->
 
-            <select name="mes"
-                    class="form-select">
+    <div class="card mb-4">
 
-                <option value="">
-                    Todos
-                </option>
+        <div class="card-body">
 
-                <option value="1"
-                    {% if request.GET.mes == "1" %}selected{% endif %}>
-                    Enero
-                </option>
+            <form method="get"
+                  class="d-flex gap-3 align-items-end flex-wrap">
 
-                <option value="2"
-                    {% if request.GET.mes == "2" %}selected{% endif %}>
-                    Febrero
-                </option>
 
-                <option value="3"
-                    {% if request.GET.mes == "3" %}selected{% endif %}>
-                    Marzo
-                </option>
+                <!-- HERRAMIENTA -->
 
-                <option value="4"
-                    {% if request.GET.mes == "4" %}selected{% endif %}>
-                    Abril
-                </option>
+                <div>
 
-                <option value="5"
-                    {% if request.GET.mes == "5" %}selected{% endif %}>
-                    Mayo
-                </option>
+                    <label class="form-label">
+                        <strong>Herramienta:</strong>
+                    </label>
 
-                <option value="6"
-                    {% if request.GET.mes == "6" %}selected{% endif %}>
-                    Junio
-                </option>
+                    <select
+                        name="herramienta"
+                        class="form-select">
 
-                <option value="7"
-                    {% if request.GET.mes == "7" %}selected{% endif %}>
-                    Julio
-                </option>
+                        <option value="">
+                            Todas
+                        </option>
 
-                <option value="8"
-                    {% if request.GET.mes == "8" %}selected{% endif %}>
-                    Agosto
-                </option>
 
-                <option value="9"
-                    {% if request.GET.mes == "9" %}selected{% endif %}>
-                    Septiembre
-                </option>
+                        {% for h in herramientas %}
 
-                <option value="10"
-                    {% if request.GET.mes == "10" %}selected{% endif %}>
-                    Octubre
-                </option>
+                            <option
+                                value="{{ h.id }}"
+                                {% if request.GET.herramienta == h.id|stringformat:"s" %}
+                                    selected
+                                {% endif %}>
 
-                <option value="11"
-                    {% if request.GET.mes == "11" %}selected{% endif %}>
-                    Noviembre
-                </option>
+                                {{ h.nombre }}
 
-                <option value="12"
-                    {% if request.GET.mes == "12" %}selected{% endif %}>
-                    Diciembre
-                </option>
+                            </option>
 
-            </select>
+                        {% endfor %}
+
+                    </select>
+
+                </div>
+
+
+                <!-- MES -->
+
+                <div>
+
+                    <label class="form-label">
+                        <strong>Mes:</strong>
+                    </label>
+
+                    <select
+                        name="mes"
+                        class="form-select">
+
+                        <option value="">
+                            Todos
+                        </option>
+
+                        <option value="1"
+                            {% if request.GET.mes == "1" %}selected{% endif %}>
+                            Enero
+                        </option>
+
+                        <option value="2"
+                            {% if request.GET.mes == "2" %}selected{% endif %}>
+                            Febrero
+                        </option>
+
+                        <option value="3"
+                            {% if request.GET.mes == "3" %}selected{% endif %}>
+                            Marzo
+                        </option>
+
+                        <option value="4"
+                            {% if request.GET.mes == "4" %}selected{% endif %}>
+                            Abril
+                        </option>
+
+                        <option value="5"
+                            {% if request.GET.mes == "5" %}selected{% endif %}>
+                            Mayo
+                        </option>
+
+                        <option value="6"
+                            {% if request.GET.mes == "6" %}selected{% endif %}>
+                            Junio
+                        </option>
+
+                        <option value="7"
+                            {% if request.GET.mes == "7" %}selected{% endif %}>
+                            Julio
+                        </option>
+
+                        <option value="8"
+                            {% if request.GET.mes == "8" %}selected{% endif %}>
+                            Agosto
+                        </option>
+
+                        <option value="9"
+                            {% if request.GET.mes == "9" %}selected{% endif %}>
+                            Septiembre
+                        </option>
+
+                        <option value="10"
+                            {% if request.GET.mes == "10" %}selected{% endif %}>
+                            Octubre
+                        </option>
+
+                        <option value="11"
+                            {% if request.GET.mes == "11" %}selected{% endif %}>
+                            Noviembre
+                        </option>
+
+                        <option value="12"
+                            {% if request.GET.mes == "12" %}selected{% endif %}>
+                            Diciembre
+                        </option>
+
+                    </select>
+
+                </div>
+
+
+                <!-- BOTONES -->
+
+                <div>
+
+                    <button
+                        type="submit"
+                        class="btn btn-primary">
+
+                        🔎 Filtrar
+
+                    </button>
+
+
+                    <a
+                        href="{% url 'mantenimiento:index' %}"
+                        class="btn btn-cancelar">
+
+                        Limpiar
+
+                    </a>
+
+                </div>
+
+            </form>
 
         </div>
 
+    </div>
 
-        <div>
 
-            <button type="submit"
-                    class="btn btn-primary">
+    <!-- ========================================================= -->
+    <!-- PESTAÑA PLANES -->
+    <!-- ========================================================= -->
 
-                🔎 Filtrar
+    <div id="tab-mant-planes">
 
-            </button>
 
-            <a href="{% url 'mantenimiento:index' %}"
-               class="btn btn-outline">
+        <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
 
-                Limpiar
+            <h3 class="mb-0">
+                Planes de Mantenimiento
+            </h3>
+
+
+            <a
+                href="{% url 'mantenimiento:crear_plan' %}"
+                class="btn btn-primary">
+
+                ➕ Nuevo Plan
 
             </a>
 
         </div>
 
-    </form>
 
-</div>
+        <div class="card">
 
+            <div class="table-responsive">
 
+                <table class="table table-hover mb-0">
 
-<!-- ========================================================= -->
-<!-- PESTAÑA PLANES -->
-<!-- ========================================================= -->
-
-<div id="tab-mant-planes">
-
-    <div style="
-        display:flex;
-        justify-content:space-between;
-        align-items:center;
-        margin-bottom:20px;
-        flex-wrap:wrap;
-        gap:10px;
-    ">
-
-        <h3>
-            Planes de Mantenimiento
-        </h3>
-
-        <a href="{% url 'mantenimiento:crear_plan' %}"
-           class="btn btn-primary">
-
-            ➕ Nuevo Plan
-
-        </a>
-
-    </div>
-
-
-    <div class="card"
-         style="padding:0;overflow:hidden;">
-
-        <table>
-
-            <thead>
-
-                <tr>
-
-                    <th>Plan</th>
-
-                    <th>Herramienta</th>
-
-                    <th>Tipo</th>
-
-                    <th>Frecuencia</th>
-
-                    <th>Próxima Ejecución</th>
-
-                    <th>Estado</th>
-
-                    <th>Acciones</th>
-
-                </tr>
-
-            </thead>
-
-
-            <tbody>
-
-                {% for plan in planes %}
-
-                    {% if plan.activo %}
-
-                    <tr>
-
-                        <!-- PLAN -->
-
-                        <td>
-
-                            <strong>
-                                {{ plan.nombre }}
-                            </strong>
-
-                            {% if plan.descripcion %}
-
-                                <br>
-
-                                <small style="color:#777;">
-                                    {{ plan.descripcion|truncatechars:70 }}
-                                </small>
-
-                            {% endif %}
-
-                        </td>
-
-
-                        <!-- HERRAMIENTA -->
-
-                        <td>
-
-                            {{ plan.herramienta.nombre }}
-
-                            <br>
-
-                            <small style="color:#777;">
-                                {{ plan.herramienta.codigo }}
-                            </small>
-
-                        </td>
-
-
-                        <!-- TIPO -->
-
-                        <td>
-
-                            {{ plan.get_tipo_display }}
-
-                        </td>
-
-
-                        <!-- FRECUENCIA -->
-
-                        <td>
-
-                            {% if plan.frecuencia_dias %}
-
-                                Cada {{ plan.frecuencia_dias }} días
-
-                            {% else %}
-
-                                —
-
-                            {% endif %}
-
-                        </td>
-
-
-                        <!-- FECHA -->
-
-                        <td>
-
-                            {% if plan.esta_vencido %}
-
-                                <span style="
-                                    color:var(--danger);
-                                    font-weight:600;
-                                ">
-
-                                    {{ plan.proxima_ejecucion|date:"d/m/Y" }}
-                                    ⚠
-
-                                </span>
-
-                            {% elif plan.esta_proximo %}
-
-                                <span style="
-                                    color:var(--orange);
-                                    font-weight:600;
-                                ">
-
-                                    {{ plan.proxima_ejecucion|date:"d/m/Y" }}
-                                    ⏳
-
-                                </span>
-
-                            {% else %}
-
-                                {{ plan.proxima_ejecucion|date:"d/m/Y" }}
-
-                            {% endif %}
-
-                        </td>
-
-
-                        <!-- ESTADO -->
-
-                        <td>
-
-                            {% if plan.esta_vencido %}
-
-                                <span class="badge badge-red">
-                                    Vencido
-                                </span>
-
-                            {% elif plan.esta_proximo %}
-
-                                <span class="badge badge-orange">
-                                    Próximo
-                                </span>
-
-                            {% else %}
-
-                                <span class="badge badge-green">
-                                    Al día
-                                </span>
-
-                            {% endif %}
-
-                        </td>
-
-
-                        <!-- ACCIONES -->
-
-                        <td>
-
-                            <div style="
-                                display:flex;
-                                gap:6px;
-                                flex-wrap:wrap;
-                            ">
-
-                                <!-- EJECUTAR -->
-
-                                <a href="{% url 'mantenimiento:ejecutar_plan' plan.id %}"
-                                   class="btn btn-sm btn-primary">
-
-                                    🔧 Ejecutar
-
-                                </a>
-
-
-                                <!-- DETALLE -->
-
-                                <a href="{% url 'mantenimiento:detalle_plan' plan.id %}"
-                                   class="btn btn-sm btn-outline">
-
-                                    👁 Detalle
-
-                                </a>
-
-
-                                <!-- HOJA DE VIDA -->
-
-                                <a href="{% url 'mantenimiento:plan_de_vida' plan.herramienta.id %}"
-                                   class="btn btn-sm btn-outline">
-
-                                    📄 Hoja de Vida
-
-                                </a>
-
-
-                                <!-- EDITAR -->
-
-                                <a href="{% url 'mantenimiento:editar_plan' plan.id %}"
-                                   class="btn btn-sm btn-warning">
-
-                                    ✏️ Editar
-
-                                </a>
-
-
-                                <!-- ELIMINAR -->
-
-                                <a href="{% url 'mantenimiento:eliminar_plan' plan.id %}"
-                                   class="btn btn-sm btn-danger"
-                                   onclick="return confirm('¿Seguro que querés eliminar este plan de mantenimiento?');">
-
-                                    🗑️ Eliminar
-
-                                </a>
-
-                            </div>
-
-                        </td>
-
-                    </tr>
-
-                    {% endif %}
-
-                {% empty %}
-
-                    <tr>
-
-                        <td colspan="7"
-                            style="
-                                text-align:center;
-                                padding:30px;
-                            ">
-
-                            <div style="font-size:40px;">
-                                🗓️
-                            </div>
-
-                            <strong>
-                                No hay planes de mantenimiento registrados.
-                            </strong>
-
-                            <br><br>
-
-                            <a href="{% url 'mantenimiento:crear_plan' %}"
-                               class="btn btn-primary">
-
-                                ➕ Crear primer plan
-
-                            </a>
-
-                        </td>
-
-                    </tr>
-
-                {% endfor %}
-
-            </tbody>
-
-        </table>
-
-    </div>
-
-</div>
-
-
-
-<!-- ========================================================= -->
-<!-- PESTAÑA TAREAS PROGRAMADAS -->
-<!-- ========================================================= -->
-
-<div id="tab-mant-tareas"
-     style="display:none;">
-
-    <div style="
-        display:flex;
-        justify-content:space-between;
-        align-items:center;
-        margin-bottom:20px;
-    ">
-
-        <h3>
-            Tareas Programadas
-        </h3>
-
-    </div>
-
-
-    <div class="card">
-
-        <div class="card-title">
-
-            🔧 Tareas requeridas por cada plan
-
-        </div>
-
-
-        <table>
-
-            <thead>
-
-                <tr>
-
-                    <th>Plan</th>
-
-                    <th>Herramienta</th>
-
-                    <th>Tarea</th>
-
-                    <th>Responsable</th>
-
-                    <th>Duración</th>
-
-                    <th>Acción</th>
-
-                </tr>
-
-            </thead>
-
-
-            <tbody>
-
-                {% for plan in planes %}
-
-                    {% if plan.activo %}
-
-                        {% for tarea in plan.tareas.all %}
+                    <thead>
 
                         <tr>
 
-                            <!-- PLAN -->
-
-                            <td>
-
-                                <strong>
-                                    {{ plan.nombre }}
-                                </strong>
-
-                            </td>
-
-
-                            <!-- HERRAMIENTA -->
-
-                            <td>
-
-                                {{ plan.herramienta.nombre }}
-
-                            </td>
-
-
-                            <!-- TAREA -->
-
-                            <td>
-
-                                {{ tarea.descripcion }}
-
-                            </td>
-
-
-                            <!-- RESPONSABLE -->
-
-                            <td>
-
-                                {% if tarea.responsable %}
-
-                                    {{ tarea.responsable }}
-
-                                {% else %}
-
-                                    <span style="color:#888;">
-                                        No especificado
-                                    </span>
-
-                                {% endif %}
-
-                            </td>
-
-
-                            <!-- DURACIÓN -->
-
-                            <td>
-
-                                {% if tarea.duracion_estimada_min %}
-
-                                    {{ tarea.duracion_estimada_min }} min
-
-                                {% else %}
-
-                                    —
-
-                                {% endif %}
-
-                            </td>
-
-
-                            <!-- ACCIÓN -->
-
-                            <td>
-
-                                <a href="{% url 'mantenimiento:ejecutar_plan' plan.id %}"
-                                   class="btn btn-sm btn-primary">
-
-                                    🔧 Ejecutar
-
-                                </a>
-
-                            </td>
+                            <th>Plan</th>
+                            <th>Herramienta</th>
+                            <th>Tipo</th>
+                            <th>Frecuencia</th>
+                            <th>Próxima Ejecución</th>
+                            <th>Estado</th>
+                            <th>Acciones</th>
 
                         </tr>
 
+                    </thead>
+
+
+                    <tbody>
+
+                        {% for plan in planes %}
+
+                            {% if plan.activo %}
+
+                            <tr>
+
+
+                                <!-- PLAN -->
+
+                                <td>
+
+                                    <strong>
+                                        {{ plan.nombre }}
+                                    </strong>
+
+
+                                    {% if plan.descripcion %}
+
+                                        <br>
+
+                                        <small class="text-muted">
+
+                                            {{ plan.descripcion|truncatechars:70 }}
+
+                                        </small>
+
+                                    {% endif %}
+
+                                </td>
+
+
+                                <!-- HERRAMIENTA -->
+
+                                <td>
+
+                                    {{ plan.herramienta.nombre }}
+
+                                    <br>
+
+                                    <small class="text-muted">
+
+                                        {{ plan.herramienta.codigo }}
+
+                                    </small>
+
+                                </td>
+
+
+                                <!-- TIPO -->
+
+                                <td>
+
+                                    {{ plan.get_tipo_display }}
+
+                                </td>
+
+
+                                <!-- FRECUENCIA -->
+
+                                <td>
+
+                                    {% if plan.frecuencia_dias %}
+
+                                        Cada {{ plan.frecuencia_dias }} días
+
+                                    {% else %}
+
+                                        —
+
+                                    {% endif %}
+
+                                </td>
+
+
+                                <!-- FECHA -->
+
+                                <td>
+
+                                    {% if plan.esta_vencido %}
+
+                                        <span class="text-danger fw-semibold">
+
+                                            {{ plan.proxima_ejecucion|date:"d/m/Y" }}
+                                            ⚠
+
+                                        </span>
+
+
+                                    {% elif plan.esta_proximo %}
+
+                                        <span class="text-warning fw-semibold">
+
+                                            {{ plan.proxima_ejecucion|date:"d/m/Y" }}
+                                            ⏳
+
+                                        </span>
+
+
+                                    {% else %}
+
+                                        {{ plan.proxima_ejecucion|date:"d/m/Y" }}
+
+                                    {% endif %}
+
+                                </td>
+
+
+                                <!-- ESTADO -->
+
+                                <td>
+
+                                    {% if plan.esta_vencido %}
+
+                                        <span class="badge bg-danger">
+                                            Vencido
+                                        </span>
+
+
+                                    {% elif plan.esta_proximo %}
+
+                                        <span class="badge bg-warning text-dark">
+                                            Próximo
+                                        </span>
+
+
+                                    {% else %}
+
+                                        <span class="badge bg-success">
+                                            Al día
+                                        </span>
+
+                                    {% endif %}
+
+                                </td>
+
+
+                                <!-- ACCIONES -->
+
+                                <td>
+
+                                    <div class="d-flex gap-1 flex-wrap">
+
+
+                                        <!-- EJECUTAR -->
+
+                                        <a
+                                            href="{% url 'mantenimiento:ejecutar_plan' plan.id %}"
+                                            class="btn btn-sm btn-primary">
+
+                                            🔧 Ejecutar
+
+                                        </a>
+
+
+                                        <!-- DETALLE -->
+
+                                        <a
+                                            href="{% url 'mantenimiento:detalle_plan' plan.id %}"
+                                            class="btn btn-sm btn-secondary">
+
+                                            👁 Detalle
+
+                                        </a>
+
+
+                                        <!-- HOJA DE VIDA -->
+
+                                        <a
+                                            href="{% url 'mantenimiento:plan_de_vida' plan.herramienta.id %}"
+                                            class="btn btn-sm btn-secondary">
+
+                                            📄 Hoja de Vida
+
+                                        </a>
+
+
+                                        <!-- EDITAR -->
+
+                                        <a
+                                            href="{% url 'mantenimiento:editar_plan' plan.id %}"
+                                            class="btn btn-sm btn-warning">
+
+                                            ✏️ Editar
+
+                                        </a>
+
+
+                                        <!-- ELIMINAR -->
+
+                                        <a
+                                            href="{% url 'mantenimiento:eliminar_plan' plan.id %}"
+                                            class="btn btn-sm btn-danger"
+                                            onclick="return confirm('¿Seguro que querés eliminar este plan de mantenimiento?');">
+
+                                            🗑️ Eliminar
+
+                                        </a>
+
+                                    </div>
+
+                                </td>
+
+                            </tr>
+
+                            {% endif %}
+
+
+                        {% empty %}
+
+                            <tr>
+
+                                <td
+                                    colspan="7"
+                                    class="text-center p-4">
+
+                                    <div class="fs-1">
+                                        🗓️
+                                    </div>
+
+                                    <strong>
+                                        No hay planes de mantenimiento registrados.
+                                    </strong>
+
+                                    <br><br>
+
+                                    <a
+                                        href="{% url 'mantenimiento:crear_plan' %}"
+                                        class="btn btn-primary">
+
+                                        ➕ Crear primer plan
+
+                                    </a>
+
+                                </td>
+
+                            </tr>
+
                         {% endfor %}
 
-                    {% endif %}
+                    </tbody>
 
-                {% empty %}
+                </table>
 
-                    <tr>
+            </div>
 
-                        <td colspan="6"
-                            style="
-                                text-align:center;
-                                padding:30px;
-                            ">
-
-                            <div style="font-size:40px;">
-                                📋
-                            </div>
-
-                            <strong>
-                                No hay tareas programadas.
-                            </strong>
-
-                            <p style="color:#777;">
-                                Los planes pueden tener tareas asociadas
-                                desde la edición del plan.
-                            </p>
-
-                        </td>
-
-                    </tr>
-
-                {% endfor %}
-
-            </tbody>
-
-        </table>
+        </div>
 
     </div>
 
-</div>
+
+    <!-- ========================================================= -->
+    <!-- PESTAÑA TAREAS PROGRAMADAS -->
+    <!-- ========================================================= -->
+
+    <div
+        id="tab-mant-tareas"
+        style="display:none;">
 
 
+        <div class="d-flex justify-content-between align-items-center mb-3">
 
-<!-- ========================================================= -->
-<!-- PESTAÑA HISTORIAL -->
-<!-- ========================================================= -->
-
-<div id="tab-mant-historial"
-     style="display:none;">
-
-    <div class="card">
-
-        <div class="card-title">
-
-            📄 Historial de Mantenimientos Realizados
+            <h3>
+                Tareas Programadas
+            </h3>
 
         </div>
 
 
-        {% if historial %}
+        <div class="card">
 
-            <table>
-
-                <thead>
-
-                    <tr>
-
-                        <th>Fecha</th>
-
-                        <th>Plan</th>
-
-                        <th>Herramienta</th>
-
-                        <th>Realizado por</th>
-
-                        <th>Tipo</th>
-
-                        <th>Costo</th>
-
-                        <th>Notas</th>
-
-                    </tr>
-
-                </thead>
+            <h5 class="mb-3">
+                🔧 Tareas requeridas por cada plan
+            </h5>
 
 
-                <tbody>
+            <div class="table-responsive">
 
-                    {% for ejecucion in historial %}
+                <table class="table table-hover">
 
-                    <tr>
+                    <thead>
 
-                        <td>
+                        <tr>
 
-                            {{ ejecucion.fecha|date:"d/m/Y" }}
+                            <th>Plan</th>
+                            <th>Herramienta</th>
+                            <th>Tarea</th>
+                            <th>Responsable</th>
+                            <th>Duración</th>
+                            <th>Acción</th>
 
-                        </td>
+                        </tr>
 
-
-                        <td>
-
-                            {{ ejecucion.plan.nombre }}
-
-                        </td>
-
-
-                        <td>
-
-                            {{ ejecucion.plan.herramienta.nombre }}
-
-                        </td>
+                    </thead>
 
 
-                        <td>
+                    <tbody>
 
-                            {% if ejecucion.realizado_por %}
+                        {% for plan in planes %}
 
-                                {{ ejecucion.realizado_por }}
+                            {% if plan.activo %}
 
-                            {% else %}
+                                {% for tarea in plan.tareas.all %}
 
-                                No especificado
+                                <tr>
+
+
+                                    <!-- PLAN -->
+
+                                    <td>
+
+                                        <strong>
+                                            {{ plan.nombre }}
+                                        </strong>
+
+                                    </td>
+
+
+                                    <!-- HERRAMIENTA -->
+
+                                    <td>
+                                        {{ plan.herramienta.nombre }}
+                                    </td>
+
+
+                                    <!-- TAREA -->
+
+                                    <td>
+                                        {{ tarea.descripcion }}
+                                    </td>
+
+
+                                    <!-- RESPONSABLE -->
+
+                                    <td>
+
+                                        {% if tarea.responsable %}
+
+                                            {{ tarea.responsable }}
+
+                                        {% else %}
+
+                                            <span class="text-muted">
+                                                No especificado
+                                            </span>
+
+                                        {% endif %}
+
+                                    </td>
+
+
+                                    <!-- DURACIÓN -->
+
+                                    <td>
+
+                                        {% if tarea.duracion_estimada_min %}
+
+                                            {{ tarea.duracion_estimada_min }} min
+
+                                        {% else %}
+
+                                            —
+
+                                        {% endif %}
+
+                                    </td>
+
+
+                                    <!-- ACCIÓN -->
+
+                                    <td>
+
+                                        <a
+                                            href="{% url 'mantenimiento:ejecutar_plan' plan.id %}"
+                                            class="btn btn-sm btn-primary">
+
+                                            🔧 Ejecutar
+
+                                        </a>
+
+                                    </td>
+
+                                </tr>
+
+                                {% endfor %}
 
                             {% endif %}
 
-                        </td>
 
+                        {% empty %}
 
-                        <td>
+                            <tr>
 
-                            {% if ejecucion.es_externo %}
+                                <td
+                                    colspan="6"
+                                    class="text-center p-4">
 
-                                <span class="badge badge-orange">
-                                    Externo
-                                </span>
+                                    <div class="fs-1">
+                                        📋
+                                    </div>
 
-                            {% else %}
+                                    <strong>
+                                        No hay tareas programadas.
+                                    </strong>
 
-                                <span class="badge badge-green">
-                                    Interno
-                                </span>
+                                    <p class="text-muted mt-2">
 
-                            {% endif %}
+                                        Los planes pueden tener tareas asociadas
+                                        desde la edición del plan.
 
-                        </td>
+                                    </p>
 
+                                </td>
 
-                        <td>
+                            </tr>
 
-                            ${{ ejecucion.costo }}
+                        {% endfor %}
 
-                        </td>
+                    </tbody>
 
-
-                        <td>
-
-                            {{ ejecucion.notas|default:"—" }}
-
-                        </td>
-
-                    </tr>
-
-                    {% endfor %}
-
-                </tbody>
-
-            </table>
-
-
-        {% else %}
-
-            <div style="
-                text-align:center;
-                padding:50px;
-                color:#777;
-            ">
-
-                <div style="font-size:50px;">
-                    📂
-                </div>
-
-                <h3>
-                    No hay mantenimientos registrados
-                </h3>
-
-                <p>
-                    Cuando se ejecute un plan,
-                    aparecerá aquí.
-                </p>
+                </table>
 
             </div>
 
-        {% endif %}
+        </div>
+
+    </div>
+
+
+    <!-- ========================================================= -->
+    <!-- PESTAÑA HISTORIAL -->
+    <!-- ========================================================= -->
+
+    <div
+        id="tab-mant-historial"
+        style="display:none;">
+
+
+        <div class="card">
+
+
+            <h5 class="mb-3">
+                📄 Historial de Mantenimientos Realizados
+            </h5>
+
+
+            {% if historial %}
+
+
+                <div class="table-responsive">
+
+                    <table class="table table-hover">
+
+                        <thead>
+
+                            <tr>
+
+                                <th>Fecha</th>
+                                <th>Plan</th>
+                                <th>Herramienta</th>
+                                <th>Realizado por</th>
+                                <th>Tipo</th>
+                                <th>Costo</th>
+                                <th>Notas</th>
+
+                            </tr>
+
+                        </thead>
+
+
+                        <tbody>
+
+                            {% for ejecucion in historial %}
+
+                            <tr>
+
+
+                                <!-- FECHA -->
+
+                                <td>
+
+                                    {{ ejecucion.fecha|date:"d/m/Y" }}
+
+                                </td>
+
+
+                                <!-- PLAN -->
+
+                                <td>
+
+                                    {{ ejecucion.plan.nombre }}
+
+                                </td>
+
+
+                                <!-- HERRAMIENTA -->
+
+                                <td>
+
+                                    {{ ejecucion.plan.herramienta.nombre }}
+
+                                </td>
+
+
+                                <!-- REALIZADO POR -->
+
+                                <td>
+
+                                    {% if ejecucion.realizado_por %}
+
+                                        {{ ejecucion.realizado_por }}
+
+                                    {% else %}
+
+                                        No especificado
+
+                                    {% endif %}
+
+                                </td>
+
+
+                                <!-- TIPO -->
+
+                                <td>
+
+                                    {% if ejecucion.es_externo %}
+
+                                        <span class="badge bg-warning text-dark">
+                                            Externo
+                                        </span>
+
+                                    {% else %}
+
+                                        <span class="badge bg-success">
+                                            Interno
+                                        </span>
+
+                                    {% endif %}
+
+                                </td>
+
+
+                                <!-- COSTO -->
+
+                                <td>
+
+                                    ${{ ejecucion.costo }}
+
+                                </td>
+
+
+                                <!-- NOTAS -->
+
+                                <td>
+
+                                    {{ ejecucion.notas|default:"—" }}
+
+                                </td>
+
+                            </tr>
+
+                            {% endfor %}
+
+                        </tbody>
+
+                    </table>
+
+                </div>
+
+
+            {% else %}
+
+
+                <div class="text-center p-5">
+
+                    <div class="fs-1">
+                        📂
+                    </div>
+
+                    <h3>
+                        No hay mantenimientos registrados
+                    </h3>
+
+                    <p class="text-muted">
+
+                        Cuando se ejecute un plan,
+                        aparecerá aquí.
+
+                    </p>
+
+                </div>
+
+
+            {% endif %}
+
+        </div>
 
     </div>
 
 </div>
+
+
+<!-- ========================================================= -->
+<!-- JAVASCRIPT DE TABS -->
+<!-- ========================================================= -->
+
+<script>
+
+function switchTab(element, tabId) {
+
+    /*
+     * Ocultar las tres pestañas
+     */
+
+    document.getElementById("tab-mant-planes").style.display = "none";
+
+    document.getElementById("tab-mant-tareas").style.display = "none";
+
+    document.getElementById("tab-mant-historial").style.display = "none";
+
+
+    /*
+     * Mostrar la pestaña seleccionada
+     */
+
+    document.getElementById(tabId).style.display = "block";
+
+
+    /*
+     * Cambiar el aspecto de los botones
+     */
+
+    const botones = element.parentElement.querySelectorAll("button");
+
+    botones.forEach(function(boton) {
+
+        boton.classList.remove("btn-primary");
+
+        boton.classList.add("btn-secondary");
+
+    });
+
+
+    element.classList.remove("btn-secondary");
+
+    element.classList.add("btn-primary");
+
+}
+
+</script>
 
 
 {% endblock %}
