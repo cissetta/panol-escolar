@@ -5,14 +5,17 @@ from datetime import datetime
 from django import forms
 from django.db.models import Count
 from django.db.models.functions import TruncMonth
-from django.contrib.auth.decorators import login_required
+from django.contrib.auth.decorators import login_required, user_passes_test
 from django.contrib import messages
 from django.shortcuts import render, redirect, get_object_or_404
 from django.db.models import F
 from django.utils import timezone
 from core.models import Herramienta, Insumo, Prestamo, PlanMantenimiento, ConfiguracionSistema, Categoria, Docente
 import openpyxl
-from django.http import HttpResponse
+from django.http import HttpResponse, JsonResponse
+from django.urls import reverse
+from django.contrib.auth.models import User
+from accounts.models import Perfil
 
 
 class ConfiguracionSistemaForm(forms.ModelForm):
@@ -173,6 +176,7 @@ def reportes(request):
 
 
 @login_required
+@user_passes_test(lambda u: hasattr(u, 'perfil') and u.perfil.es_admin())
 def exportar_reportes_excel(request):
     queryset, _, _, _ = _get_prestamos_queryset(request)
 
@@ -214,6 +218,7 @@ def exportar_reportes_excel(request):
     return response
 
 @login_required
+@user_passes_test(lambda u: hasattr(u, 'perfil') and u.perfil.es_admin())
 def configuracion(request):
     config = ConfiguracionSistema.get()
     success = False
@@ -234,6 +239,7 @@ def configuracion(request):
 
 
 @login_required
+@user_passes_test(lambda u: hasattr(u, 'perfil') and u.perfil.es_admin())
 def categorias(request):
     categorias = Categoria.objects.all().order_by('nombre')
     success = False
@@ -256,6 +262,7 @@ def categorias(request):
 
 
 @login_required
+@user_passes_test(lambda u: hasattr(u, 'perfil') and u.perfil.es_admin())
 def editar_categoria(request, pk):
     categoria = get_object_or_404(Categoria, pk=pk)
 
@@ -272,6 +279,7 @@ def editar_categoria(request, pk):
 
 
 @login_required
+@user_passes_test(lambda u: hasattr(u, 'perfil') and u.perfil.es_admin())
 def eliminar_categoria(request, pk):
     categoria = get_object_or_404(Categoria, pk=pk)
 
@@ -284,6 +292,7 @@ def eliminar_categoria(request, pk):
 
 
 @login_required
+@user_passes_test(lambda u: hasattr(u, 'perfil') and u.perfil.es_admin())
 def docentes(request):
     docentes = Docente.objects.filter(activo=True).order_by('apellido', 'nombre')
     success = False
@@ -306,6 +315,7 @@ def docentes(request):
 
 
 @login_required
+@user_passes_test(lambda u: hasattr(u, 'perfil') and u.perfil.es_admin())
 def editar_docente(request, pk):
     docente = get_object_or_404(Docente, pk=pk, activo=True)
 
@@ -322,6 +332,7 @@ def editar_docente(request, pk):
 
 
 @login_required
+@user_passes_test(lambda u: hasattr(u, 'perfil') and u.perfil.es_admin())
 def eliminar_docente(request, pk):
     docente = get_object_or_404(Docente, pk=pk, activo=True)
 
@@ -332,3 +343,97 @@ def eliminar_docente(request, pk):
         return redirect('reportes:docentes')
 
     return render(request, 'reportes/confirmar_eliminar_docente.html', {'docente': docente})
+
+class UsuarioForm(forms.ModelForm):
+    rol = forms.ChoiceField(choices=Perfil.ROLES, required=True, label='Rol')
+    password = forms.CharField(required=False, widget=forms.PasswordInput, label='Contraseña', help_text='Dejar vacío para no cambiar la contraseña')
+
+    class Meta:
+        model = User
+        fields = ['username', 'first_name', 'last_name', 'email', 'is_active']
+        widgets = {
+            'username': forms.TextInput(attrs={'class': 'form-control'}),
+            'first_name': forms.TextInput(attrs={'class': 'form-control'}),
+            'last_name': forms.TextInput(attrs={'class': 'form-control'}),
+            'email': forms.EmailInput(attrs={'class': 'form-control'}),
+            'is_active': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
+        }
+
+
+@login_required
+@user_passes_test(lambda u: hasattr(u, 'perfil') and u.perfil.es_admin())
+def usuarios(request):
+    qs = User.objects.select_related('perfil').order_by('username')
+    return render(request, 'reportes/usuarios.html', {'usuarios': qs})
+
+
+@login_required
+@user_passes_test(lambda u: hasattr(u, 'perfil') and u.perfil.es_admin())
+def usuario_nuevo(request):
+    if request.method == 'POST':
+        form = UsuarioForm(request.POST)
+        if form.is_valid():
+            user = form.save(commit=False)
+            pwd = form.cleaned_data.get('password')
+            if pwd:
+                user.set_password(pwd)
+            else:
+                user.set_unusable_password()
+            user.save()
+            rol = form.cleaned_data.get('rol')
+            Perfil.objects.create(user=user, rol=rol)
+            messages.success(request, 'Usuario creado correctamente.')
+            if request.headers.get('x-requested-with') == 'XMLHttpRequest':
+                return JsonResponse({'success': True, 'redirect': reverse('reportes:usuarios')})
+            return redirect('reportes:usuarios')
+    else:
+        form = UsuarioForm()
+    return render(request, 'reportes/usuario_form.html', {'form': form, 'nuevo': True})
+
+
+@login_required
+@user_passes_test(lambda u: hasattr(u, 'perfil') and u.perfil.es_admin())
+def usuario_editar(request, pk):
+    user = get_object_or_404(User, pk=pk)
+    perfil = getattr(user, 'perfil', None)
+
+    if request.method == 'POST':
+        form = UsuarioForm(request.POST, instance=user)
+        if form.is_valid():
+            user = form.save(commit=False)
+            pwd = form.cleaned_data.get('password')
+            if pwd:
+                user.set_password(pwd)
+            user.save()
+            rol = form.cleaned_data.get('rol')
+            if perfil:
+                perfil.rol = rol
+                perfil.save()
+            else:
+                Perfil.objects.create(user=user, rol=rol)
+            messages.success(request, 'Usuario actualizado correctamente.')
+            if request.headers.get('x-requested-with') == 'XMLHttpRequest':
+                return JsonResponse({'success': True, 'redirect': reverse('reportes:usuarios')})
+            return redirect('reportes:usuarios')
+        else:
+            if request.headers.get('x-requested-with') == 'XMLHttpRequest':
+                return JsonResponse({'success': False, 'errors': form.errors}, status=400)
+    else:
+        initial = {'rol': perfil.rol if perfil else Perfil.ROLES[0][0]}
+        form = UsuarioForm(instance=user, initial=initial)
+
+    return render(request, 'reportes/usuario_form.html', {'form': form, 'usuario': user, 'nuevo': False})
+
+
+@login_required
+@user_passes_test(lambda u: hasattr(u, 'perfil') and u.perfil.es_admin())
+def usuario_eliminar(request, pk):
+    user = get_object_or_404(User, pk=pk)
+
+    if request.method == 'POST':
+        # Eliminar usuario y su perfil por cascada
+        user.delete()
+        messages.success(request, 'Usuario eliminado correctamente.')
+        return redirect('reportes:usuarios')
+
+    return render(request, 'reportes/usuario_confirm_delete.html', {'usuario': user})
