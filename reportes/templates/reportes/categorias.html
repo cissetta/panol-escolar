@@ -16,7 +16,15 @@
                   <span class="rounded-circle border" data-color="{{ categoria.color_hex|default:'#2E86DE' }}" style="width: 14px; height: 14px;"></span>
                   <span>{{ categoria.nombre }}</span>
                 </div>
-                <span class="text-muted small">{{ categoria.color_hex }}</span>
+                <div class="d-flex align-items-center gap-2">
+                  <span class="text-muted small">{{ categoria.color_hex }}</span>
+                  <a href="{% url 'reportes:editar_categoria' categoria.pk %}" class="btn btn-sm btn-outline-primary" title="Editar categoría">
+                    <i class="bi bi-pencil-square"></i>
+                  </a>
+                  <a href="{% url 'reportes:eliminar_categoria' categoria.pk %}" class="btn btn-sm btn-outline-danger" title="Eliminar categoría">
+                    <i class="bi bi-trash"></i>
+                  </a>
+                </div>
               </li>
             {% endfor %}
           </ul>
