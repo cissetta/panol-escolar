@@ -1,238 +1,82 @@
 {% extends 'base.html' %}
-
 {% block title %}Registrar devolución{% endblock %}
-
 {% block page_title %}Registrar devolución{% endblock %}
-
 {% block content %}
-
 <div class="row justify-content-center">
-    <div class="col-xl-8 col-lg-10">
-
-        <div class="card border-0 shadow-sm">
-
-            <div class="card-body p-4">
-
-                <h2 class="h4 mb-1">
-                    Registro de devolución
-                </h2>
-
-                <p class="text-muted mb-4">
-                    Indicá el estado de la herramienta al regresar al pañol.
-                </p>
-
-
-                {% if prestamos_activos %}
-
-                <form method="post" id="devolucion-form">
-
-                    {% csrf_token %}
-
-
-                    <!-- PRÉSTAMO -->
-
-                    <div class="mb-3">
-
-                        <label for="prestamo"
-                               class="form-label fw-semibold">
-                            Préstamo a devolver
-                        </label>
-
-                        <select name="prestamo"
-                                id="prestamo"
-                                class="form-select"
-                                required>
-
-                            <option value="">
-                                Seleccioná un préstamo...
-                            </option>
-
-                            {% for prestamo in prestamos_activos %}
-
-                            <option value="{{ prestamo.pk }}"
-                                {% if prestamo.pk == prestamo_seleccionado %}
-                                    selected
-                                {% endif %}>
-
-                                {{ prestamo.herramienta.nombre }}
-                                ({{ prestamo.herramienta.codigo }})
-                                –
-                                {{ prestamo.alumno.apellido }},
-                                {{ prestamo.alumno.nombre }}
-
-                            </option>
-
-                            {% endfor %}
-
-                        </select>
-
-                    </div>
-
-
-                    <!-- ESTADO DE LA HERRAMIENTA -->
-
-                    <div class="mb-3">
-
-                        <label for="estado_devolucion"
-                               class="form-label fw-semibold">
-
-                            Estado de la herramienta
-
-                        </label>
-
-                        <select name="estado_devolucion"
-                                id="estado_devolucion"
-                                class="form-select"
-                                required>
-
-                            <option value="">
-                                Seleccioná el estado...
-                            </option>
-
-                            {% for valor, etiqueta in estados_devolucion %}
-
-                            <option value="{{ valor }}">
-                                {{ etiqueta }}
-                            </option>
-
-                            {% endfor %}
-
-                        </select>
-
-                    </div>
-
-
-                    <!-- OBSERVACIONES -->
-
-                    <div class="mb-4"
-                         id="observaciones-group">
-
-                        <label for="observaciones"
-                               class="form-label fw-semibold">
-
-                            Defecto u observaciones
-
-                        </label>
-
-                        <textarea name="observaciones"
-                                  id="observaciones"
-                                  class="form-control"
-                                  rows="4"
-                                  placeholder="Describí el defecto: por ejemplo, mango flojo, cable cortado, pieza faltante..."
-                                  maxlength="1000"></textarea>
-
-                        <div class="form-text"
-                             id="observaciones-ayuda">
-
-                            Es obligatorio completar este campo si la herramienta tiene desgaste o daños.
-
-                        </div>
-
-                    </div>
-
-
-                    <!-- BOTONES -->
-
-                    <div class="d-flex justify-content-end gap-2">
-
-                        <!-- GUARDAR -->
-                        <button type="submit"
-                                class="btn btn-primary">
-
-                            Guardar devolución
-
-                        </button>
-
-
-                        <!-- CANCELAR -->
-                        <a href="{% url 'prestamos:activos' %}"
-                           class="btn btn-cancelar">
-
-                            Cancelar
-
-                        </a>
-
-                    </div>
-
-                </form>
-
-
-                {% else %}
-
-                <!-- SIN PRÉSTAMOS ACTIVOS -->
-
-                <div class="text-center text-muted py-4">
-
-                    <div class="fs-1">
-                        ✅
-                    </div>
-
-                    <p class="mb-3">
-                        No hay préstamos activos para devolver.
-                    </p>
-
-                    <a href="{% url 'prestamos:activos' %}"
-                       class="btn btn-outline-primary">
-
-                        Ver préstamos activos
-
-                    </a>
-
-                </div>
-
-                {% endif %}
-
+  <div class="col-xl-8 col-lg-10">
+    <div class="card border-0 shadow-sm">
+      <div class="card-body p-4">
+        <h2 class="h4 mb-1">Registro de devolución</h2>
+        <p class="text-muted mb-4">Indicá el estado de la herramienta al regresar al pañol.</p>
+
+        {% if prestamos_activos %}
+          <form method="post" id="devolucion-form">
+            {% csrf_token %}
+            <div class="mb-3">
+              <label for="prestamo" class="form-label fw-semibold">Préstamo a devolver</label>
+              <select name="prestamo" id="prestamo" class="form-select" required>
+                <option value="">Seleccioná un préstamo...</option>
+                {% for prestamo in prestamos_activos %}
+                  <option value="{{ prestamo.pk }}" {% if prestamo.pk == prestamo_seleccionado %}selected{% endif %}>
+                    {{ prestamo.herramienta.nombre }} ({{ prestamo.herramienta.codigo }}) – {{ prestamo.alumno.apellido }}, {{ prestamo.alumno.nombre }}
+                  </option>
+                {% endfor %}
+              </select>
             </div>
 
-        </div>
+            <div class="mb-3">
+              <label for="estado_devolucion" class="form-label fw-semibold">Estado de la herramienta</label>
+              <select name="estado_devolucion" id="estado_devolucion" class="form-select" required>
+                <option value="">Seleccioná el estado...</option>
+                {% for valor, etiqueta in estados_devolucion %}
+                  <option value="{{ valor }}">{{ etiqueta }}</option>
+                {% endfor %}
+              </select>
+            </div>
 
+            <div class="mb-4" id="observaciones-group">
+              <label for="observaciones" class="form-label fw-semibold">Defecto u observaciones</label>
+              <textarea name="observaciones" id="observaciones" class="form-control" rows="4"
+                placeholder="Describí el defecto: por ejemplo, mango flojo, cable cortado, pieza faltante..."
+                maxlength="1000"></textarea>
+              <div class="form-text" id="observaciones-ayuda">Es obligatorio completar este campo si la herramienta tiene desgaste o daños.</div>
+            </div>
+
+            <div class="d-flex gap-2">
+              <a href="{% url 'prestamos:activos' %}" class="btn btn-outline-secondary">Cancelar</a>
+              <button type="submit" class="btn btn-primary">Guardar devolución</button>
+            </div>
+          </form>
+        {% else %}
+          <div class="text-center text-muted py-4">
+            <div class="fs-1">✅</div>
+            <p class="mb-3">No hay préstamos activos para devolver.</p>
+            <a href="{% url 'prestamos:activos' %}" class="btn btn-outline-primary">Ver préstamos activos</a>
+          </div>
+        {% endif %}
+      </div>
     </div>
+  </div>
 </div>
-
 {% endblock %}
 
-
 {% block extra_js %}
-
 <script>
+  const estado = document.getElementById('estado_devolucion');
+  const observaciones = document.getElementById('observaciones');
+  const ayuda = document.getElementById('observaciones-ayuda');
 
-    const estado =
-        document.getElementById('estado_devolucion');
+  function actualizarObservaciones() {
+    const requiereDefecto = estado.value && estado.value !== 'BUEN_ESTADO';
+    observaciones.required = requiereDefecto;
+    ayuda.textContent = requiereDefecto
+      ? 'Describí obligatoriamente qué defecto tiene la herramienta.'
+      : 'Podés agregar una observación opcional.';
+  }
 
-    const observaciones =
-        document.getElementById('observaciones');
-
-    const ayuda =
-        document.getElementById('observaciones-ayuda');
-
-
-    function actualizarObservaciones() {
-
-        const requiereDefecto =
-            estado.value &&
-            estado.value !== 'BUEN_ESTADO';
-
-        observaciones.required =
-            requiereDefecto;
-
-        ayuda.textContent =
-            requiereDefecto
-                ? 'Describí obligatoriamente qué defecto tiene la herramienta.'
-                : 'Podés agregar una observación opcional.';
-    }
-
-
-    if (estado) {
-
-        estado.addEventListener(
-            'change',
-            actualizarObservaciones
-        );
-
-        actualizarObservaciones();
-
-    }
-
+  if (estado) {
+    estado.addEventListener('change', actualizarObservaciones);
+    actualizarObservaciones();
+  }
 </script>
-
 {% endblock %}

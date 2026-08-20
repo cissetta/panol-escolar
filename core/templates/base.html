@@ -10,7 +10,7 @@
   <style>
     :root {
       --sidebar-w: 230px;
-      --azul:       #751966;
+      --azul:       #1e3a5f;
       --azul-claro: #2e86de;
     }
     body    { background: #f4f6f9; font-family: 'Segoe UI', sans-serif; }
@@ -91,12 +91,7 @@
 
     <!-- SECCIÓN GRUPO 1 MODIFICADA -->
     <div class="nav-section">Grupo 1 – Alumnos</div>
-    <a href="{% url 'alumnos:lista' %}" class="nav-link {% if request.resolver_match.url_name == 'lista' %}active{% endif %}">
-      <span class="icon"><i class="bi bi-people"></i></span> Lista de Alumnos
-    </a>
-    <a href="{% url 'alumnos:nuevo' %}" class="nav-link {% if request.resolver_match.url_name == 'nuevo' %}active{% endif %}">
-      <span class="icon"><i class="bi bi-plus-lg"></i></span> Nuevo Alumno
-    </a>
+    
     <!-- FIN SECCIÓN GRUPO 1 -->
 
     <div class="nav-section">Grupo 2 – Inventario</div>
@@ -119,15 +114,19 @@
     </a>
 
     <div class="nav-section">Grupo 4 – Mantenimiento</div>
-    <a href="{% url 'mantenimiento:index' %}" class="nav-link {% if 'mantenimiento' in request.path and 'hoja' not in request.path %}active{% endif %}">
+    <a href="{% url 'mantenimiento:planes' %}" class="nav-link {% if 'mantenimiento' in request.path and 'hoja' not in request.path %}active{% endif %}">
       <span class="icon">🗓️</span> Planes
     </a>
-
-
+    <a href="{% url 'mantenimiento:hoja_vida' %}" class="nav-link {% if 'hoja' in request.path %}active{% endif %}">
+      <span class="icon">📄</span> Hoja de Vida
+    </a>
 
     <div class="nav-section">Grupo 5 – Reportes</div>
     <a href="{% url 'reportes:index' %}" class="nav-link {% if 'reportes' in request.path %}active{% endif %}">
-      <span class="icon">📈</span> Reportes
+      <span class="icon">📈</span> Dashboard (real)
+    </a>
+    <a href="{% url 'reportes:reportes' %}" class="nav-link {% if 'reportes' in request.path %}active{% endif %}">
+      <span class="icon">📋</span> Reportes
     </a>
     <a href="{% url 'reportes:docentes' %}" class="nav-link {% if 'docentes' in request.path %}active{% endif %}">
       <span class="icon">👨‍🏫</span> Docentes

@@ -50,9 +50,11 @@
 
                 <td>{{ prestamo.docente }}</td>
 
-                <td>
-                  <span class="badge text-bg-primary">{{ prestamo.herramienta.get_estado_display }}</span>
-                </td>
+                {% if prestamo.vencido %}
+                <span class="badge text-bg-danger">Vencido</span>
+                {% else %}
+                <span class="badge text-bg-primary">Activo</span>
+                  {% endif %}
 
                 <td class="text-end">
                   <a href="{% url 'prestamos:devolucion_seleccionada' prestamo.pk %}"
@@ -60,6 +62,7 @@
                     Devolver
                   </a>
                 </td>
+
               </tr>
             {% endfor %}
           </tbody>

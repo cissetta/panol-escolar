@@ -13,87 +13,39 @@
         <form method="post">
           {% csrf_token %}
 
-          <div class="row g-3 mb-3">
-            <div class="col-md-5">
-              <label for="alumno_qr" class="form-label fw-semibold">Alumno</label>
-              <select class="form-select" id="alumno_qr" name="alumno_qr" required>
-                <option value="">Seleccioná un alumno...</option>
-                {% for alumno in alumnos %}
-                  <option value="{{ alumno.legajo }}">{{ alumno.apellido }}, {{ alumno.nombre }} ({{ alumno.legajo }})</option>
-                {% endfor %}
-              </select>
-            </div>
-
-            <div class="col-md-2 d-flex align-items-end">
-              <button type="button" class="btn btn-outline-primary w-100">
-                Escanear QR
-              </button>
-            </div>
-
-            <div class="col-md-5">
-              <label for="docente" class="form-label fw-semibold">Docente</label>
-              <select class="form-select" id="docente" name="docente" required>
-                <option value="">Seleccioná un docente...</option>
-                {% for docente in docentes %}
-                  <option value="{{ docente.pk }}">{{ docente.apellido }}, {{ docente.nombre }}</option>
-                {% endfor %}
-              </select>
-            </div>
+          <div class="mb-3">
+            <label for="alumno_qr" class="form-label fw-semibold">Alumno</label>
+            <select class="form-select" id="alumno_qr" name="alumno_qr" required>
+              <option value="">Seleccioná un alumno...</option>
+              {% for alumno in alumnos %}
+                <option value="{{ alumno.legajo }}">{{ alumno.apellido }}, {{ alumno.nombre }} ({{ alumno.legajo }})</option>
+              {% endfor %}
+            </select>
           </div>
 
           <div class="mb-3">
-            <label class="form-label fw-semibold">Herramientas</label>
-
-            {% if herramientas %}
-              <div class="dropdown">
-                <button type="button" class="btn btn-outline-secondary w-100 text-start dropdown-toggle" id="herramientasToggle" data-bs-toggle="dropdown" aria-expanded="false">
-                  <span id="herramientasSeleccionadasTexto">Seleccioná herramientas...</span>
-                </button>
-
-                <div class="dropdown-menu w-100 p-3 shadow-sm" aria-labelledby="herramientasToggle" style="max-height: 260px; overflow-y: auto;">
-                  {% for herramienta in herramientas %}
-                    <div class="form-check mb-2">
-                      <input class="form-check-input herramienta-checkbox" type="checkbox" name="herramientas" value="{{ herramienta.codigo }}" id="herramienta-{{ forloop.counter }}" data-label="{{ herramienta.nombre }} ({{ herramienta.codigo }})">
-                      <label class="form-check-label" for="herramienta-{{ forloop.counter }}">
-                        {{ herramienta.nombre }} ({{ herramienta.codigo }})
-                      </label>
-                    </div>
-                  {% endfor %}
-                </div>
-              </div>
-            {% else %}
-              <p class="text-muted mb-0">No hay herramientas disponibles para prestar.</p>
-            {% endif %}
+            <label for="herr_qr" class="form-label fw-semibold">Herramienta</label>
+            <select class="form-select" id="herr_qr" name="herr_qr" required>
+              <option value="">Seleccioná una herramienta...</option>
+              {% if herramientas %}
+                {% for herramienta in herramientas %}
+                  <option value="{{ herramienta.codigo }}">{{ herramienta.nombre }} ({{ herramienta.codigo }}) — {{ herramienta.get_estado_display }}</option>
+                {% endfor %}
+              {% else %}
+                <option value="" disabled>No hay herramientas activas para prestar</option>
+              {% endif %}
+            </select>
           </div>
 
-          <script>
-            document.addEventListener('DOMContentLoaded', function () {
-              const toggleText = document.getElementById('herramientasSeleccionadasTexto');
-              const checkboxes = document.querySelectorAll('.herramienta-checkbox');
-
-              function actualizarTextoHerramientas() {
-                const seleccionadas = [...checkboxes].filter(checkbox => checkbox.checked);
-
-                if (!seleccionadas.length) {
-                  toggleText.textContent = 'Seleccioná herramientas...';
-                  return;
-                }
-
-                if (seleccionadas.length === 1) {
-                  toggleText.textContent = seleccionadas[0].dataset.label;
-                  return;
-                }
-
-                toggleText.textContent = `${seleccionadas.length} herramientas seleccionadas`;
-              }
-
-              checkboxes.forEach(checkbox => {
-                checkbox.addEventListener('change', actualizarTextoHerramientas);
-              });
-
-              actualizarTextoHerramientas();
-            });
-          </script>
+          <div class="mb-3">
+            <label for="docente" class="form-label fw-semibold">Docente</label>
+            <select class="form-select" id="docente" name="docente" required>
+              <option value="">Seleccioná un docente...</option>
+              {% for docente in docentes %}
+                <option value="{{ docente.pk }}">{{ docente.apellido }}, {{ docente.nombre }}</option>
+              {% endfor %}
+            </select>
+          </div>
 
           <div class="mb-4">
             <label for="observaciones" class="form-label fw-semibold">Observaciones</label>
