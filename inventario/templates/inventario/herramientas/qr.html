@@ -1,50 +1,154 @@
+```html
 {% extends 'base.html' %}
+
+{% block title %}
+QR de herramienta
+{% endblock %}
+
+{% block page_title %}
+QR de herramienta
+{% endblock %}
 
 {% block content %}
 
-<div class="container mt-4 text-center">
+<div class="container">
 
-    <h2>QR de herramienta</h2>
+    <div class="mb-4">
 
-    <h3>
-        {{ herramienta.nombre }}
-    </h3>
+        <h4 style="color:#1e3a5f;">
+            QR de herramienta
+        </h4>
 
-    <p>
-        Código: {{ herramienta.codigo }}
-    </p>
+        <p class="text-muted">
+            Inventario / Herramientas / QR
+        </p>
 
-
-    {% if herramienta.qr_code %}
-
-        <img 
-            src="{{ herramienta.qr_code.url }}"
-            width="300"
-            class="img-thumbnail"
-        >
-
-        <br><br>
-
-        <button 
-            onclick="window.print()"
-            class="btn btn-success">
-
-            Imprimir QR
-
-        </button>
+    </div>
 
 
-    {% else %}
+    <div class="card">
 
-        <div class="alert alert-warning">
+        <div class="card-body text-center">
 
-            Esta herramienta no tiene QR generado.
+            <h3 class="mb-2">
+                {{ herramienta.nombre }}
+            </h3>
+
+
+            <p class="text-muted">
+
+                Código:
+
+                <strong>
+                    {{ herramienta.codigo }}
+                </strong>
+
+            </p>
+
+
+            {% if herramienta.qr_code %}
+
+                <div class="my-4">
+
+                    <img
+                        src="{{ herramienta.qr_code.url }}"
+                        alt="QR de {{ herramienta.nombre }}"
+                        width="300"
+                        height="300"
+                        class="img-thumbnail"
+                    >
+
+                </div>
+
+
+                <p class="text-muted">
+                    Escaneá este código para abrir
+                    directamente la herramienta.
+                </p>
+
+
+                <button
+                    onclick="window.print()"
+                    class="btn btn-primary"
+                >
+
+                    <i class="bi bi-printer"></i>
+
+                    Imprimir QR
+
+                </button>
+
+
+                <a
+                    href="{% url 'inventario:detalle_herramienta' herramienta.pk %}"
+                    class="btn btn-info"
+                >
+                    Ver herramienta
+                </a>
+
+
+                <a
+                    href="{% url 'inventario:herramientas' %}"
+                    class="btn btn-secondary"
+                >
+                    Volver
+                </a>
+
+            {% else %}
+
+                <div class="alert alert-warning">
+
+                    Esta herramienta no tiene QR generado.
+
+                </div>
+
+
+                <a
+                    href="{% url 'inventario:herramientas' %}"
+                    class="btn btn-secondary"
+                >
+                    Volver
+                </a>
+
+            {% endif %}
 
         </div>
 
-    {% endif %}
-
+    </div>
 
 </div>
 
+
+<style>
+
+@media print {
+
+    body * {
+        visibility: hidden;
+    }
+
+    .card,
+    .card * {
+        visibility: visible;
+    }
+
+    .card {
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 100%;
+        border: none;
+        box-shadow: none;
+    }
+
+    button,
+    a {
+        display: none !important;
+    }
+
+}
+
+</style>
+
 {% endblock %}
+```
