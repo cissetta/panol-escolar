@@ -1,0 +1,36 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-md-8 col-lg-6">
+            <div class="card shadow-sm p-4 border-top border-primary border-4">
+                <h4 class="mb-3"><i class="bi bi-pencil-square"></i> Editar Alumno</h4>
+                <p class="text-muted small mb-4">Actualiza los datos de <strong>{{ alumno.nombre }} {{ alumno.apellido }}</strong>. Si cambias el legajo, se generará un nuevo QR automáticamente.</p>
+                
+                <form method="post">
+                    {% csrf_token %}
+                    
+                    <!-- Renderizamos el formulario usando crispy-forms o manualmente. Aquí una versión estándar de Bootstrap -->
+                    {% for field in form %}
+                        <div class="mb-3">
+                            <label for="{{ field.id_for_label }}" class="form-label fw-bold">{{ field.label }}</label>
+                            {{ field }} <!-- Asegúrate de que tu form tenga widgets de Bootstrap o usa django-crispy-forms -->
+                            {% if field.errors %}
+                                <div class="text-danger small mt-1">
+                                    {{ field.errors|striptags }}
+                                </div>
+                            {% endif %}
+                        </div>
+                    {% endfor %}
+                    
+                    <div class="d-flex justify-content-end gap-2 mt-4">
+                        <a href="{% url 'alumnos:detalle' alumno.pk %}" class="btn btn-outline-secondary px-4">Cancelar</a>
+                        <button type="submit" class="btn btn-primary px-4"><i class="bi bi-save"></i> Guardar Cambios</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

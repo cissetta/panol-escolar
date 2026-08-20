@@ -1,0 +1,537 @@
+```html
+{% extends 'base.html' %}
+
+{% block title %}
+    Editar Plan
+{% endblock %}
+
+{% block page_title %}
+    Editar Plan de Mantenimiento
+{% endblock %}
+
+
+{% block content %}
+
+<div class="container-fluid">
+
+
+    <!-- ENCABEZADO -->
+
+    <div class="mb-4">
+
+        <span class="badge bg-primary">
+            ✏️ Grupo 4 – Editar Plan
+        </span>
+
+    </div>
+
+
+    <!-- TARJETA PRINCIPAL -->
+
+    <div class="card p-4">
+
+
+        <h3 class="mb-4">
+            ✏️ Editar Plan de Mantenimiento
+        </h3>
+
+
+        <form method="post">
+
+            {% csrf_token %}
+
+
+            <!-- ========================= -->
+            <!-- DATOS DEL PLAN -->
+            <!-- ========================= -->
+
+            <h4 class="mb-3">
+                📋 Datos del Plan
+            </h4>
+
+
+            <div class="row g-3">
+
+
+                <!-- NOMBRE -->
+
+                <div class="col-md-6">
+
+                    <label class="form-label">
+                        <strong>Nombre del plan</strong>
+                    </label>
+
+                    <input
+                        type="text"
+                        name="nombre"
+                        class="form-control"
+                        value="{{ plan.nombre }}"
+                        required>
+
+                </div>
+
+
+                <!-- HERRAMIENTA -->
+
+                <div class="col-md-6">
+
+                    <label class="form-label">
+                        <strong>Herramienta</strong>
+                    </label>
+
+                    <select
+                        name="herramienta"
+                        class="form-select"
+                        required>
+
+                        {% for h in herramientas %}
+
+                            <option
+                                value="{{ h.id }}"
+                                {% if h.id == plan.herramienta.id %}
+                                    selected
+                                {% endif %}>
+
+                                {{ h.nombre }}
+
+                            </option>
+
+                        {% endfor %}
+
+                    </select>
+
+                </div>
+
+
+                <!-- TIPO -->
+
+                <div class="col-md-6">
+
+                    <label class="form-label">
+                        <strong>Tipo de mantenimiento</strong>
+                    </label>
+
+                    <select
+                        name="tipo"
+                        class="form-select"
+                        required>
+
+                        <option
+                            value="PREV"
+                            {% if plan.tipo == "PREV" %}
+                                selected
+                            {% endif %}>
+
+                            Preventivo
+
+                        </option>
+
+                        <option
+                            value="CORR"
+                            {% if plan.tipo == "CORR" %}
+                                selected
+                            {% endif %}>
+
+                            Correctivo
+
+                        </option>
+
+                    </select>
+
+                </div>
+
+
+                <!-- FRECUENCIA -->
+
+                <div class="col-md-6">
+
+                    <label class="form-label">
+                        <strong>Frecuencia (días)</strong>
+                    </label>
+
+                    <input
+                        type="number"
+                        name="frecuencia_dias"
+                        class="form-control"
+                        value="{{ plan.frecuencia_dias }}"
+                        min="1">
+
+                </div>
+
+
+                <!-- PRÓXIMA EJECUCIÓN -->
+
+                <div class="col-md-6">
+
+                    <label class="form-label">
+                        <strong>Próxima ejecución</strong>
+                    </label>
+
+                    <input
+                        type="date"
+                        name="proxima_ejecucion"
+                        class="form-control"
+                        value="{{ plan.proxima_ejecucion|date:'Y-m-d' }}"
+                        required>
+
+                </div>
+
+
+                <!-- DESCRIPCIÓN -->
+
+                <div class="col-12">
+
+                    <label class="form-label">
+                        <strong>Descripción</strong>
+                    </label>
+
+                    <textarea
+                        name="descripcion"
+                        rows="4"
+                        class="form-control">{{ plan.descripcion }}</textarea>
+
+                </div>
+
+            </div>
+
+
+            <hr class="my-4">
+
+
+            <!-- ========================= -->
+            <!-- TAREAS PROGRAMADAS -->
+            <!-- ========================= -->
+
+            <div class="d-flex justify-content-between align-items-center mb-3">
+
+                <h4 class="mb-0">
+                    🔧 Tareas Programadas
+                </h4>
+
+                <button
+                    type="button"
+                    class="btn btn-primary"
+                    onclick="agregarTarea()">
+
+                    ➕ Agregar tarea
+
+                </button>
+
+            </div>
+
+
+            <p class="text-muted mb-4">
+
+                Estas son las tareas que deberán realizarse cuando se ejecute este plan.
+
+            </p>
+
+
+            <!-- TAREAS EXISTENTES -->
+
+            <div id="tareas-container">
+
+                {% for tarea in tareas %}
+
+                <div
+                    class="card p-3 mb-3 tarea-item"
+                    id="tarea-{{ tarea.id }}">
+
+
+                    <!-- CABECERA DE TAREA -->
+
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+
+                        <strong>
+                            Tarea {{ forloop.counter }}
+                        </strong>
+
+
+                        <label class="text-danger">
+
+                            <input
+                                type="checkbox"
+                                name="tarea_eliminar_{{ tarea.id }}">
+
+                            🗑️ Eliminar
+
+                        </label>
+
+                    </div>
+
+
+                    <!-- CAMPOS -->
+
+                    <div class="row g-3">
+
+
+                        <!-- DESCRIPCIÓN -->
+
+                        <div class="col-md-6">
+
+                            <label class="form-label">
+                                Descripción
+                            </label>
+
+                            <input
+                                type="text"
+                                name="tarea_descripcion_{{ tarea.id }}"
+                                class="form-control"
+                                value="{{ tarea.descripcion }}"
+                                required>
+
+                        </div>
+
+
+                        <!-- RESPONSABLE -->
+
+                        <div class="col-md-3">
+
+                            <label class="form-label">
+                                Responsable
+                            </label>
+
+                            <input
+                                type="text"
+                                name="tarea_responsable_{{ tarea.id }}"
+                                class="form-control"
+                                value="{{ tarea.responsable }}">
+
+                        </div>
+
+
+                        <!-- DURACIÓN -->
+
+                        <div class="col-md-2">
+
+                            <label class="form-label">
+                                Duración (min)
+                            </label>
+
+                            <input
+                                type="number"
+                                name="tarea_duracion_{{ tarea.id }}"
+                                class="form-control"
+                                value="{{ tarea.duracion_estimada_min }}"
+                                min="1">
+
+                        </div>
+
+
+                        <!-- ORDEN -->
+
+                        <div class="col-md-1">
+
+                            <label class="form-label">
+                                Orden
+                            </label>
+
+                            <input
+                                type="number"
+                                name="tarea_orden_{{ tarea.id }}"
+                                class="form-control"
+                                value="{{ tarea.orden }}"
+                                min="0">
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+                {% empty %}
+
+
+                <!-- SIN TAREAS -->
+
+                <div
+                    id="sin-tareas"
+                    class="text-center p-4 border rounded">
+
+                    <div class="fs-1">
+                        📋
+                    </div>
+
+                    <strong>
+                        Este plan todavía no tiene tareas.
+                    </strong>
+
+                    <p class="text-muted mb-0">
+                        Presioná "Agregar tarea" para crear la primera.
+                    </p>
+
+                </div>
+
+
+                {% endfor %}
+
+            </div>
+
+
+            <!-- NUEVAS TAREAS -->
+
+            <div id="nuevas-tareas"></div>
+
+
+            <hr class="my-4">
+
+
+            <!-- BOTONES -->
+
+            <div class="d-flex justify-content-end gap-2">
+
+
+                <a
+                    href="{% url 'mantenimiento:index' %}"
+                    class="btn btn-cancelar">
+
+                    Cancelar
+
+                </a>
+
+
+                <button
+                    type="submit"
+                    class="btn btn-primary">
+
+                    💾 Guardar cambios
+
+                </button>
+
+            </div>
+
+
+        </form>
+
+    </div>
+
+</div>
+
+
+<!-- ========================= -->
+<!-- JAVASCRIPT -->
+<!-- ========================= -->
+
+<script>
+
+let numeroNuevaTarea = 0;
+
+
+function agregarTarea() {
+
+    numeroNuevaTarea++;
+
+
+    const container =
+        document.getElementById("nuevas-tareas");
+
+
+    const tarea =
+        document.createElement("div");
+
+
+    tarea.className =
+        "card p-3 mb-3 tarea-item";
+
+
+    tarea.innerHTML = `
+
+        <div class="d-flex justify-content-between align-items-center mb-3">
+
+            <strong>
+                Nueva tarea
+            </strong>
+
+
+            <button
+                type="button"
+                class="btn btn-cancelar"
+                onclick="this.closest('.tarea-item').remove()">
+
+                ❌ Quitar
+
+            </button>
+
+        </div>
+
+
+        <div class="row g-3">
+
+
+            <div class="col-md-6">
+
+                <label class="form-label">
+                    Descripción
+                </label>
+
+                <input
+                    type="text"
+                    name="nueva_tarea_descripcion"
+                    class="form-control"
+                    placeholder="Ej: Revisar cableado"
+                    required>
+
+            </div>
+
+
+            <div class="col-md-3">
+
+                <label class="form-label">
+                    Responsable
+                </label>
+
+                <input
+                    type="text"
+                    name="nueva_tarea_responsable"
+                    class="form-control"
+                    placeholder="Responsable">
+
+            </div>
+
+
+            <div class="col-md-2">
+
+                <label class="form-label">
+                    Duración (min)
+                </label>
+
+                <input
+                    type="number"
+                    name="nueva_tarea_duracion"
+                    class="form-control"
+                    min="1"
+                    placeholder="30">
+
+            </div>
+
+
+            <div class="col-md-1">
+
+                <label class="form-label">
+                    Orden
+                </label>
+
+                <input
+                    type="number"
+                    name="nueva_tarea_orden"
+                    class="form-control"
+                    min="0"
+                    value="${numeroNuevaTarea}">
+
+            </div>
+
+        </div>
+
+    `;
+
+
+    container.appendChild(tarea);
+
+}
+
+</script>
+
+
+{% endblock %}
+```

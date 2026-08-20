@@ -1,0 +1,188 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<div class="container mt-4">
+
+    <h1>Detalle del plan de mantenimiento</h1>
+
+    <!-- Información del plan -->
+    <div class="card mt-3">
+        <div class="card-body">
+
+            <h3>{{ plan.nombre }}</h3>
+
+            <hr>
+
+            <p>
+                <strong>Herramienta:</strong>
+                {{ plan.herramienta.nombre }}
+            </p>
+
+            <p>
+                <strong>Tipo:</strong>
+                {{ plan.get_tipo_display }}
+            </p>
+
+            <p>
+                <strong>Descripción:</strong>
+                {{ plan.descripcion|default:"Sin descripción" }}
+            </p>
+
+            <p>
+                <strong>Frecuencia:</strong>
+                {% if plan.frecuencia_dias %}
+                    Cada {{ plan.frecuencia_dias }} días
+                {% else %}
+                    No especificada
+                {% endif %}
+            </p>
+
+            <p>
+                <strong>Próxima ejecución:</strong>
+                {{ plan.proxima_ejecucion|date:"d/m/Y" }}
+            </p>
+
+            <p>
+                <strong>Estado:</strong>
+
+                {% if plan.activo %}
+                    <span class="badge bg-success">
+                        Activo
+                    </span>
+                {% else %}
+                    <span class="badge bg-secondary">
+                        Inactivo
+                    </span>
+                {% endif %}
+
+            </p>
+
+        </div>
+    </div>
+
+
+    <!-- Tareas -->
+    <div class="card mt-4">
+
+        <div class="card-body">
+
+            <h3>Tareas del plan</h3>
+
+            {% if tareas %}
+
+                <ul class="list-group mt-3">
+
+                    {% for tarea in tareas %}
+
+                        <li class="list-group-item">
+
+                            {{ tarea.descripcion }}
+
+                        </li>
+
+                    {% endfor %}
+
+                </ul>
+
+            {% else %}
+
+                <p class="text-muted">
+                    Este plan no tiene tareas registradas.
+                </p>
+
+            {% endif %}
+
+        </div>
+
+    </div>
+
+
+    <!-- Ejecuciones -->
+    <div class="card mt-4">
+
+        <div class="card-body">
+
+            <h3>Historial de ejecuciones</h3>
+
+            {% if ejecuciones %}
+
+                <div class="table-responsive">
+
+                    <table class="table table-striped mt-3">
+
+                        <thead>
+
+                            <tr>
+                                <th>Fecha</th>
+                                <th>Realizado por</th>
+                                <th>Costo</th>
+                                <th>Externo</th>
+                                <th>Notas</th>
+                            </tr>
+
+                        </thead>
+
+                        <tbody>
+
+                            {% for ejecucion in ejecuciones %}
+
+                                <tr>
+
+                                    <td>
+                                        {{ ejecucion.fecha|date:"d/m/Y" }}
+                                    </td>
+
+                                    <td>
+                                        {{ ejecucion.realizado_por }}
+                                    </td>
+
+                                    <td>
+                                        {{ ejecucion.costo }}
+                                    </td>
+
+                                    <td>
+                                        {% if ejecucion.es_externo %}
+                                            Sí
+                                        {% else %}
+                                            No
+                                        {% endif %}
+                                    </td>
+
+                                    <td>
+                                        {{ ejecucion.notas|default:"-" }}
+                                    </td>
+
+                                </tr>
+
+                            {% endfor %}
+
+                        </tbody>
+
+                    </table>
+
+                </div>
+
+            {% else %}
+
+                <p class="text-muted">
+                    Este plan todavía no tiene ejecuciones.
+                </p>
+
+            {% endif %}
+
+        </div>
+
+    </div>
+
+
+    <a href="{% url 'mantenimiento:index' %}"
+       class="btn btn-secondary mt-4">
+
+        ← Volver a planes
+
+    </a>
+
+</div>
+
+{% endblock %}

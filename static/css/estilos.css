@@ -1,0 +1,89 @@
+body {
+    background-color: #f4f6f9;
+    color: #212529;
+    font-family: Arial, Helvetica, sans-serif;
+}
+
+
+/* ===== TÍTULOS ===== */
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+    font-weight: 600;
+    color: #212529;
+}
+
+
+/* ===== BOTÓN PRINCIPAL AZUL ===== */
+
+.btn-primary {
+    background-color: #0d6efd;
+    border-color: #0d6efd;
+    color: white;
+}
+
+.btn-primary:hover {
+    background-color: #0b5ed7;
+    border-color: #0b5ed7;
+    color: white;
+}
+
+.btn-primary:active {
+    background-color: #084298 !important;
+    border-color: #084298 !important;
+}
+
+
+/* ===== BOTÓN CANCELAR ROJO ===== */
+
+.btn-cancelar {
+    background-color: #dc3545;
+    border-color: #dc3545;
+    color: white;
+}
+
+.btn-cancelar:hover {
+    background-color: #bb2d3b;
+    border-color: #bb2d3b;
+    color: white;
+}
+
+.btn-cancelar:active {
+    background-color: #842029 !important;
+    border-color: #842029 !important;
+}
+
+
+/* ===== TODOS LOS BOTONES ===== */
+
+.btn {
+    border-radius: 6px;
+    font-weight: 500;
+}
+
+
+/* ===== TEXTO SECUNDARIO ===== */
+
+.text-muted {
+    color: #6c757d !important;
+}
+
+
+/* ===== TARJETAS ===== */
+
+.card {
+    background-color: white;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+
+/* ===== TABLAS ===== */
+
+.table {
+    background-color: white;
+}

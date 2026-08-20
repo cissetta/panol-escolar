@@ -11,6 +11,9 @@ from django.contrib.auth.models import User
 from django.core.validators import MinValueValidator
 from django.utils import timezone
 from datetime import date, timedelta
+import qrcode
+from io import BytesIO
+from django.core.files import File
 
 
 # ══════════════════════════════════════════════════════════════════
@@ -103,6 +106,13 @@ class Alumno(models.Model):
         config = ConfiguracionSistema.get()
         limite = timezone.now() - timedelta(days=config.dias_maximo_prestamo)
         return self.prestamos_activos().filter(fecha_prestamo__lt=limite).exists()
+
+    
+    def delete(self, *args, **kwargs):
+        if self.qr_code:
+            self.qr_code.delete(save=False)
+            
+        super().delete(*args, **kwargs)
 # ══════════════════════════════════════════════════════════════════
 #  INVENTARIO  (Grupo 2)
 # ══════════════════════════════════════════════════════════════════
@@ -122,55 +132,121 @@ class Categoria(models.Model):
 
 
 class Herramienta(models.Model):
+
     ESTADOS = [
         ('DISPONIBLE','Disponible'),
         ('PRESTADA',  'Prestada'),
         ('REPARACION','En Reparación'),
         ('BAJA',      'Baja'),
     ]
-    codigo      = models.CharField(max_length=20, unique=True, blank=True)
-    nombre      = models.CharField(max_length=100)
+
+    codigo = models.CharField(max_length=20, unique=True, blank=True)
+    nombre = models.CharField(max_length=100)
     descripcion = models.TextField(blank=True)
-    marca       = models.CharField(max_length=50, blank=True)
-    modelo      = models.CharField(max_length=50, blank=True)
-    categoria   = models.ForeignKey(Categoria, on_delete=models.SET_NULL,
-                    null=True, blank=True, related_name='herramientas')
-    ubicacion   = models.CharField(max_length=50, blank=True)
-    estado      = models.CharField(max_length=15, choices=ESTADOS, default='DISPONIBLE')
+    marca = models.CharField(max_length=50, blank=True)
+    modelo = models.CharField(max_length=50, blank=True)
+
+    categoria = models.ForeignKey(
+        Categoria,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='herramientas'
+    )
+
+    ubicacion = models.CharField(max_length=50, blank=True)
+
+    estado = models.CharField(
+        max_length=15,
+        choices=ESTADOS,
+        default='DISPONIBLE'
+    )
+
     fecha_compra = models.DateField(null=True, blank=True)
-    costo       = models.DecimalField(max_digits=12, decimal_places=2,
-                    null=True, blank=True, validators=[MinValueValidator(0)])
-    qr_code     = models.ImageField(upload_to='qr/herramientas/', null=True, blank=True)
-    fecha_alta  = models.DateField(auto_now_add=True)
-    activo      = models.BooleanField(default=True)
+
+    costo = models.DecimalField(
+        max_digits=12,
+        decimal_places=2,
+        null=True,
+        blank=True,
+        validators=[MinValueValidator(0)]
+    )
+
+    qr_code = models.ImageField(
+        upload_to='qr/herramientas/',
+        null=True,
+        blank=True
+    )
+
+    fecha_alta = models.DateField(auto_now_add=True)
+
+    activo = models.BooleanField(default=True)
+
 
     class Meta:
         ordering = ['nombre']
         verbose_name = 'Herramienta'
         verbose_name_plural = 'Herramientas'
 
+
     def __str__(self):
         return f'{self.nombre} [{self.codigo}]'
 
+
     def save(self, *args, **kwargs):
+
+        # Crear código automático
         if not self.codigo:
-            ultima = Herramienta.objects.order_by('id').last()
+
+            ultima = Herramienta.objects.order_by("id").last()
+
             num = (ultima.id + 1) if ultima else 1
-            self.codigo = f'HRR-{num:04d}'
+
+            self.codigo = f"HRR-{num:04d}"
+
+
+        # Guardar para obtener ID
         super().save(*args, **kwargs)
+
+
+        # Crear QR una sola vez
+        if not self.qr_code:
+
+            qr = qrcode.make(self.codigo)
+
+            buffer = BytesIO()
+
+            qr.save(
+                buffer,
+                format="PNG"
+            )
+
+            self.qr_code.save(
+                f"{self.codigo}.png",
+                File(buffer),
+                save=False
+            )
+
+            super().save(
+                update_fields=["qr_code"]
+            )
+
 
     def esta_disponible(self):
         return self.estado == 'DISPONIBLE'
 
+
     def cambiar_estado(self, nuevo_estado):
+
         self.estado = nuevo_estado
+
         self.save()
+
         LogHerramienta.objects.create(
             herramienta=self,
             tipo='ESTADO',
             descripcion=f'Estado cambiado a {self.get_estado_display()}'
         )
-
 
 class LogHerramienta(models.Model):
     TIPOS = [
@@ -262,7 +338,6 @@ class MovimientoInsumo(models.Model):
         else:
             self.insumo.stock_actual -= self.cantidad
         self.insumo.save()
-
 
 # ══════════════════════════════════════════════════════════════════
 #  PRÉSTAMOS  (Grupo 3)

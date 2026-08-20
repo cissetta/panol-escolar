@@ -1,0 +1,429 @@
+```html
+{% extends 'base.html' %}
+
+{% block title %}
+    Grupo 4 – Crear Plan
+{% endblock %}
+
+{% block page_title %}
+    Crear Plan de Mantenimiento
+{% endblock %}
+
+
+{% block content %}
+
+<div class="container-fluid">
+
+
+    <!-- ENCABEZADO -->
+
+    <div class="mb-4">
+
+        <span class="badge bg-primary">
+            🛠️ Grupo 4 – Mantenimiento
+        </span>
+
+    </div>
+
+
+    <!-- MENSAJES -->
+
+    {% if messages %}
+
+        {% for message in messages %}
+
+            <div class="alert alert-danger mb-4">
+                {{ message }}
+            </div>
+
+        {% endfor %}
+
+    {% endif %}
+
+
+    <!-- TARJETA PRINCIPAL -->
+
+    <div class="card p-4 mx-auto" style="max-width: 900px;">
+
+
+        <h3 class="mb-3">
+            ➕ Crear Nuevo Plan de Mantenimiento
+        </h3>
+
+
+        <p class="text-muted mb-4">
+            Complete la información del plan y agregue todas las tareas necesarias para el mantenimiento.
+        </p>
+
+
+        <form
+            method="post"
+            action="{% url 'mantenimiento:crear_plan' %}">
+
+            {% csrf_token %}
+
+
+            <!-- INFORMACIÓN GENERAL -->
+
+            <h4 class="mb-3">
+                📋 Información General
+            </h4>
+
+
+            <div class="row g-3">
+
+
+                <!-- NOMBRE -->
+
+                <div class="col-md-6">
+
+                    <label class="form-label">
+                        <strong>Nombre del plan</strong>
+                    </label>
+
+                    <input
+                        type="text"
+                        name="nombre"
+                        class="form-control"
+                        placeholder="Ej: Preventivo mensual"
+                        required>
+
+                </div>
+
+
+                <!-- HERRAMIENTA -->
+
+                <div class="col-md-6">
+
+                    <label class="form-label">
+                        <strong>Herramienta</strong>
+                    </label>
+
+                    <select
+                        name="herramienta"
+                        class="form-control"
+                        required>
+
+                        <option value="">
+                            Seleccione...
+                        </option>
+
+                        {% for h in herramientas %}
+
+                            <option value="{{ h.id }}">
+                                {{ h.nombre }}
+                            </option>
+
+                        {% endfor %}
+
+                    </select>
+
+                </div>
+
+
+                <!-- TIPO -->
+
+                <div class="col-md-6">
+
+                    <label class="form-label">
+                        <strong>Tipo</strong>
+                    </label>
+
+                    <select
+                        name="tipo"
+                        class="form-control"
+                        required>
+
+                        <option value="">
+                            Seleccione...
+                        </option>
+
+                        <option value="PREV">
+                            Preventivo
+                        </option>
+
+                        <option value="CORR">
+                            Correctivo
+                        </option>
+
+                    </select>
+
+                </div>
+
+
+                <!-- FRECUENCIA -->
+
+                <div class="col-md-6">
+
+                    <label class="form-label">
+                        <strong>Frecuencia (días)</strong>
+                    </label>
+
+                    <input
+                        type="number"
+                        name="frecuencia_dias"
+                        class="form-control"
+                        placeholder="Ej: 30">
+
+                </div>
+
+
+                <!-- PRÓXIMA EJECUCIÓN -->
+
+                <div class="col-md-6">
+
+                    <label class="form-label">
+                        <strong>Próxima ejecución</strong>
+                    </label>
+
+                    <input
+                        type="date"
+                        name="proxima_ejecucion"
+                        class="form-control"
+                        required>
+
+                </div>
+
+            </div>
+
+
+            <!-- DESCRIPCIÓN -->
+
+            <div class="mt-4">
+
+                <label class="form-label">
+                    <strong>Descripción</strong>
+                </label>
+
+                <textarea
+                    name="descripcion"
+                    rows="4"
+                    class="form-control"
+                    placeholder="Describa el mantenimiento que debe realizarse..."></textarea>
+
+            </div>
+
+
+            <hr class="my-4">
+
+
+            <!-- TAREAS -->
+
+            <h4 class="mb-3">
+                🔧 Tareas del mantenimiento
+            </h4>
+
+
+            <div id="contenedor-tareas">
+
+
+                <!-- TAREA 1 -->
+
+                <div class="card p-3 mb-3">
+
+
+                    <h5 class="mb-3">
+                        Tarea 1
+                    </h5>
+
+
+                    <div class="mb-3">
+
+                        <label class="form-label">
+                            Descripción
+                        </label>
+
+                        <input
+                            type="text"
+                            name="descripcion_tarea[]"
+                            class="form-control"
+                            placeholder="Ej: Lubricar rodamientos">
+
+                    </div>
+
+
+                    <div class="row g-3">
+
+
+                        <div class="col-md-8">
+
+                            <label class="form-label">
+                                Responsable
+                            </label>
+
+                            <input
+                                type="text"
+                                name="responsable_tarea[]"
+                                class="form-control"
+                                placeholder="Juan Pérez">
+
+                        </div>
+
+
+                        <div class="col-md-4">
+
+                            <label class="form-label">
+                                Duración
+                            </label>
+
+                            <input
+                                type="number"
+                                name="duracion_tarea[]"
+                                class="form-control"
+                                placeholder="30">
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <!-- AGREGAR TAREA -->
+
+            <button
+                type="button"
+                onclick="agregarTarea()"
+                class="btn btn-primary">
+
+                ➕ Agregar otra tarea
+
+            </button>
+
+
+            <hr class="my-4">
+
+
+            <!-- BOTONES -->
+
+            <div class="d-flex gap-2 justify-content-end">
+
+
+                <button
+                    type="button"
+                    class="btn btn-cancelar"
+                    onclick="history.back()">
+
+                    Cancelar
+
+                </button>
+
+
+                <button
+                    type="submit"
+                    class="btn btn-primary">
+
+                    💾 Crear Plan
+
+                </button>
+
+            </div>
+
+
+        </form>
+
+    </div>
+
+</div>
+
+
+<script>
+
+let numero = 2;
+
+
+function agregarTarea() {
+
+    const contenedor =
+        document.getElementById("contenedor-tareas");
+
+
+    contenedor.insertAdjacentHTML(
+        "beforeend",
+
+        `
+
+        <div class="card p-3 mb-3">
+
+            <h5 class="mb-3">
+                Tarea ${numero}
+            </h5>
+
+
+            <div class="mb-3">
+
+                <label class="form-label">
+                    Descripción
+                </label>
+
+                <input
+                    type="text"
+                    name="descripcion_tarea[]"
+                    class="form-control"
+                    placeholder="Descripción de la tarea">
+
+            </div>
+
+
+            <div class="row g-3">
+
+
+                <div class="col-md-8">
+
+                    <label class="form-label">
+                        Responsable
+                    </label>
+
+                    <input
+                        type="text"
+                        name="responsable_tarea[]"
+                        class="form-control"
+                        placeholder="Responsable">
+
+                </div>
+
+
+                <div class="col-md-4">
+
+                    <label class="form-label">
+                        Duración (min)
+                    </label>
+
+                    <input
+                        type="number"
+                        name="duracion_tarea[]"
+                        class="form-control"
+                        placeholder="Minutos">
+
+                </div>
+
+            </div>
+
+
+            <button
+                type="button"
+                onclick="this.parentElement.remove()"
+                class="btn btn-cancelar mt-3">
+
+                🗑 Eliminar tarea
+
+            </button>
+
+        </div>
+
+        `
+
+    );
+
+
+    numero++;
+
+}
+
+</script>
+
+
+{% endblock %}
+```

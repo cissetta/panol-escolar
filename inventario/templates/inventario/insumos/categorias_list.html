@@ -1,0 +1,37 @@
+{% extends 'base.html' %}
+{% block title %}Categorías{% endblock %}
+{% block page_title %}Categorías{% endblock %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+  <h2>Categorías</h2>
+  <a href="{% url 'inventario:nueva_categoria' %}" class="btn btn-primary">Nueva categoría</a>
+</div>
+
+<div class="table-responsive">
+  <table class="table table-hover align-middle">
+    <thead>
+      <tr>
+        <th>Nombre</th>
+        <th>Descripción</th>
+        <th>Color</th>
+        <th></th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for categoria in categorias %}
+        <tr>
+          <td>{{ categoria.nombre }}</td>
+          <td>{{ categoria.descripcion|default:'-' }}</td>
+          <td><span class="badge" style="background: {{ categoria.color_hex }}">{{ categoria.color_hex }}</span></td>
+          <td class="text-end">
+            <a href="{% url 'inventario:editar_categoria' categoria.pk %}" class="btn btn-sm btn-outline-primary">Editar</a>
+            <a href="{% url 'inventario:eliminar_categoria' categoria.pk %}" class="btn btn-sm btn-outline-danger">Eliminar</a>
+          </td>
+        </tr>
+      {% empty %}
+        <tr><td colspan="4" class="text-center">No hay categorías registradas.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}
