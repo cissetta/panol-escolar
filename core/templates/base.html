@@ -5,11 +5,12 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>{% block title %}Sistema Pañol{% endblock %} – PROA</title>
+
+  <!-- Bootstrap CSS -->
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-  <!-- Agregada la librería de Bootstrap Icons -->
+  <!-- Bootstrap Icons -->
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
-  
-  <!-- Archivo CSS Personalizado -->
+  <!-- Estilos globales del proyecto -->
   <link rel="stylesheet" href="{% static 'css/estilos.css' %}">
 
   <style>
@@ -18,7 +19,7 @@
       --azul:       #1e3a5f;
       --azul-claro: #2e86de;
     }
-    body    { background: #f4f6f9; font-family: 'Segoe UI', sans-serif; }
+    body { background: #f4f6f9; font-family: 'Segoe UI', sans-serif; }
 
     /* ── Sidebar ── */
     #sidebar {
@@ -30,10 +31,10 @@
       padding: 18px 16px 14px;
       border-bottom: 1px solid rgba(255,255,255,.12);
     }
-    .sidebar-brand h2 { font-size: 15px; font-weight: 700; color: #fff; margin: 0; }
+    .sidebar-brand h2  { font-size: 15px; font-weight: 700; color: #fff; margin: 0; }
     .sidebar-brand small { font-size: 11px; color: rgba(255,255,255,.5); }
-    .sidebar-nav  { flex: 1; overflow-y: auto; padding: 8px 0; }
-    .nav-section  {
+    .sidebar-nav { flex: 1; overflow-y: auto; padding: 8px 0; }
+    .nav-section {
       font-size: 10px; text-transform: uppercase; letter-spacing: .08em;
       color: rgba(255,255,255,.4); padding: 14px 16px 4px;
     }
@@ -76,8 +77,9 @@
     .badge-panolero { background: #e67e22; color: #fff; }
     .badge-docente  { background: #27ae60; color: #fff; }
     .badge-alumno   { background: #2e86de; color: #fff; }
-
   </style>
+
+  {% block extra_css %}{% endblock %}
 </head>
 <body>
 
@@ -89,61 +91,61 @@
   </div>
 
   <div class="sidebar-nav">
+
     <div class="nav-section">Principal</div>
     <a href="{% url 'dashboard' %}" class="nav-link {% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}">
-      <span class="icon">📊</span> Dashboard
+      <span class="icon"><i class="bi bi-bar-chart-line"></i></span> Dashboard
     </a>
 
-    <!-- SECCIÓN GRUPO 1 MODIFICADA -->
     <div class="nav-section">Grupo 1 – Alumnos</div>
-    <a href="{% url 'alumnos:lista' %}" class="nav-link {% if request.resolver_match.url_name == 'lista' %}active{% endif %}">
+    <a href="{% url 'alumnos:lista' %}" class="nav-link {% if 'alumnos' in request.path and request.resolver_match.url_name != 'nuevo' %}active{% endif %}">
       <span class="icon"><i class="bi bi-people"></i></span> Lista de Alumnos
     </a>
-    <a href="{% url 'alumnos:nuevo' %}" class="nav-link {% if request.resolver_match.url_name == 'nuevo' %}active{% endif %}">
-      <span class="icon"><i class="bi bi-plus-lg"></i></span> Nuevo Alumno
+    <a href="{% url 'alumnos:nuevo' %}" class="nav-link {% if request.resolver_match.url_name == 'nuevo' and 'alumnos' in request.path %}active{% endif %}">
+      <span class="icon"><i class="bi bi-person-plus"></i></span> Nuevo Alumno
     </a>
-    <a href="{% url 'alumnos:lista' %}" class="nav-link">
-      <span class="icon"><i class="bi bi-clipboard-check"></i></span> Historial Alumno
-    </a>
-    <!-- FIN SECCIÓN GRUPO 1 -->
 
     <div class="nav-section">Grupo 2 – Inventario</div>
-    <a href="{% url 'inventario:herramientas' %}" class="nav-link {% if 'inventario' in request.path and 'insumos' not in request.path %}active{% endif %}">
-      <span class="icon">🔨</span> Herramientas
+    <a href="{% url 'inventario:herramientas' %}" class="nav-link {% if 'inventario' in request.path and 'insumo' not in request.path %}active{% endif %}">
+      <span class="icon"><i class="bi bi-tools"></i></span> Herramientas
     </a>
-    <a href="{% url 'inventario:insumos' %}" class="nav-link {% if 'insumos' in request.path %}active{% endif %}">
-      <span class="icon">📦</span> Insumos
+    <a href="{% url 'inventario:insumos' %}" class="nav-link {% if 'insumo' in request.path %}active{% endif %}">
+      <span class="icon"><i class="bi bi-box-seam"></i></span> Insumos
     </a>
 
     <div class="nav-section">Grupo 3 – Préstamos</div>
-    <a href="{% url 'prestamos:nuevo' %}" class="nav-link {% if 'prestamos/nuevo' in request.path %}active{% endif %}">
-      <span class="icon">📷</span> Registrar Préstamo
+    <a href="{% url 'prestamos:nuevo' %}" class="nav-link {% if request.resolver_match.url_name == 'nuevo' and 'prestamos' in request.path %}active{% endif %}">
+      <span class="icon"><i class="bi bi-arrow-up-circle"></i></span> Registrar Préstamo
     </a>
-    <a href="{% url 'prestamos:activos' %}" class="nav-link {% if 'prestamos/activos' in request.path %}active{% endif %}">
-      <span class="icon">📤</span> Préstamos Activos
+    <a href="{% url 'prestamos:activos' %}" class="nav-link {% if 'activos' in request.path %}active{% endif %}">
+      <span class="icon"><i class="bi bi-clock-history"></i></span> Préstamos Activos
     </a>
     <a href="{% url 'prestamos:devolucion' %}" class="nav-link {% if 'devolucion' in request.path %}active{% endif %}">
-      <span class="icon">📥</span> Registrar Devolución
+      <span class="icon"><i class="bi bi-arrow-down-circle"></i></span> Registrar Devolución
     </a>
 
     <div class="nav-section">Grupo 4 – Mantenimiento</div>
-    <a href="{% url 'mantenimiento:index' %}" class="nav-link {% if 'mantenimiento' in request.path and 'hoja' not in request.path %}active{% endif %}">
-      <span class="icon">🗓️</span> Planes
+    <a href="{% url 'mantenimiento:index' %}" class="nav-link {% if 'mantenimiento' in request.path and 'vida' not in request.path %}active{% endif %}">
+      <span class="icon"><i class="bi bi-calendar-check"></i></span> Planes
     </a>
 
     <div class="nav-section">Grupo 5 – Reportes</div>
-    <a href="{% url 'reportes:index' %}" class="nav-link {% if 'reportes' in request.path %}active{% endif %}">
-      <span class="icon">📈</span> Reportes
+    <a href="{% url 'reportes:index' %}" class="nav-link {% if request.resolver_match.url_name == 'index' and 'reportes' in request.path %}active{% endif %}">
+      <span class="icon"><i class="bi bi-graph-up"></i></span> Dashboard
+    </a>
+    <a href="{% url 'reportes:reportes' %}" class="nav-link {% if request.resolver_match.url_name == 'reportes' %}active{% endif %}">
+      <span class="icon"><i class="bi bi-file-earmark-bar-graph"></i></span> Reportes
     </a>
     <a href="{% url 'reportes:docentes' %}" class="nav-link {% if 'docentes' in request.path %}active{% endif %}">
-      <span class="icon">👨‍🏫</span> Docentes
+      <span class="icon"><i class="bi bi-person-video3"></i></span> Docentes
     </a>
     <a href="{% url 'reportes:categorias' %}" class="nav-link {% if 'categorias' in request.path %}active{% endif %}">
-      <span class="icon">🏷️</span> Categorias
+      <span class="icon"><i class="bi bi-tags"></i></span> Categorías
     </a>
     <a href="{% url 'reportes:configuracion' %}" class="nav-link {% if 'configuracion' in request.path %}active{% endif %}">
-      <span class="icon">⚙️</span> Configuración
+      <span class="icon"><i class="bi bi-gear"></i></span> Configuración
     </a>
+
   </div>
 
   <div class="sidebar-footer">
@@ -156,9 +158,7 @@
 
   <!-- Topbar -->
   <div class="topbar">
-    <div>
-      <div class="topbar-title">{% block page_title %}Dashboard{% endblock %}</div>
-    </div>
+    <div class="topbar-title">{% block page_title %}Dashboard{% endblock %}</div>
     <div class="topbar-user">
       {% if user.is_authenticated %}
         <span class="badge badge-{{ user.perfil.rol|lower }}">
@@ -196,201 +196,7 @@
 
 </div><!-- /main -->
 
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-{% block extra_js %}{% endblock %}
-</body>
-</html>
-<!DOCTYPE html>
-<html lang="es">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>{% block title %}Sistema Pañol{% endblock %} – PROA</title>
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-  <!-- Agregada la librería de Bootstrap Icons -->
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
-  <style>
-    :root {
-      --sidebar-w: 230px;
-      --azul:       #1e3a5f;
-      --azul-claro: #2e86de;
-    }
-    body    { background: #f4f6f9; font-family: 'Segoe UI', sans-serif; }
-
-    /* ── Sidebar ── */
-    #sidebar {
-      position: fixed; top: 0; left: 0; height: 100vh;
-      width: var(--sidebar-w); background: var(--azul);
-      display: flex; flex-direction: column; z-index: 1000;
-    }
-    .sidebar-brand {
-      padding: 18px 16px 14px;
-      border-bottom: 1px solid rgba(255,255,255,.12);
-    }
-    .sidebar-brand h2 { font-size: 15px; font-weight: 700; color: #fff; margin: 0; }
-    .sidebar-brand small { font-size: 11px; color: rgba(255,255,255,.5); }
-    .sidebar-nav  { flex: 1; overflow-y: auto; padding: 8px 0; }
-    .nav-section  {
-      font-size: 10px; text-transform: uppercase; letter-spacing: .08em;
-      color: rgba(255,255,255,.4); padding: 14px 16px 4px;
-    }
-    .nav-link {
-      display: flex; align-items: center; gap: 10px;
-      padding: 9px 16px; color: rgba(255,255,255,.8); font-size: 13.5px;
-      border-left: 3px solid transparent; border-radius: 0;
-    }
-    .nav-link:hover  { background: rgba(255,255,255,.08); color: #fff; }
-    .nav-link.active { background: rgba(255,255,255,.14); color: #fff; border-left-color: var(--azul-claro); }
-    .nav-link .icon  { width: 18px; text-align: center; }
-    .sidebar-footer  { padding: 12px 16px; border-top: 1px solid rgba(255,255,255,.1); font-size: 11px; color: rgba(255,255,255,.4); }
-
-    /* ── Main ── */
-    #main { margin-left: var(--sidebar-w); min-height: 100vh; display: flex; flex-direction: column; }
-
-    /* ── Topbar ── */
-    .topbar {
-      position: sticky; top: 0; z-index: 900;
-      background: #fff; border-bottom: 1px solid #dce3ec;
-      padding: 0 24px; height: 56px;
-      display: flex; align-items: center; justify-content: space-between;
-    }
-    .topbar-title { font-size: 17px; font-weight: 600; color: var(--azul); }
-    .topbar-user  { display: flex; align-items: center; gap: 10px; font-size: 13px; color: #7f8c8d; }
-    .avatar {
-      width: 32px; height: 32px; background: var(--azul-claro);
-      border-radius: 50%; display: flex; align-items: center;
-      justify-content: center; color: #fff; font-size: 13px; font-weight: 700;
-    }
-
-    /* ── Content ── */
-    .page-content { padding: 24px; flex: 1; }
-
-    /* ── Alertas flash ── */
-    .flash-container { padding: 0 24px; }
-
-    /* ── Badges de rol ── */
-    .badge-admin    { background: #1e3a5f; color: #fff; }
-    .badge-panolero { background: #e67e22; color: #fff; }
-    .badge-docente  { background: #27ae60; color: #fff; }
-    .badge-alumno   { background: #2e86de; color: #fff; }
-
-  </style>
-</head>
-<body>
-
-<!-- ══ SIDEBAR ══════════════════════════════════════════════════ -->
-<nav id="sidebar">
-  <div class="sidebar-brand">
-    <h2>🔧 Sistema Pañol</h2>
-    <small>PROA – Villa del Totoral</small>
-  </div>
-
-  <div class="sidebar-nav">
-    <div class="nav-section">Principal</div>
-    <a href="{% url 'dashboard' %}" class="nav-link {% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}">
-      <span class="icon">📊</span> Dashboard
-    </a>
-
-    <!-- SECCIÓN GRUPO 1 MODIFICADA -->
-    <div class="nav-section">Grupo 1 – Alumnos</div>
-    
-    <!-- FIN SECCIÓN GRUPO 1 -->
-
-    <div class="nav-section">Grupo 2 – Inventario</div>
-    <a href="{% url 'inventario:herramientas' %}" class="nav-link {% if 'inventario' in request.path and 'insumos' not in request.path %}active{% endif %}">
-      <span class="icon">🔨</span> Herramientas
-    </a>
-    <a href="{% url 'inventario:insumos' %}" class="nav-link {% if 'insumos' in request.path %}active{% endif %}">
-      <span class="icon">📦</span> Insumos
-    </a>
-
-    <div class="nav-section">Grupo 3 – Préstamos</div>
-    <a href="{% url 'prestamos:nuevo' %}" class="nav-link {% if 'prestamos/nuevo' in request.path %}active{% endif %}">
-      <span class="icon">📷</span> Registrar Préstamo
-    </a>
-    <a href="{% url 'prestamos:activos' %}" class="nav-link {% if 'prestamos/activos' in request.path %}active{% endif %}">
-      <span class="icon">📤</span> Préstamos Activos
-    </a>
-    <a href="{% url 'prestamos:devolucion' %}" class="nav-link {% if 'devolucion' in request.path %}active{% endif %}">
-      <span class="icon">📥</span> Registrar Devolución
-    </a>
-
-    <div class="nav-section">Grupo 4 – Mantenimiento</div>
-    <a href="{% url 'mantenimiento:planes' %}" class="nav-link {% if 'mantenimiento' in request.path and 'hoja' not in request.path %}active{% endif %}">
-      <span class="icon">🗓️</span> Planes
-    </a>
-    <a href="{% url 'mantenimiento:hoja_vida' %}" class="nav-link {% if 'hoja' in request.path %}active{% endif %}">
-      <span class="icon">📄</span> Hoja de Vida
-    </a>
-
-    <div class="nav-section">Grupo 5 – Reportes</div>
-    <a href="{% url 'reportes:index' %}" class="nav-link {% if 'reportes' in request.path %}active{% endif %}">
-      <span class="icon">📈</span> Dashboard (real)
-    </a>
-    <a href="{% url 'reportes:reportes' %}" class="nav-link {% if 'reportes' in request.path %}active{% endif %}">
-      <span class="icon">📋</span> Reportes
-    </a>
-    <a href="{% url 'reportes:docentes' %}" class="nav-link {% if 'docentes' in request.path %}active{% endif %}">
-      <span class="icon">👨‍🏫</span> Docentes
-    </a>
-    <a href="{% url 'reportes:categorias' %}" class="nav-link {% if 'categorias' in request.path %}active{% endif %}">
-      <span class="icon">🏷️</span> Categorias
-    </a>
-    <a href="{% url 'reportes:configuracion' %}" class="nav-link {% if 'configuracion' in request.path %}active{% endif %}">
-      <span class="icon">⚙️</span> Configuración
-    </a>
-  </div>
-
-  <div class="sidebar-footer">
-    v1.0 – Programación IV 2026
-  </div>
-</nav>
-
-<!-- ══ MAIN ══════════════════════════════════════════════════════ -->
-<div id="main">
-
-  <!-- Topbar -->
-  <div class="topbar">
-    <div>
-      <div class="topbar-title">{% block page_title %}Dashboard{% endblock %}</div>
-    </div>
-    <div class="topbar-user">
-      {% if user.is_authenticated %}
-        <span class="badge badge-{{ user.perfil.rol|lower }}">
-          {{ user.perfil.get_rol_display }}
-        </span>
-        <div class="avatar">
-          {{ user.first_name|first|upper }}{{ user.last_name|first|upper }}
-        </div>
-        <div>
-          <div style="font-weight:600;color:#2c3e50">{{ user.get_full_name|default:user.username }}</div>
-          <div style="font-size:11px">
-            <a href="{% url 'logout' %}" class="text-danger text-decoration-none">Cerrar sesión</a>
-          </div>
-        </div>
-      {% endif %}
-    </div>
-  </div>
-
-  <!-- Mensajes flash -->
-  {% if messages %}
-    <div class="flash-container mt-2">
-      {% for msg in messages %}
-        <div class="alert alert-{{ msg.tags }} alert-dismissible fade show" role="alert">
-          {{ msg }}
-          <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-        </div>
-      {% endfor %}
-    </div>
-  {% endif %}
-
-  <!-- Contenido de cada página -->
-  <div class="page-content">
-    {% block content %}{% endblock %}
-  </div>
-
-</div><!-- /main -->
-
+<!-- Bootstrap JS -->
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 {% block extra_js %}{% endblock %}
 </body>
