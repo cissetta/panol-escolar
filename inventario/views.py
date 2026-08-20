@@ -445,3 +445,33 @@ def ver_qr_herramienta(request, pk):
             "herramienta": herramienta
         }
     )
+
+@login_required
+def insumo_detalle(request, pk):
+    """Vista de detalle de un insumo."""
+    from core.models import MovimientoInsumo
+    insumo = get_object_or_404(Insumo, pk=pk)
+    movimientos = MovimientoInsumo.objects.filter(insumo=insumo).order_by('-fecha') if hasattr(insumo, 'movimientos') else []
+    return render(request, 'inventario/insumos/form.html', {
+        'insumo': insumo,
+        'movimientos': movimientos,
+    })
+
+
+@login_required
+def nuevo_movimiento(request):
+    """Registrar entrada/salida de insumo. TODO (Grupo 2): implementar completamente."""
+    from .forms import MovimientoInsumoForm
+    form = MovimientoInsumoForm(request.POST or None)
+    if request.method == 'POST' and form.is_valid():
+        from core.models import MovimientoInsumo
+        MovimientoInsumo.objects.create(
+            insumo=form.cleaned_data['insumo'],
+            tipo=form.cleaned_data['tipo'],
+            cantidad=form.cleaned_data['cantidad'],
+            observacion=form.cleaned_data.get('observacion', ''),
+            usuario=request.user,
+        )
+        messages.success(request, 'Movimiento registrado correctamente.')
+        return redirect('inventario:insumos')
+    return render(request, 'inventario/insumos/movimiento_form.html', {'form': form})

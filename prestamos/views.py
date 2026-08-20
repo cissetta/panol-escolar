@@ -36,52 +36,52 @@ def registrar_prestamo(request):
     if request.method == "POST":
         try:
             alumno = get_object_or_404(Alumno, legajo=request.POST.get("alumno_qr"))
-            herr = get_object_or_404(Herramienta, codigo=request.POST.get("herr_qr"))
+            codigos = request.POST.getlist("herramientas")
             docente_id = request.POST.get("docente")
+            observaciones = request.POST.get("observaciones", "")
+
+            ctx = {"alumnos": alumnos, "herramientas": herramientas, "docentes": docentes}
 
             if not docente_id:
                 messages.error(request, "Seleccioná un docente.")
-                return render(
-                    request,
-                    "prestamos/prestamos.html",
-                    {
-                        "alumnos": alumnos,
-                        "herramientas": herramientas,
-                        "docentes": docentes,
-                    },
-                )
+                return render(request, "prestamos/prestamos.html", ctx)
 
-            if not herr.esta_disponible():
-                messages.error(request, "La herramienta no está disponible.")
-                return render(
-                    request,
-                    "prestamos/prestamos.html",
-                    {
-                        "alumnos": alumnos,
-                        "herramientas": herramientas,
-                        "docentes": docentes,
-                    },
-                )
+            if not codigos:
+                messages.error(request, "Seleccioná al menos una herramienta.")
+                return render(request, "prestamos/prestamos.html", ctx)
 
             if alumno.tiene_prestamo_vencido():
                 messages.warning(request, "Atención: el alumno tiene préstamos vencidos.")
 
-            Prestamo.objects.create(
-                alumno=alumno,
-                herramienta=herr,
-                docente_id=docente_id,
-                fecha_prestamo=timezone.now(),
-                observaciones=request.POST.get("observaciones", ""),
-            )
-            herr.estado = "PRESTADA"
-            herr.save()
-            messages.success(request, "Préstamo registrado correctamente.")
+            registradas = []
+            no_disponibles = []
+            for codigo in codigos:
+                herr = Herramienta.objects.filter(codigo=codigo).first()
+                if herr is None:
+                    continue
+                if not herr.esta_disponible():
+                    no_disponibles.append(herr.nombre)
+                    continue
+                Prestamo.objects.create(
+                    alumno=alumno,
+                    herramienta=herr,
+                    docente_id=docente_id,
+                    fecha_prestamo=timezone.now(),
+                    observaciones=observaciones,
+                )
+                herr.estado = "PRESTADA"
+                herr.save()
+                registradas.append(herr.nombre)
+
+            if registradas:
+                messages.success(request, f"Préstamo registrado: {', '.join(registradas)}.")
+            if no_disponibles:
+                messages.warning(request, f"No disponibles (omitidas): {', '.join(no_disponibles)}.")
+
             return redirect("prestamos:activos")
         except Exception as e:
-            # Mostrar el error en pantalla y registrar en la consola para depuración.
             messages.error(request, f"Error al registrar préstamo: {e}")
             import traceback
-
             traceback.print_exc()
 
     return render(

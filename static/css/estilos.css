@@ -1,22 +1,27 @@
-/* Variables de Colores y Estilos Globales */
+/* ============================================================
+   estilos.css — Estilos globales del Sistema Pañol PROA 2026
+   Todos los templates que extienden base.html reciben estos estilos.
+   ============================================================ */
+
+/* ── Variables globales ── */
 :root {
-  --color-primary: #0d6efd;
-  --color-primary-hover: #0b5ed7;
+  --color-primary:        #0d6efd;
+  --color-primary-hover:  #0b5ed7;
   --color-primary-active: #0a58ca;
-
-  /* Estilos del Botón Cancelar */
-  --color-cancel: #dc3545;        /* Rojo Normal */
-  --color-cancel-hover: #bb2d3b;  /* Rojo Oscuro (hover) */
-  --color-cancel-active: #b02a37; /* Rojo Más Oscuro (click) */
-
-  --color-bg-surface: #ffffff;
-  --color-border: #e2e8f0;
-  --color-text-main: #1e293b;
-  --color-text-muted: #64748b;
-  --radius-md: 6px;
+  --color-cancel:         #dc3545;
+  --color-cancel-hover:   #bb2d3b;
+  --color-cancel-active:  #b02a37;
+  --color-bg-surface:     #ffffff;
+  --color-border:         #e2e8f0;
+  --color-text-main:      #1e293b;
+  --color-text-muted:     #64748b;
+  --azul:                 #1e3a5f;
+  --azul-claro:           #2e86de;
+  --radius-md:            6px;
+  --radius-lg:            10px;
 }
 
-/* Contenedor de Botones de Formulario */
+/* ── Botones de formulario ── */
 .form-actions {
   display: flex !important;
   align-items: center;
@@ -24,7 +29,6 @@
   margin-top: 24px;
 }
 
-/* Estilo Base de Botones */
 .btn {
   display: inline-flex;
   align-items: center;
@@ -40,42 +44,149 @@
   text-decoration: none;
 }
 
-/* 1. BOTÓN PRINCIPAL (Guardar / Confirmar) -> IZQUIERDA */
-.btn-primary, 
+.btn-primary,
 .btn-confirm {
   order: 1 !important;
   background-color: var(--color-primary) !important;
   color: #ffffff !important;
 }
+.btn-primary:hover,
+.btn-confirm:hover  { background-color: var(--color-primary-hover) !important; color: #fff !important; }
+.btn-primary:active,
+.btn-confirm:active { background-color: var(--color-primary-active) !important; transform: translateY(1px); }
 
-.btn-primary:hover, 
-.btn-confirm:hover {
-  background-color: var(--color-primary-hover) !important;
-  color: #ffffff !important;
-}
-
-.btn-primary:active, 
-.btn-confirm:active {
-  background-color: var(--color-primary-active) !important;
-  transform: translateY(1px);
-}
-
-/* 2. BOTÓN CANCELAR -> DERECHA, ROJO Y OSCURO EN HOVER */
 .btn-cancel {
   order: 2 !important;
   background-color: var(--color-cancel) !important;
   color: #ffffff !important;
   border: none !important;
 }
+.btn-cancel:hover  { background-color: var(--color-cancel-hover) !important; color: #fff !important; }
+.btn-cancel:active { background-color: var(--color-cancel-active) !important; transform: translateY(1px); }
 
-/* Estado Hover: Se pone más oscuro al pasar el mouse */
-.btn-cancel:hover {
-  background-color: var(--color-cancel-hover) !important;
-  color: #ffffff !important;
+/* Botón acción pequeño en tablas */
+.btn-accion {
+  padding: 4px 8px;
+  font-size: 13px;
+  border-radius: var(--radius-md);
 }
 
-/* Estado Active: Se oscurece más al hacer click */
-.btn-cancel:active {
-  background-color: var(--color-cancel-active) !important;
-  transform: translateY(1px);
+/* ── Cards ── */
+.card-panol {
+  border: none;
+  border-radius: var(--radius-lg);
+  box-shadow: 0 1px 4px rgba(0, 0, 0, .08);
+  background: #fff;
+}
+
+/* ── Tablas ── */
+.tabla-panol thead th {
+  background-color: var(--azul);
+  color: #fff;
+  font-weight: 500;
+  font-size: 13px;
+  border: none;
+}
+.tabla-panol tbody tr:hover {
+  background-color: #f0f4f8;
+}
+.tabla-panol td, .tabla-panol th {
+  vertical-align: middle;
+  padding: 10px 14px;
+}
+
+/* ── Badges de estado herramienta ── */
+.badge-disponible {
+  background: #d1fae5;
+  color: #065f46;
+  padding: 3px 10px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 500;
+}
+.badge-prestada {
+  background: #fef3c7;
+  color: #92400e;
+  padding: 3px 10px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 500;
+}
+.badge-reparacion {
+  background: #fee2e2;
+  color: #991b1b;
+  padding: 3px 10px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 500;
+}
+.badge-baja {
+  background: #f3f4f6;
+  color: #6b7280;
+  padding: 3px 10px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+/* ── Badge stock crítico ── */
+.badge-critico {
+  background: #fee2e2;
+  color: #991b1b;
+  padding: 3px 10px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+/* ── Badges de estado préstamo ── */
+.badge-activo   { background: #dbeafe; color: #1e40af; padding: 3px 10px; border-radius: 20px; font-size: 12px; }
+.badge-vencido  { background: #fee2e2; color: #991b1b; padding: 3px 10px; border-radius: 20px; font-size: 12px; }
+.badge-devuelto { background: #d1fae5; color: #065f46; padding: 3px 10px; border-radius: 20px; font-size: 12px; }
+
+/* ── Badges de estado mantenimiento ── */
+.badge-al-dia   { background: #d1fae5; color: #065f46; padding: 3px 10px; border-radius: 20px; font-size: 12px; }
+.badge-proximo  { background: #fef3c7; color: #92400e; padding: 3px 10px; border-radius: 20px; font-size: 12px; }
+.badge-vencido-mant { background: #fee2e2; color: #991b1b; padding: 3px 10px; border-radius: 20px; font-size: 12px; }
+
+/* ── Header de página con título + botón ── */
+.page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.25rem;
+}
+.page-header h4 {
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--azul);
+  margin: 0;
+}
+
+/* ── Formularios ── */
+.form-panol {
+  background: #fff;
+  border-radius: var(--radius-lg);
+  padding: 1.5rem;
+  box-shadow: 0 1px 4px rgba(0,0,0,.08);
+  max-width: 680px;
+}
+.form-panol .form-label {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--color-text-main);
+  margin-bottom: 4px;
+}
+
+/* ── Mensajes vacíos en tablas ── */
+.tabla-vacia {
+  text-align: center;
+  color: var(--color-text-muted);
+  padding: 2.5rem 0;
+  font-size: 14px;
+}
+
+/* ── Fila crítica en tabla insumos ── */
+tr.fila-critica td {
+  background-color: #fff1f2;
 }
