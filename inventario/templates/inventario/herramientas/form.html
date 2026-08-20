@@ -1,30 +1,139 @@
 {% extends 'base.html' %}
 
+{% block title %}
+Nueva Herramienta
+{% endblock %}
+
+{% block page_title %}
+Nueva Herramienta
+{% endblock %}
+
 {% block content %}
 
-<div class="container mt-4">
+<div class="container-fluid">
 
-    <div class="card shadow">
+    <div class="mb-4">
 
-        <div class="card-header">
-            <h3>Herramienta</h3>
-        </div>
+        <h4 style="color:#1e3a5f;">
+            {% if herramienta %}
+                Editar Herramienta
+            {% else %}
+                Nueva Herramienta
+            {% endif %}
+        </h4>
+
+        <p class="text-muted">
+            Inventario / Herramientas /
+            {% if herramienta %}
+                Editar
+            {% else %}
+                Nueva
+            {% endif %}
+        </p>
+
+    </div>
+
+
+    <div class="card shadow-sm">
 
         <div class="card-body">
 
-            <form method="post" enctype="multipart/form-data">
+            <form
+                method="post"
+                enctype="multipart/form-data"
+            >
 
                 {% csrf_token %}
 
-                {{ form.as_p }}
 
-                <button type="submit" class="btn btn-success">
-                    Guardar
-                </button>
+                <!-- ERRORES GENERALES -->
 
-                <a href="{% url 'inventario:herramientas' %}" class="btn btn-secondary">
-                    Cancelar
-                </a>
+                {% if form.non_field_errors %}
+
+                    <div class="alert alert-danger">
+
+                        {{ form.non_field_errors }}
+
+                    </div>
+
+                {% endif %}
+
+
+                <!-- CAMPOS -->
+
+                {% for field in form %}
+
+                    <div class="mb-3">
+
+                        <label
+                            for="{{ field.id_for_label }}"
+                            class="form-label"
+                        >
+
+                            {{ field.label }}
+
+                            {% if field.field.required %}
+
+                                <span class="text-danger">*</span>
+
+                            {% endif %}
+
+                        </label>
+
+
+                        {{ field }}
+
+
+                        {% if field.help_text %}
+
+                            <div class="form-text">
+                                {{ field.help_text }}
+                            </div>
+
+                        {% endif %}
+
+
+                        {% for error in field.errors %}
+
+                            <div class="text-danger small">
+                                {{ error }}
+                            </div>
+
+                        {% endfor %}
+
+                    </div>
+
+                {% endfor %}
+
+
+                <!-- BOTONES -->
+
+                <div class="mt-4">
+
+                    <button
+                        type="submit"
+                        class="btn btn-success"
+                    >
+
+                        <i class="bi bi-check-lg"></i>
+
+                        Guardar herramienta
+
+                    </button>
+
+
+                    <a
+                        href="{% url 'inventario:herramientas' %}"
+                        class="btn btn-secondary"
+                    >
+
+                        <i class="bi bi-arrow-left"></i>
+
+                        Cancelar / Volver
+
+                    </a>
+
+                </div>
 
             </form>
 

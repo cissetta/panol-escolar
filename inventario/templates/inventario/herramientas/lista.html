@@ -1,89 +1,682 @@
+```html
 {% extends 'base.html' %}
+
+{% block extra_css %}
+
+<style>
+    /* ==============================
+       ESTILO INVENTARIO
+       ============================== */
+
+    .page-subtitle {
+        color: #5b8db8;
+        font-size: 13px;
+        margin-bottom: 8px;
+    }
+
+    .grupo-inventario {
+        display: inline-block;
+        background: #e3f2fd;
+        color: #1976d2;
+        border: 1px solid #bbdefb;
+        padding: 6px 12px;
+        border-radius: 20px;
+        font-size: 12px;
+        font-weight: 600;
+    }
+
+    /* ==============================
+       BOTÓN NUEVA HERRAMIENTA
+       ============================== */
+
+    .btn-nueva-herramienta {
+        background: #1976d2;
+        border: none;
+        color: white;
+        padding: 9px 16px;
+        border-radius: 8px;
+        font-weight: 600;
+        transition: all 0.2s ease;
+        text-decoration: none;
+        display: inline-block;
+    }
+
+    .btn-nueva-herramienta:hover {
+        background: #1565c0;
+        color: white;
+        transform: translateY(-1px);
+        box-shadow: 0 4px 10px rgba(25, 118, 210, 0.25);
+    }
+
+    /* ==============================
+       BUSCADOR Y FILTROS
+       ============================== */
+
+    #buscarHerramienta,
+    #filtroCategoria,
+    #filtroEstado {
+        border: 1px solid #b8d8f2;
+        border-radius: 8px;
+    }
+
+    #buscarHerramienta:focus,
+    #filtroCategoria:focus,
+    #filtroEstado:focus {
+        border-color: #42a5f5;
+        box-shadow: 0 0 0 0.2rem rgba(66, 165, 245, 0.15);
+    }
+
+    /* ==============================
+       BOTÓN LIMPIAR FILTROS
+       ============================== */
+
+    #limpiarFiltros {
+        background: #e3f2fd;
+        color: #1976d2;
+        border: 1px solid #90caf9;
+        border-radius: 8px;
+        font-weight: 600;
+    }
+
+    #limpiarFiltros:hover {
+        background: #bbdefb;
+        color: #0d47a1;
+    }
+
+    /* ==============================
+       TABLA
+       ============================== */
+
+    .card {
+        border: 1px solid #d6eaf8;
+        border-radius: 12px;
+        box-shadow: 0 3px 12px rgba(30, 58, 95, 0.08);
+        overflow: hidden;
+    }
+
+    #tablaHerramientas {
+        margin-bottom: 0;
+    }
+
+    #tablaHerramientas thead {
+        background: #e3f2fd;
+    }
+
+    #tablaHerramientas thead th {
+        color: #174a7c;
+        font-size: 13px;
+        font-weight: 700;
+        border-bottom: 2px solid #90caf9;
+        padding: 14px 12px;
+        white-space: nowrap;
+    }
+
+    #tablaHerramientas tbody td {
+        padding: 13px 12px;
+        color: #34495e;
+        border-color: #e8f3fb;
+    }
+
+    #tablaHerramientas tbody tr:hover {
+        background: #f0f8ff;
+    }
+
+    #tablaHerramientas tbody td:first-child {
+        color: #1976d2;
+        font-weight: 700;
+    }
+
+    /* ==============================
+       ESTADOS
+       ============================== */
+
+    .estado-disponible {
+        background: #e3f2fd !important;
+        color: #1976d2 !important;
+        border: 1px solid #90caf9;
+        padding: 6px 10px;
+        font-weight: 600;
+    }
+
+    .estado-sin-estado {
+        background: #eaf6ff !important;
+        color: #5b8db8 !important;
+        border: 1px solid #b8d8f2;
+        padding: 6px 10px;
+        font-weight: 600;
+    }
+
+    .estado-baja {
+        background: #dbeeff !important;
+        color: #1565c0 !important;
+        border: 1px solid #90caf9;
+        padding: 6px 10px;
+        font-weight: 600;
+    }
+
+    /* ==============================
+       BOTONES DE ACCIONES
+       ============================== */
+
+    .btn-accion {
+        border-radius: 7px;
+        font-weight: 600;
+        padding: 6px 10px;
+        margin-right: 3px;
+        transition: all 0.2s ease;
+        text-decoration: none;
+    }
+
+    /* VER QR */
+
+    .btn-ver-qr {
+        color: #1976d2;
+        border: 1px solid #64b5f6;
+        background: #f5fbff;
+    }
+
+    .btn-ver-qr:hover {
+        background: #e3f2fd;
+        color: #0d47a1;
+        border-color: #1976d2;
+    }
+
+    /* VER HERRAMIENTA */
+
+    .btn-ver-herramienta {
+        color: #1565c0;
+        border: 1px solid #90caf9;
+        background: #f5fbff;
+    }
+
+    .btn-ver-herramienta:hover {
+        background: #e3f2fd;
+        color: #0d47a1;
+        border-color: #64b5f6;
+    }
+
+    /* DAR DE BAJA */
+
+    .btn-dar-baja {
+        background: #e2110aff;
+        color: white;
+        border: none;
+        padding: 6px 11px;
+        border-radius: 7px;
+        cursor: pointer;
+        font-weight: 600;
+        transition: all 0.2s ease;
+    }
+
+    .btn-dar-baja:hover {
+        background: #1565c0;
+        color: white;
+        transform: translateY(-1px);
+        box-shadow: 0 4px 10px rgba(33, 150, 243, 0.25);
+    }
+
+    .form-dar-baja {
+        display: inline;
+        margin: 0;
+    }
+
+    /* ==============================
+       ACCIONES EN LA TABLA
+       ============================== */
+
+    #tablaHerramientas td:last-child {
+        white-space: nowrap;
+    }
+</style>
+
+{% endblock %}
+
+
+{% block title %}Inventario – Herramientas{% endblock %}
+
+
+{% block page_title %}
+Inventario – Herramientas
+{% endblock %}
+
 
 {% block content %}
 
-<div class="container mt-4">
+<div class="container-fluid">
 
-    <div class="d-flex justify-content-between align-items-center mb-4">
+    <!-- TÍTULO -->
 
-        <h2>Herramientas</h2>
+    <div class="mb-3">
 
-        <a href="{% url 'inventario:nueva_herramienta' %}" class="btn btn-primary">
-            Nueva herramienta
+        <h4 style="color:#1e3a5f; margin-bottom: 2px;">
+            Inventario – Herramientas
+        </h4>
+
+        <div class="page-subtitle">
+            Inventario / Herramientas
+        </div>
+
+        <div class="grupo-inventario">
+            🔨 Grupo 2 – Inventario
+        </div>
+
+    </div>
+
+
+    <!-- BOTÓN NUEVA HERRAMIENTA -->
+
+    <div class="mb-3">
+
+        <a
+            href="{% url 'inventario:nueva_herramienta' %}"
+            class="btn-nueva-herramienta"
+        >
+            <i class="bi bi-plus-lg"></i>
+            Nueva Herramienta
         </a>
 
     </div>
 
-    <table class="table table-bordered table-hover">
 
-        <thead class="table-dark">
+    <!-- FILTROS -->
 
-            <tr>
-                <th>Código</th>
-                <th>Nombre</th>
-                <th>Categoría</th>
-                <th>Ubicación</th>
-                <th>Estado</th>
-                <th>Acciones</th>
-            </tr>
+    <div class="row g-2 mb-3">
 
-        </thead>
+        <!-- BUSCADOR -->
 
-        <tbody>
+        <div class="col-md-4">
 
-        {% for herramienta in herramientas %}
+            <input
+                id="buscarHerramienta"
+                type="text"
+                class="form-control"
+                placeholder="🔍 Buscar herramienta..."
+            >
 
-            <tr>
-
-                <td>{{ herramienta.codigo }}</td>
-
-                <td>{{ herramienta.nombre }}</td>
-
-                <td>{{ herramienta.categoria }}</td>
-
-                <td>{{ herramienta.ubicacion }}</td>
-
-                <td>{{ herramienta.get_estado_display }}</td>
-
-                <td>
-
-    <a href="{% url 'inventario:editar_herramienta' herramienta.id %}"
-       class="btn btn-warning btn-sm">
-        Editar
-    </a>
+        </div>
 
 
-    <a href="{% url 'inventario:eliminar_herramienta' herramienta.id %}"
-       class="btn btn-danger btn-sm">
-        Baja
-    </a>
+        <!-- FILTRO CATEGORÍA -->
 
-    <a href="{% url 'inventario:ver_qr_herramienta' herramienta.id %}"
-       class="btn btn-success btn-sm">
-        QR
-    </a>
-</td>
+        <div class="col-md-3">
 
-            </tr>
+            <select
+                id="filtroCategoria"
+                class="form-select"
+            >
 
-        {% empty %}
+                <option value="">
+                    Todas las categorías
+                </option>
 
-            <tr>
+                {% for categoria in categorias %}
 
-                <td colspan="6" class="text-center">
+                    <option value="{{ categoria.nombre }}">
+                        {{ categoria.nombre }}
+                    </option>
 
-                    No hay herramientas registradas.
+                {% endfor %}
 
-                </td>
+            </select>
 
-            </tr>
+        </div>
 
-        {% endfor %}
 
-        </tbody>
+        <!-- FILTRO ESTADO -->
 
-    </table>
+        <div class="col-md-3">
+
+            <select
+                id="filtroEstado"
+                class="form-select"
+            >
+
+                <option value="">
+                    Todos los estados
+                </option>
+
+                {% for estado in estados %}
+
+                    <option value="{{ estado }}">
+                        {{ estado }}
+                    </option>
+
+                {% endfor %}
+
+            </select>
+
+        </div>
+
+
+        <!-- LIMPIAR FILTROS -->
+
+        <div class="col-md-2">
+
+            <button
+                type="button"
+                id="limpiarFiltros"
+                class="btn w-100"
+            >
+                Limpiar filtros
+            </button>
+
+        </div>
+
+    </div>
+
+
+    <!-- TABLA -->
+
+    <div class="card">
+
+        <div class="card-body p-0">
+
+            <div class="table-responsive">
+
+                <table
+                    class="table table-hover align-middle mb-0"
+                    id="tablaHerramientas"
+                >
+
+                    <thead>
+
+                        <tr>
+
+                            <th>Código</th>
+                            <th>Herramienta</th>
+                            <th>Categoría</th>
+                            <th>Ubicación</th>
+                            <th>Estado</th>
+                            <th>Acciones</th>
+
+                        </tr>
+
+                    </thead>
+
+
+                    <tbody>
+
+                    {% for herramienta in herramientas %}
+
+                        <tr>
+
+                            <!-- CÓDIGO -->
+
+                            <td>
+                                {{ herramienta.codigo }}
+                            </td>
+
+
+                            <!-- NOMBRE -->
+
+                            <td>
+                                {{ herramienta.nombre }}
+                            </td>
+
+
+                            <!-- CATEGORÍA -->
+
+                            <td>
+
+                                {% if herramienta.categoria %}
+
+                                    {{ herramienta.categoria.nombre }}
+
+                                {% else %}
+
+                                    Sin categoría
+
+                                {% endif %}
+
+                            </td>
+
+
+                            <!-- UBICACIÓN -->
+
+                            <td>
+                                {{ herramienta.ubicacion|default:"Sin ubicación" }}
+                            </td>
+
+
+                            <!-- ESTADO -->
+
+                            <td>
+
+                                {% if herramienta.estado %}
+
+                                    <span class="badge rounded-pill estado-disponible">
+                                        {{ herramienta.get_estado_display }}
+                                    </span>
+
+                                {% else %}
+
+                                    <span class="badge rounded-pill estado-sin-estado">
+                                        Sin estado
+                                    </span>
+
+                                {% endif %}
+
+                            </td>
+
+
+                            <!-- ACCIONES -->
+
+                            <td>
+
+                                <!-- VER QR -->
+
+                                <a
+                                    href="{% url 'inventario:qr_herramienta' herramienta.id %}"
+                                    class="btn btn-accion btn-ver-qr"
+                                >
+                                    <i class="bi bi-qr-code"></i>
+                                    Ver QR
+                                </a>
+
+
+                                <!-- VER HERRAMIENTA -->
+
+                                <a
+                                    href="{% url 'inventario:detalle_herramienta' herramienta.id %}"
+                                    class="btn btn-accion btn-ver-herramienta"
+                                >
+                                    Ver herramienta
+                                </a>
+
+
+                                <!-- DAR DE BAJA -->
+
+                                {% if herramienta.estado != "BAJA" %}
+
+<form
+    method="POST"
+    action="{% url 'inventario:dar_de_baja_herramienta' herramienta.pk %}"
+    class="form-dar-baja"
+    onsubmit="return confirm('¿Seguro que querés dar de baja esta herramienta?');"
+>
+    {% csrf_token %}
+
+    <button
+        type="submit"
+        class="btn-dar-baja"
+    >
+        Dar de baja
+    </button>
+
+</form>
+
+
+                                {% else %}
+
+                                    <span class="badge rounded-pill estado-baja">
+                                        Dada de baja
+                                    </span>
+
+                                {% endif %}
+
+                            </td>
+
+                        </tr>
+
+                    {% empty %}
+
+                        <tr>
+
+                            <td
+                                colspan="6"
+                                class="text-center py-4"
+                            >
+                                No hay herramientas registradas.
+                            </td>
+
+                        </tr>
+
+                    {% endfor %}
+
+                    </tbody>
+
+                </table>
+
+            </div>
+
+        </div>
+
+    </div>
 
 </div>
 
+
+<!-- ============================== -->
+<!-- FILTROS CON JAVASCRIPT -->
+<!-- ============================== -->
+
+<script>
+
+document.addEventListener("DOMContentLoaded", function () {
+
+    const buscador = document.getElementById("buscarHerramienta");
+
+    const filtroCategoria =
+        document.getElementById("filtroCategoria");
+
+    const filtroEstado =
+        document.getElementById("filtroEstado");
+
+    const limpiarFiltros =
+        document.getElementById("limpiarFiltros");
+
+    const tabla =
+        document.getElementById("tablaHerramientas");
+
+    const filas =
+        tabla.querySelectorAll("tbody tr");
+
+
+    function aplicarFiltros() {
+
+        const texto =
+            buscador.value.toLowerCase().trim();
+
+        const categoria =
+            filtroCategoria.value.toLowerCase().trim();
+
+        const estado =
+            filtroEstado.value.toLowerCase().trim();
+
+
+        filas.forEach(function (fila) {
+
+            const celdas =
+                fila.querySelectorAll("td");
+
+
+            if (celdas.length < 6) {
+                return;
+            }
+
+
+            const codigo =
+                celdas[0].textContent.toLowerCase().trim();
+
+            const nombre =
+                celdas[1].textContent.toLowerCase().trim();
+
+            const categoriaFila =
+                celdas[2].textContent.toLowerCase().trim();
+
+            const estadoFila =
+                celdas[4].textContent.toLowerCase().trim();
+
+
+            const coincideBusqueda =
+                texto === "" ||
+                codigo.includes(texto) ||
+                nombre.includes(texto);
+
+
+            const coincideCategoria =
+                categoria === "" ||
+                categoriaFila === categoria;
+
+
+            const coincideEstado =
+                estado === "" ||
+                estadoFila === estado;
+
+
+            if (
+                coincideBusqueda &&
+                coincideCategoria &&
+                coincideEstado
+            ) {
+
+                fila.style.display = "";
+
+            } else {
+
+                fila.style.display = "none";
+
+            }
+
+        });
+
+    }
+
+
+    buscador.addEventListener(
+        "input",
+        aplicarFiltros
+    );
+
+
+    filtroCategoria.addEventListener(
+        "change",
+        aplicarFiltros
+    );
+
+
+    filtroEstado.addEventListener(
+        "change",
+        aplicarFiltros
+    );
+
+
+    limpiarFiltros.addEventListener(
+        "click",
+        function () {
+
+            buscador.value = "";
+            filtroCategoria.value = "";
+            filtroEstado.value = "";
+
+            aplicarFiltros();
+
+        }
+    );
+
+});
+
+</script>
+
 {% endblock %}
+```
