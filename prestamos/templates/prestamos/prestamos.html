@@ -29,16 +29,28 @@
                 Escanear QR
               </button>
             </div>
+          <div class="mb-3">
+            <label for="alumno_qr" class="form-label fw-semibold">Alumno</label>
+            <select class="form-select" id="alumno_qr" name="alumno_qr" required>
+              <option value="">Seleccioná un alumno...</option>
+              {% for alumno in alumnos %}
+                <option value="{{ alumno.legajo }}">{{ alumno.apellido }}, {{ alumno.nombre }} ({{ alumno.legajo }})</option>
+              {% endfor %}
+            </select>
+          </div>
 
-            <div class="col-md-5">
-              <label for="docente" class="form-label fw-semibold">Docente</label>
-              <select class="form-select" id="docente" name="docente" required>
-                <option value="">Seleccioná un docente...</option>
-                {% for docente in docentes %}
-                  <option value="{{ docente.pk }}">{{ docente.apellido }}, {{ docente.nombre }}</option>
+          <div class="mb-3">
+            <label for="herr_qr" class="form-label fw-semibold">Herramienta</label>
+            <select class="form-select" id="herr_qr" name="herr_qr" required>
+              <option value="">Seleccioná una herramienta...</option>
+              {% if herramientas %}
+                {% for herramienta in herramientas %}
+                  <option value="{{ herramienta.codigo }}">{{ herramienta.nombre }} ({{ herramienta.codigo }}) — {{ herramienta.get_estado_display }}</option>
                 {% endfor %}
-              </select>
-            </div>
+              {% else %}
+                <option value="" disabled>No hay herramientas activas para prestar</option>
+              {% endif %}
+            </select>
           </div>
 
           <div class="mb-3">
@@ -372,6 +384,15 @@
               }
             });
           </script>
+
+            <label for="docente" class="form-label fw-semibold">Docente</label>
+            <select class="form-select" id="docente" name="docente" required>
+              <option value="">Seleccioná un docente...</option>
+              {% for docente in docentes %}
+                <option value="{{ docente.pk }}">{{ docente.apellido }}, {{ docente.nombre }}</option>
+              {% endfor %}
+            </select>
+          </div>
 
           <div class="mb-4">
             <label for="observaciones" class="form-label fw-semibold">Observaciones</label>
