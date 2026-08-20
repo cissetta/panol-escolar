@@ -4,7 +4,7 @@ from django.core.files import File
 
 def generar_qr_alumno(alumno):
     # Genera la imagen del QR con un prefijo y el legajo
-    img = qrcode.make(f"ALU-{alumno.legajo}")
+    img = qrcode.make(f"ALU-{alumno.legajo }")
     buf = BytesIO()
     img.save(buf, format='PNG')
     

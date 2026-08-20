@@ -1,0 +1,36 @@
+{% extends 'base.html' %}
+{% block title %}Grupo 5 - Categorías{% endblock %}
+{% block page_title %}Editar categoría{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+  <div class="col-lg-6">
+    <div class="card border-0 shadow-sm">
+      <div class="card-header bg-white fw-semibold">✏️ Editar categoría</div>
+      <div class="card-body">
+        <form method="post">
+          {% csrf_token %}
+          <div class="mb-3">
+            <label for="{{ form.nombre.id_for_label }}" class="form-label">Nombre</label>
+            {{ form.nombre }}
+            {% if form.nombre.errors %}
+              <div class="text-danger small">{{ form.nombre.errors|join:", " }}</div>
+            {% endif %}
+          </div>
+          <div class="mb-3">
+            <label for="{{ form.color_hex.id_for_label }}" class="form-label">Color</label>
+            {{ form.color_hex }}
+            {% if form.color_hex.errors %}
+              <div class="text-danger small">{{ form.color_hex.errors|join:", " }}</div>
+            {% endif %}
+          </div>
+          <div class="d-flex gap-2">
+            <button type="submit" class="btn btn-primary">Guardar cambios</button>
+            <a href="{% url 'reportes:categorias' %}" class="btn btn-secondary">Cancelar</a>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
