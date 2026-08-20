@@ -68,8 +68,295 @@
             {% endif %}
           </div>
 
-          <!-- ── Docente ── -->
-          <div class="mb-3">
+          <div class="modal fade" id="qrScannerModal" tabindex="-1" aria-labelledby="qrScannerModalLabel" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered">
+              <div class="modal-content">
+                <div class="modal-header">
+                  <h5 class="modal-title" id="qrScannerModalLabel">Escanear QR del alumno</h5>
+                  <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+                </div>
+                <div class="modal-body">
+                  <div id="qr-reader" style="width: 100%; min-height: 280px;"></div>
+                  <p class="text-muted small mb-0 mt-3">Apuntá la cámara al código QR del alumno.</p>
+                </div>
+                <div class="modal-footer">
+                  <button type="button" class="btn btn-outline-secondary" id="stopScannerButton">Cerrar cámara</button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="modal fade" id="toolQrScannerModal" tabindex="-1" aria-labelledby="toolQrScannerModalLabel" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered">
+              <div class="modal-content">
+                <div class="modal-header">
+                  <h5 class="modal-title" id="toolQrScannerModalLabel">Escanear QR de herramienta</h5>
+                  <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+                </div>
+                <div class="modal-body">
+                  <div id="tool-qr-reader" style="width: 100%; min-height: 280px;"></div>
+                  <p class="text-muted small mb-0 mt-3">Apuntá la cámara al código QR de la herramienta.</p>
+                </div>
+                <div class="modal-footer">
+                  <button type="button" class="btn btn-outline-secondary" id="stopToolScannerButton">Cerrar cámara</button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <script src="https://cdn.jsdelivr.net/npm/html5-qrcode@2.3.8/minified/html5-qrcode.min.js"></script>
+          <script>
+            document.addEventListener('DOMContentLoaded', function () {
+              const toggleText = document.getElementById('herramientasSeleccionadasTexto');
+              const checkboxes = document.querySelectorAll('.herramienta-checkbox');
+              const alumnoSelect = document.getElementById('alumno_qr');
+              const searchInputDropdown = document.getElementById('herramientaSearchDropdown');
+              const toolSearchItems = document.querySelectorAll('.herramienta-item');
+              const toggleButton = document.getElementById('herramientasToggle');
+              const herramientasPanel = document.getElementById('herramientasPanel');
+              const scanButton = document.getElementById('scanQrButton');
+              const toolScanButton = document.getElementById('scanToolQrButton');
+              const modalElement = document.getElementById('qrScannerModal');
+              const toolModalElement = document.getElementById('toolQrScannerModal');
+              const stopScannerButton = document.getElementById('stopScannerButton');
+              const stopToolScannerButton = document.getElementById('stopToolScannerButton');
+              const qrReader = document.getElementById('qr-reader');
+              const toolQrReader = document.getElementById('tool-qr-reader');
+              let qrScanner = null;
+              let toolQrScanner = null;
+              let modal = null;
+              let toolModal = null;
+
+              if (window.bootstrap && modalElement) {
+                modal = new bootstrap.Modal(modalElement);
+              }
+
+              if (window.bootstrap && toolModalElement) {
+                toolModal = new bootstrap.Modal(toolModalElement);
+              }
+
+              function actualizarTextoHerramientas() {
+                const seleccionadas = [...checkboxes].filter(checkbox => checkbox.checked);
+
+                if (!seleccionadas.length) {
+                  toggleText.textContent = 'Seleccioná herramientas...';
+                  return;
+                }
+
+                if (seleccionadas.length === 1) {
+                  toggleText.textContent = seleccionadas[0].dataset.label;
+                  return;
+                }
+
+                toggleText.textContent = `${seleccionadas.length} herramientas seleccionadas`;
+              }
+
+              checkboxes.forEach(checkbox => {
+                checkbox.addEventListener('change', actualizarTextoHerramientas);
+              });
+
+              function filtrarHerramientas(termino) {
+                const textoBuscado = termino.trim().toLowerCase();
+
+                toolSearchItems.forEach(item => {
+                  const texto = (item.dataset.search || '').toLowerCase();
+                  const coincide = !textoBuscado || texto.includes(textoBuscado);
+                  item.style.display = coincide ? '' : 'none';
+                });
+              }
+
+              if (toggleButton && herramientasPanel) {
+                toggleButton.addEventListener('click', function () {
+                  const visible = herramientasPanel.style.display !== 'none';
+                  herramientasPanel.style.display = visible ? 'none' : 'block';
+                });
+
+                document.addEventListener('click', function (event) {
+                  const clicDentro = toggleButton.contains(event.target) || herramientasPanel.contains(event.target);
+                  if (!clicDentro) {
+                    herramientasPanel.style.display = 'none';
+                  }
+                });
+              }
+
+              if (searchInputDropdown) {
+                searchInputDropdown.addEventListener('input', function () {
+                  filtrarHerramientas(this.value);
+                });
+              }
+
+              actualizarTextoHerramientas();
+
+              async function detenerScanner() {
+                if (!qrScanner) {
+                  return;
+                }
+
+                try {
+                  await qrScanner.stop();
+                } catch (error) {
+                  // Ignoramos si la cámara ya estaba cerrada.
+                }
+
+                qrScanner.clear();
+                qrScanner = null;
+                qrReader.innerHTML = '';
+              }
+
+              async function detenerToolScanner() {
+                if (!toolQrScanner) {
+                  return;
+                }
+
+                try {
+                  await toolQrScanner.stop();
+                } catch (error) {
+                  // Ignoramos si la cámara ya estaba cerrada.
+                }
+
+                toolQrScanner.clear();
+                toolQrScanner = null;
+                if (toolQrReader) {
+                  toolQrReader.innerHTML = '';
+                }
+              }
+
+              async function abrirScannerQR() {
+                if (!window.Html5Qrcode) {
+                  alert('No se pudo cargar el lector de QR en este navegador.');
+                  return;
+                }
+
+                if (modal) {
+                  modal.show();
+                }
+
+                if (qrScanner) {
+                  await detenerScanner();
+                }
+
+                qrScanner = new Html5Qrcode('qr-reader');
+                try {
+                  await qrScanner.start(
+                    { facingMode: 'environment' },
+                    { fps: 10, qrbox: { width: 250, height: 250 } },
+                    async (decodedText) => {
+                      const valor = String(decodedText).trim();
+                      const option = [...alumnoSelect.options].find(opt => opt.value.toLowerCase() === valor.toLowerCase());
+
+                      if (!option) {
+                        alert('El QR escaneado no coincide con ningún alumno registrado.');
+                        return;
+                      }
+
+                      alumnoSelect.value = option.value;
+
+                      if (modal) {
+                        modal.hide();
+                      }
+
+                      await detenerScanner();
+                    },
+                    () => {}
+                  );
+                } catch (error) {
+                  alert('No se pudo acceder a la cámara. Revisá los permisos del navegador.');
+                  if (modal) {
+                    modal.hide();
+                  }
+                  await detenerScanner();
+                }
+              }
+
+              async function abrirScannerHerramienta() {
+                if (!window.Html5Qrcode) {
+                  alert('No se pudo cargar el lector de QR en este navegador.');
+                  return;
+                }
+
+                if (toolModal) {
+                  toolModal.show();
+                }
+
+                if (toolQrScanner) {
+                  await detenerToolScanner();
+                }
+
+                toolQrScanner = new Html5Qrcode('tool-qr-reader');
+
+                try {
+                  await toolQrScanner.start(
+                    { facingMode: 'environment' },
+                    { fps: 10, qrbox: { width: 240, height: 240 } },
+                    async (decodedText) => {
+                      const codigoEscaneado = String(decodedText).trim().toUpperCase();
+                      const checkbox = [...checkboxes].find(item => item.value.toUpperCase() === codigoEscaneado);
+
+                      if (!checkbox) {
+                        alert('El QR escaneado no coincide con ninguna herramienta disponible.');
+                        return;
+                      }
+
+                      checkbox.checked = true;
+                      checkbox.dispatchEvent(new Event('change'));
+
+                      if (toolModal) {
+                        toolModal.hide();
+                      }
+
+                      await detenerToolScanner();
+                    },
+                    () => {}
+                  );
+                } catch (error) {
+                  alert('No se pudo acceder a la cámara. Revisá los permisos del navegador.');
+                  if (toolModal) {
+                    toolModal.hide();
+                  }
+                  await detenerToolScanner();
+                }
+              }
+
+              if (scanButton) {
+                scanButton.addEventListener('click', abrirScannerQR);
+              }
+
+              if (toolScanButton) {
+                toolScanButton.addEventListener('click', abrirScannerHerramienta);
+              }
+
+              if (stopScannerButton) {
+                stopScannerButton.addEventListener('click', async () => {
+                  if (modal) {
+                    modal.hide();
+                  }
+                  await detenerScanner();
+                });
+              }
+
+              if (stopToolScannerButton) {
+                stopToolScannerButton.addEventListener('click', async () => {
+                  if (toolModal) {
+                    toolModal.hide();
+                  }
+                  await detenerToolScanner();
+                });
+              }
+
+              if (modalElement) {
+                modalElement.addEventListener('hidden.bs.modal', async () => {
+                  await detenerScanner();
+                });
+              }
+
+              if (toolModalElement) {
+                toolModalElement.addEventListener('hidden.bs.modal', async () => {
+                  await detenerToolScanner();
+                });
+              }
+            });
+          </script>
+
             <label for="docente" class="form-label fw-semibold">Docente</label>
             <select class="form-select" id="docente" name="docente" required>
               <option value="">Seleccioná un docente...</option>
