@@ -10,11 +10,10 @@ from core.models import (
     LogHerramienta,
 )
 
-
 @solo_docente
 def index(request):
     herramienta_id = request.GET.get("herramienta")
-    mes = request.GET.get("mes")
+    mes_completo = request.GET.get("mes")  # Cambiamos el nombre para no confundir
 
     herramientas = Herramienta.objects.filter(activo=True)
 
@@ -31,9 +30,15 @@ def index(request):
         planes = planes.filter(herramienta_id=herramienta_id)
         historial = historial.filter(plan__herramienta_id=herramienta_id)
 
-    if mes:
-        planes = planes.filter(proxima_ejecucion__month=int(mes))
-        historial = historial.filter(fecha__month=int(mes))
+    # NUEVA LÓGICA: Separamos el Año y el Mes que vienen del formulario 'YYYY-MM'
+    if mes_completo and '-' in mes_completo:
+        partes = mes_completo.split('-')
+        anio_int = int(partes[0])  # Guarda 2026
+        mes_int = int(partes[1])   # Guarda 7
+
+        # Filtramos tanto por mes como por año para que sea exacto
+        planes = planes.filter(proxima_ejecucion__year=anio_int, proxima_ejecucion__month=mes_int)
+        historial = historial.filter(fecha__year=anio_int, fecha__month=mes_int)
 
     historial = historial.order_by("-fecha")
 
@@ -45,32 +50,9 @@ def index(request):
             "historial": historial,
             "herramientas": herramientas,
             "herramienta_seleccionada": herramienta_id,
-            "mes_seleccionado": mes,
+            "mes_seleccionado": mes_completo,  # Mantenemos el texto completo para que el HTML sepa qué mes dejar seleccionado
         }
     )
-
-    return render(
-        request,
-        "mantenimiento/index.html",
-        {
-            "planes": planes,
-            "historial": historial,
-            "herramientas": herramientas,
-            "herramienta_seleccionada": herramienta_id,
-            "mes_seleccionado": mes,
-        }
-    )
-    return render(
-        request,
-        "mantenimiento/index.html",
-        {
-            "planes": planes,
-            "historial": historial,
-            "herramientas": herramientas,
-            "herramienta_seleccionada": herramienta_id,
-        }
-    )
-
 @solo_panolero
 def crear_plan(request):
 
