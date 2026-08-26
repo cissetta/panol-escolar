@@ -4,10 +4,11 @@ from django.contrib.auth.decorators import login_required
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
 from datetime import timedelta
+from accounts.decorators import solo_panolero, solo_docente, solo_alumno
 from core.models import Alumno, Docente, Herramienta, Prestamo
 
 
-@login_required
+@solo_docente
 def index(request):
     devoluciones = (
         Prestamo.objects.filter(fecha_devolucion__isnull=False)
@@ -17,7 +18,7 @@ def index(request):
     return render(request, "prestamos/index.html", {"devoluciones": devoluciones})
 
 
-@login_required
+@solo_docente
 def activos(request):
     prestamos_activos = (
         Prestamo.objects.filter(fecha_devolucion__isnull=True)
@@ -27,7 +28,7 @@ def activos(request):
     return render(request, "prestamos/activos.html", {"prestamos_activos": prestamos_activos})
 
 
-@login_required
+@solo_panolero
 def registrar_prestamo(request):
     alumnos = Alumno.objects.filter(activo=True).order_by("apellido", "nombre")
     herramientas = Herramienta.objects.filter(activo=True).order_by("nombre")
@@ -94,7 +95,32 @@ def registrar_prestamo(request):
         },
     )
 
-@login_required
+@solo_alumno
+def mis_prestamos(request):
+    """Vista para el alumno: muestra sus préstamos activos e historial."""
+    perfil = getattr(request.user, 'perfil', None)
+    alumno = getattr(perfil, 'alumno', None) if perfil else None
+
+    if alumno is None:
+        # Usuario con rol ALUMNO pero sin alumno vinculado
+        return render(request, 'prestamos/mis_prestamos.html', {'alumno': None})
+
+    activos = Prestamo.objects.filter(
+        alumno=alumno, fecha_devolucion__isnull=True
+    ).select_related('herramienta', 'docente').order_by('-fecha_prestamo')
+
+    historial = Prestamo.objects.filter(
+        alumno=alumno, fecha_devolucion__isnull=False
+    ).select_related('herramienta', 'docente').order_by('-fecha_devolucion')[:20]
+
+    return render(request, 'prestamos/mis_prestamos.html', {
+        'alumno': alumno,
+        'activos': activos,
+        'historial': historial,
+    })
+
+
+@solo_panolero
 def registrar_devolucion(request, id=None):
     prestamos_activos = (
         Prestamo.objects.filter(fecha_devolucion__isnull=True)

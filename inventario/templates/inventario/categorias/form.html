@@ -1,37 +1,63 @@
 {% extends 'base.html' %}
+{% block title %}{% if form.instance.pk %}Editar categoría{% else %}Nueva categoría{% endif %}{% endblock %}
+{% block page_title %}{% if form.instance.pk %}Editar categoría{% else %}Nueva categoría{% endif %}{% endblock %}
 
 {% block content %}
+<div class="row justify-content-center">
+  <div class="col-lg-6">
+    <div class="card card-panol">
+      <div class="card-body p-4">
 
-<div class="container mt-4">
+        <h5 class="fw-semibold mb-4">
+          <i class="bi bi-{% if form.instance.pk %}pencil{% else %}plus-lg{% endif %} text-primary"></i>
+          {% if form.instance.pk %}Editar categoría{% else %}Nueva categoría{% endif %}
+        </h5>
 
-    <div class="card shadow">
-
-        <div class="card-header">
-            <h3>Categoría</h3>
+        {% if form.errors %}
+        <div class="alert alert-danger">
+          <strong>Corregí los siguientes errores:</strong>
+          <ul class="mb-0 mt-1">
+            {% for field in form %}{% for e in field.errors %}<li>{{ field.label }}: {{ e }}</li>{% endfor %}{% endfor %}
+            {% for e in form.non_field_errors %}<li>{{ e }}</li>{% endfor %}
+          </ul>
         </div>
+        {% endif %}
 
-        <div class="card-body">
+        <form method="post">
+          {% csrf_token %}
 
-            <form method="post">
+          <div class="mb-3">
+            <label class="form-label fw-semibold">Nombre <span class="text-danger">*</span></label>
+            {{ form.nombre }}
+            {% for e in form.nombre.errors %}<div class="text-danger small">{{ e }}</div>{% endfor %}
+          </div>
 
-                {% csrf_token %}
+          <div class="mb-4">
+            <label class="form-label fw-semibold">Color</label>
+            {{ form.color_hex }}
+            <div class="form-text">Color para identificar la categoría en los reportes.</div>
+          </div>
 
-                {{ form.as_p }}
+          <div class="d-flex justify-content-between">
+            <a href="{% url 'inventario:categorias' %}" class="btn btn-outline-secondary">
+              <i class="bi bi-arrow-left"></i> Cancelar
+            </a>
+            <button type="submit" class="btn btn-primary">
+              <i class="bi bi-check-lg"></i> Guardar
+            </button>
+          </div>
+        </form>
 
-                <button type="submit" class="btn btn-success">
-                    Guardar
-                </button>
-
-                <a href="{% url 'inventario:categorias' %}" class="btn btn-secondary">
-                    Cancelar
-                </a>
-
-            </form>
-
-        </div>
-
+      </div>
     </div>
-
+  </div>
 </div>
+{% endblock %}
 
+{% block extra_js %}
+<script>
+document.querySelectorAll('input:not([type=checkbox]):not([type=radio]):not([type=hidden]):not([type=color]), select, textarea')
+  .forEach(el => el.classList.add('form-control'));
+document.querySelectorAll('select').forEach(el => { el.classList.remove('form-control'); el.classList.add('form-select'); });
+</script>
 {% endblock %}

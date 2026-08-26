@@ -1,0 +1,140 @@
+{% extends 'base.html' %}
+{% block title %}Historial de herramientas{% endblock %}
+{% block page_title %}Historial de préstamos de herramientas{% endblock %}
+
+{% block content %}
+
+<!-- Filtros -->
+<div class="card card-panol mb-4">
+  <div class="card-body py-3">
+    <form method="get" class="row g-2 align-items-end">
+
+      <div class="col-md-3">
+        <label class="form-label form-label-sm fw-semibold">Herramienta</label>
+        <select name="herramienta" class="form-select form-select-sm">
+          <option value="">Todas</option>
+          {% for h in herramientas %}
+            <option value="{{ h.pk }}" {% if filtro_herramienta == h.pk|stringformat:"s" %}selected{% endif %}>
+              {{ h.nombre }} ({{ h.codigo }})
+            </option>
+          {% endfor %}
+        </select>
+      </div>
+
+      <div class="col-md-2">
+        <label class="form-label form-label-sm fw-semibold">Alumno</label>
+        <select name="alumno" class="form-select form-select-sm">
+          <option value="">Todos</option>
+          {% for a in alumnos %}
+            <option value="{{ a.pk }}" {% if filtro_alumno == a.pk|stringformat:"s" %}selected{% endif %}>
+              {{ a.apellido }}, {{ a.nombre }}
+            </option>
+          {% endfor %}
+        </select>
+      </div>
+
+      <div class="col-md-2">
+        <label class="form-label form-label-sm fw-semibold">Estado</label>
+        <select name="estado" class="form-select form-select-sm">
+          <option value="">Todos</option>
+          <option value="activo"   {% if filtro_estado == 'activo' %}selected{% endif %}>Activos</option>
+          <option value="devuelto" {% if filtro_estado == 'devuelto' %}selected{% endif %}>Devueltos</option>
+        </select>
+      </div>
+
+      <div class="col-md-2">
+        <label class="form-label form-label-sm fw-semibold">Desde</label>
+        <input type="date" name="fecha_desde" class="form-control form-control-sm" value="{{ filtro_fecha_desde }}">
+      </div>
+
+      <div class="col-md-2">
+        <label class="form-label form-label-sm fw-semibold">Hasta</label>
+        <input type="date" name="fecha_hasta" class="form-control form-control-sm" value="{{ filtro_fecha_hasta }}">
+      </div>
+
+      <div class="col-md-1 d-flex gap-1">
+        <button type="submit" class="btn btn-primary btn-sm">
+          <i class="bi bi-funnel"></i>
+        </button>
+        <a href="{% url 'inventario:historial_herramientas' %}" class="btn btn-outline-secondary btn-sm">
+          <i class="bi bi-x-circle"></i>
+        </a>
+      </div>
+
+    </form>
+  </div>
+</div>
+
+<!-- Tabla -->
+<div class="card card-panol">
+  <div class="card-body p-0">
+    <div class="px-4 py-3 d-flex justify-content-between align-items-center border-bottom">
+      <h6 class="fw-semibold mb-0">
+        <i class="bi bi-clock-history text-muted"></i> Préstamos
+        <span class="badge bg-secondary ms-1">{{ total }}</span>
+        {% if total > 200 %}<span class="text-muted small">(mostrando últimos 200)</span>{% endif %}
+      </h6>
+    </div>
+
+    {% if prestamos %}
+    <table class="tabla-panol">
+      <thead>
+        <tr>
+          <th>Fecha préstamo</th>
+          <th>Herramienta</th>
+          <th>Alumno</th>
+          <th>Docente</th>
+          <th>Estado</th>
+          <th>Devolución</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for p in prestamos %}
+        <tr>
+          <td class="text-nowrap">{{ p.fecha_prestamo|date:"d/m/Y H:i" }}</td>
+          <td>
+            <a href="{% url 'inventario:detalle_herramienta' p.herramienta.pk %}" class="text-decoration-none fw-semibold">
+              {{ p.herramienta.nombre }}
+            </a>
+            <div class="text-muted small">{{ p.herramienta.codigo }}</div>
+          </td>
+          <td>
+            <a href="{% url 'alumnos:detalle' p.alumno.pk %}" class="text-decoration-none">
+              {{ p.alumno.apellido }}, {{ p.alumno.nombre }}
+            </a>
+            <div class="text-muted small">{{ p.alumno.get_curso_display }}</div>
+          </td>
+          <td>{{ p.docente.apellido }}, {{ p.docente.nombre }}</td>
+          <td>
+            {% if p.fecha_devolucion %}
+              <span class="badge badge-disponible"><i class="bi bi-check-lg"></i> Devuelto</span>
+            {% else %}
+              {% if p.esta_vencido %}
+                <span class="badge badge-vencido"><i class="bi bi-exclamation-triangle"></i> Vencido</span>
+              {% else %}
+                <span class="badge badge-prestada"><i class="bi bi-arrow-up"></i> Activo</span>
+              {% endif %}
+            {% endif %}
+          </td>
+          <td class="text-muted small">
+            {% if p.fecha_devolucion %}
+              {{ p.fecha_devolucion|date:"d/m/Y" }}
+              {% if p.estado_devolucion %}
+                · {{ p.get_estado_devolucion_display }}
+              {% endif %}
+            {% else %}
+              —
+            {% endif %}
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    {% else %}
+    <p class="tabla-vacia py-4">No hay préstamos que coincidan con los filtros.</p>
+    {% endif %}
+
+  </div>
+</div>
+
+{% endblock %}

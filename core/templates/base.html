@@ -92,59 +92,110 @@
 
   <div class="sidebar-nav">
 
+    {% with rol=user.perfil.rol %}
+
     <div class="nav-section">Principal</div>
     <a href="{% url 'dashboard' %}" class="nav-link {% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}">
       <span class="icon"><i class="bi bi-bar-chart-line"></i></span> Dashboard
     </a>
 
-    <div class="nav-section">Grupo 1 – Alumnos</div>
-    <a href="{% url 'alumnos:lista' %}" class="nav-link {% if 'alumnos' in request.path and request.resolver_match.url_name != 'nuevo' %}active{% endif %}">
-      <span class="icon"><i class="bi bi-people"></i></span> Lista de Alumnos
-    </a>
-    <a href="{% url 'alumnos:nuevo' %}" class="nav-link {% if request.resolver_match.url_name == 'nuevo' and 'alumnos' in request.path %}active{% endif %}">
-      <span class="icon"><i class="bi bi-person-plus"></i></span> Nuevo Alumno
-    </a>
+    {% if rol == 'ALUMNO' %}
+      <!-- ── Menú simplificado para ALUMNO ── -->
+      <div class="nav-section">Mis datos</div>
+      <a href="{% url 'prestamos:mis_prestamos' %}" class="nav-link {% if 'mis-prestamos' in request.path %}active{% endif %}">
+        <span class="icon"><i class="bi bi-person-check"></i></span> Mis Préstamos
+      </a>
 
-    <div class="nav-section">Grupo 2 – Inventario</div>
-    <a href="{% url 'inventario:herramientas' %}" class="nav-link {% if 'inventario' in request.path and 'insumo' not in request.path %}active{% endif %}">
-      <span class="icon"><i class="bi bi-tools"></i></span> Herramientas
-    </a>
-    <a href="{% url 'inventario:insumos' %}" class="nav-link {% if 'insumo' in request.path %}active{% endif %}">
-      <span class="icon"><i class="bi bi-box-seam"></i></span> Insumos
-    </a>
+      <div class="nav-section">Inventario</div>
+      <a href="{% url 'inventario:herramientas' %}" class="nav-link {% if 'inventario' in request.path and 'insumo' not in request.path %}active{% endif %}">
+        <span class="icon"><i class="bi bi-tools"></i></span> Herramientas
+      </a>
+      <a href="{% url 'inventario:insumos' %}" class="nav-link {% if 'insumo' in request.path %}active{% endif %}">
+        <span class="icon"><i class="bi bi-box-seam"></i></span> Insumos
+      </a>
 
-    <div class="nav-section">Grupo 3 – Préstamos</div>
-    <a href="{% url 'prestamos:nuevo' %}" class="nav-link {% if request.resolver_match.url_name == 'nuevo' and 'prestamos' in request.path %}active{% endif %}">
-      <span class="icon"><i class="bi bi-arrow-up-circle"></i></span> Registrar Préstamo
-    </a>
-    <a href="{% url 'prestamos:activos' %}" class="nav-link {% if 'activos' in request.path %}active{% endif %}">
-      <span class="icon"><i class="bi bi-clock-history"></i></span> Préstamos Activos
-    </a>
-    <a href="{% url 'prestamos:devolucion' %}" class="nav-link {% if 'devolucion' in request.path %}active{% endif %}">
-      <span class="icon"><i class="bi bi-arrow-down-circle"></i></span> Registrar Devolución
-    </a>
+    {% else %}
+      <!-- ── Menú completo para ADMIN / PANOLERO / DOCENTE ── -->
 
-    <div class="nav-section">Grupo 4 – Mantenimiento</div>
-    <a href="{% url 'mantenimiento:index' %}" class="nav-link {% if 'mantenimiento' in request.path and 'vida' not in request.path %}active{% endif %}">
-      <span class="icon"><i class="bi bi-calendar-check"></i></span> Planes
-    </a>
+      <!-- Alumnos -->
+      <div class="nav-section">Alumnos</div>
+      <a href="{% url 'alumnos:lista' %}" class="nav-link {% if 'alumnos' in request.path and request.resolver_match.url_name != 'nuevo' %}active{% endif %}">
+        <span class="icon"><i class="bi bi-people"></i></span> Lista de Alumnos
+      </a>
+      {% if rol == 'ADMIN' or rol == 'PANOLERO' %}
+      <a href="{% url 'alumnos:nuevo' %}" class="nav-link {% if request.resolver_match.url_name == 'nuevo' and 'alumnos' in request.path %}active{% endif %}">
+        <span class="icon"><i class="bi bi-person-plus"></i></span> Nuevo Alumno
+      </a>
+      {% endif %}
 
-    <div class="nav-section">Grupo 5 – Reportes</div>
-    <a href="{% url 'reportes:index' %}" class="nav-link {% if request.resolver_match.url_name == 'index' and 'reportes' in request.path %}active{% endif %}">
-      <span class="icon"><i class="bi bi-graph-up"></i></span> Dashboard
-    </a>
-    <a href="{% url 'reportes:reportes' %}" class="nav-link {% if request.resolver_match.url_name == 'reportes' %}active{% endif %}">
-      <span class="icon"><i class="bi bi-file-earmark-bar-graph"></i></span> Reportes
-    </a>
-    <a href="{% url 'reportes:docentes' %}" class="nav-link {% if 'docentes' in request.path %}active{% endif %}">
-      <span class="icon"><i class="bi bi-person-video3"></i></span> Docentes
-    </a>
-    <a href="{% url 'reportes:categorias' %}" class="nav-link {% if 'categorias' in request.path %}active{% endif %}">
-      <span class="icon"><i class="bi bi-tags"></i></span> Categorías
-    </a>
-    <a href="{% url 'reportes:configuracion' %}" class="nav-link {% if 'configuracion' in request.path %}active{% endif %}">
-      <span class="icon"><i class="bi bi-gear"></i></span> Configuración
-    </a>
+      <!-- Inventario -->
+      <div class="nav-section">Inventario</div>
+      <a href="{% url 'inventario:herramientas' %}" class="nav-link {% if 'inventario' in request.path and 'insumo' not in request.path and 'historial' not in request.path %}active{% endif %}">
+        <span class="icon"><i class="bi bi-tools"></i></span> Herramientas
+      </a>
+      <a href="{% url 'inventario:historial_herramientas' %}" class="nav-link {% if 'herramientas/historial' in request.path %}active{% endif %}">
+        <span class="icon"><i class="bi bi-clock-history"></i></span> Historial herramientas
+      </a>
+      <a href="{% url 'inventario:insumos' %}" class="nav-link {% if 'insumo' in request.path and 'historial' not in request.path %}active{% endif %}">
+        <span class="icon"><i class="bi bi-box-seam"></i></span> Insumos
+      </a>
+      <a href="{% url 'inventario:historial_movimientos' %}" class="nav-link {% if 'insumos/historial' in request.path %}active{% endif %}">
+        <span class="icon"><i class="bi bi-clock-history"></i></span> Historial insumos
+      </a>
+
+      <!-- Préstamos -->
+      <div class="nav-section">Préstamos</div>
+      {% if rol == 'ADMIN' or rol == 'PANOLERO' %}
+      <a href="{% url 'prestamos:nuevo' %}" class="nav-link {% if request.resolver_match.url_name == 'nuevo' and 'prestamos' in request.path %}active{% endif %}">
+        <span class="icon"><i class="bi bi-arrow-up-circle"></i></span> Registrar Préstamo
+      </a>
+      {% endif %}
+      <a href="{% url 'prestamos:activos' %}" class="nav-link {% if 'activos' in request.path %}active{% endif %}">
+        <span class="icon"><i class="bi bi-clock-history"></i></span> Préstamos Activos
+      </a>
+      {% if rol == 'ADMIN' or rol == 'PANOLERO' %}
+      <a href="{% url 'prestamos:devolucion' %}" class="nav-link {% if 'devolucion' in request.path %}active{% endif %}">
+        <span class="icon"><i class="bi bi-arrow-down-circle"></i></span> Registrar Devolución
+      </a>
+      {% endif %}
+
+      <!-- Mantenimiento -->
+      <div class="nav-section">Mantenimiento</div>
+      <a href="{% url 'mantenimiento:index' %}" class="nav-link {% if 'mantenimiento' in request.path %}active{% endif %}">
+        <span class="icon"><i class="bi bi-calendar-check"></i></span> Planes
+      </a>
+
+      <!-- Reportes -->
+      <div class="nav-section">Reportes</div>
+      <a href="{% url 'reportes:index' %}" class="nav-link {% if request.resolver_match.url_name == 'index' and 'reportes' in request.path %}active{% endif %}">
+        <span class="icon"><i class="bi bi-graph-up"></i></span> Dashboard reportes
+      </a>
+      <a href="{% url 'reportes:reportes' %}" class="nav-link {% if request.resolver_match.url_name == 'reportes' %}active{% endif %}">
+        <span class="icon"><i class="bi bi-file-earmark-bar-graph"></i></span> Reporte préstamos
+      </a>
+      {% if rol == 'ADMIN' or rol == 'PANOLERO' %}
+      <a href="{% url 'reportes:docentes' %}" class="nav-link {% if 'docentes' in request.path %}active{% endif %}">
+        <span class="icon"><i class="bi bi-person-video3"></i></span> Docentes
+      </a>
+      <a href="{% url 'reportes:categorias' %}" class="nav-link {% if 'categorias' in request.path %}active{% endif %}">
+        <span class="icon"><i class="bi bi-tags"></i></span> Categorías
+      </a>
+      {% endif %}
+
+      <!-- Administración: solo ADMIN -->
+      {% if rol == 'ADMIN' %}
+      <div class="nav-section">Administración</div>
+      <a href="{% url 'reportes:usuarios' %}" class="nav-link {% if 'usuarios' in request.path %}active{% endif %}">
+        <span class="icon"><i class="bi bi-people-fill"></i></span> Usuarios
+      </a>
+      <a href="{% url 'reportes:configuracion' %}" class="nav-link {% if 'configuracion' in request.path %}active{% endif %}">
+        <span class="icon"><i class="bi bi-gear"></i></span> Configuración
+      </a>
+      {% endif %}
+
+    {% endif %}
+
+    {% endwith %}
 
   </div>
 

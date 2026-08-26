@@ -374,9 +374,13 @@
           </div>
 
           <!-- ── Botones ── -->
-          <div class="form-actions">
-            <button type="submit" class="btn btn-primary">Confirmar préstamo</button>
-            <a href="{% url 'prestamos:activos' %}" class="btn btn-cancel">Cancelar</a>
+          <div class="d-flex justify-content-between mt-4">
+            <a href="{% url 'prestamos:activos' %}" class="btn btn-outline-secondary">
+              <i class="bi bi-arrow-left"></i> Cancelar
+            </a>
+            <button type="submit" class="btn btn-primary">
+              <i class="bi bi-check-lg"></i> Confirmar préstamo
+            </button>
           </div>
         </form>
       </div>

@@ -127,27 +127,13 @@
                     </div>
 
 
-                    <!-- BOTONES (REORDENADOS Y CON CLASE CORRECTA) -->
-
-                    <div class="form-actions">
-
-                        <!-- IZQUIERDA: GUARDAR -->
-                        <button type="submit"
-                                class="btn btn-primary">
-
-                            Guardar devolución
-
-                        </button>
-
-
-                        <!-- DERECHA: CANCELAR (Se usó 'btn-cancel' para coincidir con CSS) -->
-                        <a href="{% url 'prestamos:activos' %}"
-                           class="btn btn-cancel">
-
-                            Cancelar
-
+                    <div class="d-flex justify-content-between mt-4">
+                        <a href="{% url 'prestamos:activos' %}" class="btn btn-outline-secondary">
+                          <i class="bi bi-arrow-left"></i> Cancelar
                         </a>
-
+                        <button type="submit" class="btn btn-primary">
+                          <i class="bi bi-check-lg"></i> Guardar devolución
+                        </button>
                     </div>
 
                 </form>
@@ -216,9 +202,13 @@
               <div class="form-text" id="observaciones-ayuda">Es obligatorio completar este campo si la herramienta tiene desgaste o daños.</div>
             </div>
 
-            <div class="d-flex gap-2">
-              <a href="{% url 'prestamos:activos' %}" class="btn btn-outline-secondary">Cancelar</a>
-              <button type="submit" class="btn btn-primary">Guardar devolución</button>
+            <div class="d-flex justify-content-between mt-4">
+              <a href="{% url 'prestamos:activos' %}" class="btn btn-outline-secondary">
+                <i class="bi bi-arrow-left"></i> Cancelar
+              </a>
+              <button type="submit" class="btn btn-primary">
+                <i class="bi bi-check-lg"></i> Guardar devolución
+              </button>
             </div>
           </form>
         {% else %}

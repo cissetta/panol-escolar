@@ -1,0 +1,34 @@
+{% extends 'base.html' %}
+{% block title %}Eliminar alumno definitivamente{% endblock %}
+{% block page_title %}Eliminar alumno definitivamente{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+  <div class="col-lg-5">
+    <div class="card card-panol border-danger">
+      <div class="card-body p-4 text-center">
+        <div class="mb-3" style="font-size:3rem;">⚠️</div>
+        <h5 class="fw-semibold text-danger mb-1">Eliminar definitivamente</h5>
+        <p class="text-muted mb-3">
+          <strong>{{ alumno.apellido }}, {{ alumno.nombre }}</strong><br>
+          Legajo {{ alumno.legajo }} · {{ alumno.get_curso_display }}
+        </p>
+        <div class="alert alert-danger text-start small mb-4">
+          <strong>Esta acción es irreversible.</strong><br>
+          El registro del alumno y su QR se borrarán permanentemente de la base de datos.<br>
+          Solo se permite si el alumno <strong>no tiene ningún préstamo registrado</strong> (activo ni histórico).
+        </div>
+        <form method="post" class="d-flex gap-2 justify-content-center">
+          {% csrf_token %}
+          <a href="{% url 'alumnos:detalle' alumno.pk %}" class="btn btn-outline-secondary">
+            <i class="bi bi-x-lg"></i> Cancelar
+          </a>
+          <button type="submit" class="btn btn-danger">
+            <i class="bi bi-trash3"></i> Eliminar definitivamente
+          </button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

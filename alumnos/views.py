@@ -8,12 +8,13 @@ from django.core.paginator import Paginator
 from django.db.models import Q
 from django.shortcuts import get_object_or_404, redirect, render
 
+from accounts.decorators import solo_panolero, solo_docente
 from core.models import Alumno, Prestamo
 
 from .forms import AlumnoForm
 
 
-@login_required
+@solo_docente
 def lista(request):
     q = request.GET.get('q', '').strip()
     alumnos_qs = Alumno.objects.filter(activo=True)
@@ -33,7 +34,7 @@ def lista(request):
     return render(request, 'alumnos/lista.html', {'page_obj': page_obj, 'q': q})
 
 
-@login_required
+@solo_docente
 def detalle(request, pk):
     alumno   = get_object_or_404(Alumno, pk=pk)
     prestamos = alumno.prestamo_set.all().order_by('-fecha_prestamo')
@@ -43,7 +44,7 @@ def detalle(request, pk):
     })
 
 
-@login_required
+@solo_panolero
 def nuevo(request):
     if request.method == 'POST':
         form = AlumnoForm(request.POST)
@@ -61,7 +62,7 @@ def nuevo(request):
     return render(request, 'alumnos/form.html', {'form': form, 'accion': 'Nuevo Alumno'})
 
 
-@login_required
+@solo_panolero
 def editar(request, pk):
     alumno      = get_object_or_404(Alumno, pk=pk)
     legajo_prev = alumno.legajo
@@ -86,7 +87,7 @@ def editar(request, pk):
     return render(request, 'alumnos/form.html', {'form': form, 'accion': 'Editar Alumno', 'alumno': alumno})
 
 
-@login_required
+@solo_panolero
 def confirmar_eliminar(request, pk):
     alumno = get_object_or_404(Alumno, pk=pk)
 
@@ -112,9 +113,59 @@ def confirmar_eliminar(request, pk):
     return render(request, 'alumnos/confirmar_eliminar.html', {'alumno': alumno})
 
 
+from django.http import HttpResponseForbidden
+
+def _generar_qr(alumno):
+    """Genera y guarda el QR de un alumno."""
+    qr_img = qrcode.make(alumno.legajo)
+    buffer = BytesIO()
+    qr_img.save(buffer, format='PNG')
+    alumno.qr_code.save(f'qr_{alumno.legajo}.png', File(buffer), save=True)
+
+
+@solo_panolero
+def reactivar(request, pk):
+    """Solo ADMIN puede reactivar un alumno inactivo."""
+    if getattr(getattr(request.user, 'perfil', None), 'rol', None) != 'ADMIN':
+        return HttpResponseForbidden('Solo los administradores pueden reactivar alumnos.')
+    alumno = get_object_or_404(Alumno, pk=pk, activo=False)
+    if request.method == 'POST':
+        alumno.activo = True
+        alumno.save()
+        if not alumno.qr_code:
+            _generar_qr(alumno)
+        messages.success(request, f'Alumno {alumno} reactivado correctamente.')
+        return redirect('alumnos:detalle', pk=alumno.pk)
+    return render(request, 'alumnos/confirmar_reactivar.html', {'alumno': alumno})
+
+
+@solo_panolero
+def eliminar_definitivo(request, pk):
+    """Solo ADMIN. Solo si el alumno está inactivo y sin historial de préstamos."""
+    if getattr(getattr(request.user, 'perfil', None), 'rol', None) != 'ADMIN':
+        return HttpResponseForbidden('Solo los administradores pueden eliminar alumnos definitivamente.')
+    alumno = get_object_or_404(Alumno, pk=pk, activo=False)
+    if request.method == 'POST':
+        if alumno.prestamo_set.exists():
+            messages.error(request,
+                'No se puede eliminar: el alumno tiene historial de préstamos. '
+                'Solo se pueden eliminar alumnos sin ningún préstamo registrado.')
+            return redirect('alumnos:detalle', pk=alumno.pk)
+        import os
+        if alumno.qr_code:
+            path = alumno.qr_code.path
+            if os.path.isfile(path):
+                os.remove(path)
+        alumno.delete()
+        messages.success(request, 'Alumno eliminado definitivamente del sistema.')
+        return redirect('alumnos:lista')
+    return render(request, 'alumnos/confirmar_eliminar_definitivo.html', {'alumno': alumno})
+
+
 import csv
 from django.http import HttpResponse
 
+@solo_docente
 def exportar_csv(request):
     """Exporta el listado de alumnos activos a CSV."""
     response = HttpResponse(content_type='text/csv')
@@ -126,6 +177,7 @@ def exportar_csv(request):
     return response
 
 
+@solo_panolero
 def importar_csv(request):
     """TODO (Grupo 1): implementar importación de alumnos desde CSV."""
     messages.info(request, 'Importación CSV — funcionalidad pendiente de implementar.')

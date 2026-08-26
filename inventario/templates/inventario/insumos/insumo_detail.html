@@ -1,61 +1,133 @@
 {% extends 'base.html' %}
 {% block title %}{{ insumo.nombre }}{% endblock %}
-{% block page_title %}Insumo: {{ insumo.nombre }}{% endblock %}
+{% block page_title %}Detalle de insumo{% endblock %}
+
 {% block content %}
-<div class="mb-3 d-flex justify-content-between align-items-start gap-2 flex-wrap">
-  <div>
-    <a href="{% url 'inventario:insumos' %}" class="btn btn-outline-secondary btn-sm mb-2">← Volver</a>
-    <h3 class="mb-1">{{ insumo.nombre }}</h3>
-    <small class="text-muted">Código {{ insumo.codigo }}</small>
-  </div>
-  <div class="btn-group">
-    <a href="{% url 'inventario:editar_insumo' insumo.pk %}" class="btn btn-outline-primary">Editar</a>
-    <a href="{% url 'inventario:eliminar_insumo' insumo.pk %}" class="btn btn-outline-danger">Dar de baja</a>
-  </div>
-</div>
-
+{% with rol=user.perfil.rol %}
 <div class="row g-4">
-  <div class="col-md-6">
-    <div class="card shadow-sm mb-4">
-      <div class="card-body">
-        <dl class="row">
-          <dt class="col-sm-4">Categoría</dt><dd class="col-sm-8">{{ insumo.categoria|default:'-' }}</dd>
-          <dt class="col-sm-4">Unidad</dt><dd class="col-sm-8">{{ insumo.get_unidad_display }}</dd>
-          <dt class="col-sm-4">Estado</dt><dd class="col-sm-8"><span class="badge bg-{% if insumo.estado == 'NORMAL' %}success{% elif insumo.estado == 'BAJO' %}warning{% elif insumo.estado == 'ALTO' %}info{% else %}danger{% endif %}">{{ insumo.get_estado_display }}</span></dd>
-          <dt class="col-sm-4">Stock actual</dt><dd class="col-sm-8">{{ insumo.stock_actual }}</dd>
-          <dt class="col-sm-4">Stock mínimo</dt><dd class="col-sm-8">{{ insumo.stock_minimo }}</dd>
-        </dl>
-        <p>{{ insumo.descripcion|default:'Sin descripción' }}</p>
-      </div>
-    </div>
-  </div>
-  <div class="col-md-6">
-    <div class="card shadow-sm mb-4">
-      <div class="card-body">
-        <h5 class="card-title">Movimientos</h5>
-        <p class="text-muted">Registra entradas, entregas o ajustes de stock.</p>
-        <a href="{% url 'inventario:nuevo_movimiento' insumo.pk %}" class="btn btn-primary">Registrar movimiento</a>
-      </div>
-    </div>
-  </div>
-</div>
 
-<div class="card shadow-sm">
-  <div class="card-body">
-    <h5 class="card-title">Historial de movimientos</h5>
-    <ul class="list-group list-group-flush">
-      {% for movimiento in movimientos %}
-        <li class="list-group-item">
-          <strong>{{ movimiento.get_tipo_display }}</strong> · {{ movimiento.cantidad }} {{ insumo.get_unidad_display }}
-          <div class="small text-muted">{{ movimiento.fecha|date:'d/m/Y H:i' }}</div>
-          {% if movimiento.observacion %}
-            <div>{{ movimiento.observacion }}</div>
-          {% endif %}
-        </li>
-      {% empty %}
-        <li class="list-group-item text-muted">No hay movimientos registrados.</li>
-      {% endfor %}
-    </ul>
+  <!-- Panel izquierdo: info + imagen -->
+  <div class="col-md-4">
+    <div class="card card-panol mb-3">
+      <div class="card-body text-center p-4">
+
+        {% if insumo.imagen %}
+          <img src="{{ insumo.imagen.url }}" alt="{{ insumo.nombre }}"
+               class="img-fluid rounded mb-3" style="max-height:180px;object-fit:cover;">
+        {% else %}
+          <div class="rounded mb-3 d-flex align-items-center justify-content-center bg-light"
+               style="height:120px;">
+            <i class="bi bi-box-seam text-muted" style="font-size:2.5rem;"></i>
+          </div>
+        {% endif %}
+
+        <h5 class="fw-semibold mb-0">{{ insumo.nombre }}</h5>
+        <div class="text-muted small mb-2">{{ insumo.codigo }}</div>
+
+        {% if insumo.es_critico %}
+          <div class="alert alert-warning py-1 px-2 small mb-2">
+            <i class="bi bi-exclamation-triangle"></i> Stock bajo mínimo
+          </div>
+        {% endif %}
+
+        <div class="d-flex justify-content-around mt-3 mb-2">
+          <div class="text-center">
+            <div class="h4 mb-0 fw-bold">{{ insumo.stock_actual }}</div>
+            <div class="text-muted small">Stock actual</div>
+          </div>
+          <div class="text-center">
+            <div class="h4 mb-0 fw-bold text-muted">{{ insumo.stock_minimo }}</div>
+            <div class="text-muted small">Mínimo</div>
+          </div>
+        </div>
+
+        <div class="text-muted small mt-2">
+          <i class="bi bi-tag"></i> {{ insumo.get_unidad_display }}
+          {% if insumo.categoria %} · {{ insumo.categoria }}{% endif %}
+        </div>
+
+        {% if insumo.descripcion %}
+          <p class="text-muted small mt-3 mb-0">{{ insumo.descripcion }}</p>
+        {% endif %}
+
+        {% if rol == 'ADMIN' or rol == 'PANOLERO' %}
+        <div class="d-flex flex-column gap-2 mt-4">
+          <a href="{% url 'inventario:nuevo_movimiento' insumo.pk %}" class="btn btn-primary btn-sm">
+            <i class="bi bi-arrow-left-right"></i> Registrar movimiento
+          </a>
+          <a href="{% url 'inventario:editar_insumo' insumo.pk %}" class="btn btn-outline-secondary btn-sm">
+            <i class="bi bi-pencil"></i> Editar
+          </a>
+          <a href="{% url 'inventario:eliminar_insumo' insumo.pk %}" class="btn btn-outline-danger btn-sm">
+            <i class="bi bi-trash3"></i> Dar de baja
+          </a>
+        </div>
+        {% endif %}
+
+      </div>
+    </div>
   </div>
+
+  <!-- Panel derecho: historial de movimientos -->
+  <div class="col-md-8">
+    <div class="card card-panol">
+      <div class="card-body p-0">
+        <div class="px-4 py-3 border-bottom d-flex justify-content-between align-items-center">
+          <h6 class="fw-semibold mb-0">
+            <i class="bi bi-clock-history text-muted"></i> Historial de movimientos
+          </h6>
+          <a href="{% url 'inventario:historial_movimientos' %}?insumo={{ insumo.pk }}"
+             class="btn btn-outline-secondary btn-sm">
+            <i class="bi bi-funnel"></i> Ver con filtros
+          </a>
+        </div>
+
+        {% if movimientos %}
+        <table class="tabla-panol">
+          <thead>
+            <tr>
+              <th>Fecha</th>
+              <th>Tipo</th>
+              <th>Cantidad</th>
+              <th>Observación</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for mov in movimientos %}
+            <tr>
+              <td class="text-nowrap small">{{ mov.fecha|date:"d/m/Y H:i" }}</td>
+              <td>
+                {% if mov.tipo == 'ENTRADA' %}
+                  <span class="badge badge-disponible"><i class="bi bi-box-arrow-in-down"></i> Entrada</span>
+                {% elif mov.tipo == 'ENTREGA' %}
+                  <span class="badge badge-prestada"><i class="bi bi-box-arrow-up"></i> Entrega</span>
+                {% else %}
+                  <span class="badge badge-reparacion"><i class="bi bi-pencil-square"></i> Ajuste</span>
+                {% endif %}
+              </td>
+              <td class="fw-semibold">
+                {% if mov.tipo == 'ENTRADA' %}
+                  <span class="text-success">+{{ mov.cantidad }}</span>
+                {% elif mov.cantidad >= 0 %}
+                  <span class="text-danger">−{{ mov.cantidad }}</span>
+                {% else %}
+                  <span class="text-danger">{{ mov.cantidad }}</span>
+                {% endif %}
+                <span class="text-muted small">{{ insumo.get_unidad_display }}</span>
+              </td>
+              <td class="text-muted small">{{ mov.observacion|default:"—" }}</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+        {% else %}
+          <p class="tabla-vacia py-4">No hay movimientos registrados.</p>
+        {% endif %}
+
+      </div>
+    </div>
+  </div>
+
 </div>
+{% endwith %}
 {% endblock %}

@@ -1,0 +1,33 @@
+{% extends 'base.html' %}
+{% block title %}Reactivar alumno{% endblock %}
+{% block page_title %}Reactivar alumno{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+  <div class="col-lg-5">
+    <div class="card card-panol">
+      <div class="card-body p-4 text-center">
+        <div class="mb-3" style="font-size:3rem;">🔄</div>
+        <h5 class="fw-semibold mb-1">¿Reactivar alumno?</h5>
+        <p class="text-muted mb-4">
+          <strong>{{ alumno.apellido }}, {{ alumno.nombre }}</strong><br>
+          Legajo {{ alumno.legajo }} · {{ alumno.get_curso_display }}
+        </p>
+        <p class="small text-muted mb-4">
+          El alumno volverá a estar activo y podrá participar en nuevos préstamos.
+          Si no tiene QR se generará uno nuevo automáticamente.
+        </p>
+        <form method="post" class="d-flex gap-2 justify-content-center">
+          {% csrf_token %}
+          <a href="{% url 'alumnos:detalle' alumno.pk %}" class="btn btn-outline-secondary">
+            <i class="bi bi-x-lg"></i> Cancelar
+          </a>
+          <button type="submit" class="btn btn-success">
+            <i class="bi bi-arrow-counterclockwise"></i> Confirmar reactivación
+          </button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

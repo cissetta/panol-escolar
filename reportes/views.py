@@ -6,6 +6,7 @@ from django import forms
 from django.db.models import Count
 from django.db.models.functions import TruncMonth
 from django.contrib.auth.decorators import login_required, user_passes_test
+from accounts.decorators import solo_admin, solo_panolero, solo_docente
 from django.contrib import messages
 from django.shortcuts import render, redirect, get_object_or_404
 from django.db.models import F
@@ -127,6 +128,7 @@ def _get_reportes_context():
     return context
 
 
+@solo_docente
 def index(request):
     context = _get_reportes_context()
     return render(request, 'reportes/index.html', context)
@@ -163,6 +165,7 @@ def _get_prestamos_queryset(request):
     return queryset, categoria_id or '', orden, estado
 
 
+@solo_docente
 def reportes(request):
     queryset, categoria_actual, orden_actual, estado_actual = _get_prestamos_queryset(request)
 
@@ -175,8 +178,7 @@ def reportes(request):
     return render(request, 'reportes/reportes.html', context)
 
 
-@login_required
-@user_passes_test(lambda u: hasattr(u, 'perfil') and u.perfil.es_admin())
+@solo_docente
 def exportar_reportes_excel(request):
     queryset, _, _, _ = _get_prestamos_queryset(request)
 
@@ -217,8 +219,7 @@ def exportar_reportes_excel(request):
     wb.save(response)
     return response
 
-@login_required
-@user_passes_test(lambda u: hasattr(u, 'perfil') and u.perfil.es_admin())
+@solo_admin
 def configuracion(request):
     config = ConfiguracionSistema.get()
     success = False
@@ -238,8 +239,7 @@ def configuracion(request):
     return render(request, 'reportes/configuracion.html', context)
 
 
-@login_required
-@user_passes_test(lambda u: hasattr(u, 'perfil') and u.perfil.es_admin())
+@solo_panolero
 def categorias(request):
     categorias = Categoria.objects.all().order_by('nombre')
     success = False
@@ -261,8 +261,7 @@ def categorias(request):
     return render(request, 'reportes/categorias.html', context)
 
 
-@login_required
-@user_passes_test(lambda u: hasattr(u, 'perfil') and u.perfil.es_admin())
+@solo_panolero
 def editar_categoria(request, pk):
     categoria = get_object_or_404(Categoria, pk=pk)
 
@@ -278,8 +277,7 @@ def editar_categoria(request, pk):
     return render(request, 'reportes/editar_categoria.html', {'form': form, 'categoria': categoria})
 
 
-@login_required
-@user_passes_test(lambda u: hasattr(u, 'perfil') and u.perfil.es_admin())
+@solo_panolero
 def eliminar_categoria(request, pk):
     categoria = get_object_or_404(Categoria, pk=pk)
 
@@ -291,8 +289,7 @@ def eliminar_categoria(request, pk):
     return render(request, 'reportes/confirmar_eliminar_categoria.html', {'categoria': categoria})
 
 
-@login_required
-@user_passes_test(lambda u: hasattr(u, 'perfil') and u.perfil.es_admin())
+@solo_panolero
 def docentes(request):
     docentes = Docente.objects.filter(activo=True).order_by('apellido', 'nombre')
     success = False
@@ -314,8 +311,7 @@ def docentes(request):
     return render(request, 'reportes/docentes.html', context)
 
 
-@login_required
-@user_passes_test(lambda u: hasattr(u, 'perfil') and u.perfil.es_admin())
+@solo_panolero
 def editar_docente(request, pk):
     docente = get_object_or_404(Docente, pk=pk, activo=True)
 
@@ -331,8 +327,7 @@ def editar_docente(request, pk):
     return render(request, 'reportes/editar_docente.html', {'form': form, 'docente': docente})
 
 
-@login_required
-@user_passes_test(lambda u: hasattr(u, 'perfil') and u.perfil.es_admin())
+@solo_panolero
 def eliminar_docente(request, pk):
     docente = get_object_or_404(Docente, pk=pk, activo=True)
 
@@ -345,30 +340,37 @@ def eliminar_docente(request, pk):
     return render(request, 'reportes/confirmar_eliminar_docente.html', {'docente': docente})
 
 class UsuarioForm(forms.ModelForm):
-    rol = forms.ChoiceField(choices=Perfil.ROLES, required=True, label='Rol')
-    password = forms.CharField(required=False, widget=forms.PasswordInput, label='Contraseña', help_text='Dejar vacío para no cambiar la contraseña')
+    from core.models import Alumno as _Alumno
+    rol      = forms.ChoiceField(choices=Perfil.ROLES, required=True, label='Rol')
+    password = forms.CharField(required=False, widget=forms.PasswordInput, label='Contraseña',
+                               help_text='Dejar vacío para no cambiar la contraseña')
+    alumno   = forms.ModelChoiceField(
+        queryset=_Alumno.objects.filter(activo=True).order_by('apellido', 'nombre'),
+        required=False, label='Alumno vinculado',
+        help_text='Completar solo si el rol es Alumno',
+        widget=forms.Select(attrs={'class': 'form-select'}),
+        empty_label='— Sin vincular —',
+    )
 
     class Meta:
         model = User
         fields = ['username', 'first_name', 'last_name', 'email', 'is_active']
         widgets = {
-            'username': forms.TextInput(attrs={'class': 'form-control'}),
+            'username':   forms.TextInput(attrs={'class': 'form-control'}),
             'first_name': forms.TextInput(attrs={'class': 'form-control'}),
-            'last_name': forms.TextInput(attrs={'class': 'form-control'}),
-            'email': forms.EmailInput(attrs={'class': 'form-control'}),
-            'is_active': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
+            'last_name':  forms.TextInput(attrs={'class': 'form-control'}),
+            'email':      forms.EmailInput(attrs={'class': 'form-control'}),
+            'is_active':  forms.CheckboxInput(attrs={'class': 'form-check-input'}),
         }
 
 
-@login_required
-@user_passes_test(lambda u: hasattr(u, 'perfil') and u.perfil.es_admin())
+@solo_admin
 def usuarios(request):
     qs = User.objects.select_related('perfil').order_by('username')
     return render(request, 'reportes/usuarios.html', {'usuarios': qs})
 
 
-@login_required
-@user_passes_test(lambda u: hasattr(u, 'perfil') and u.perfil.es_admin())
+@solo_admin
 def usuario_nuevo(request):
     if request.method == 'POST':
         form = UsuarioForm(request.POST)
@@ -380,8 +382,9 @@ def usuario_nuevo(request):
             else:
                 user.set_unusable_password()
             user.save()
-            rol = form.cleaned_data.get('rol')
-            Perfil.objects.create(user=user, rol=rol)
+            rol    = form.cleaned_data.get('rol')
+            alumno = form.cleaned_data.get('alumno')
+            Perfil.objects.create(user=user, rol=rol, alumno=alumno)
             messages.success(request, 'Usuario creado correctamente.')
             if request.headers.get('x-requested-with') == 'XMLHttpRequest':
                 return JsonResponse({'success': True, 'redirect': reverse('reportes:usuarios')})
@@ -391,8 +394,7 @@ def usuario_nuevo(request):
     return render(request, 'reportes/usuario_form.html', {'form': form, 'nuevo': True})
 
 
-@login_required
-@user_passes_test(lambda u: hasattr(u, 'perfil') and u.perfil.es_admin())
+@solo_admin
 def usuario_editar(request, pk):
     user = get_object_or_404(User, pk=pk)
     perfil = getattr(user, 'perfil', None)
@@ -405,12 +407,14 @@ def usuario_editar(request, pk):
             if pwd:
                 user.set_password(pwd)
             user.save()
-            rol = form.cleaned_data.get('rol')
+            rol    = form.cleaned_data.get('rol')
+            alumno = form.cleaned_data.get('alumno')
             if perfil:
-                perfil.rol = rol
+                perfil.rol    = rol
+                perfil.alumno = alumno
                 perfil.save()
             else:
-                Perfil.objects.create(user=user, rol=rol)
+                Perfil.objects.create(user=user, rol=rol, alumno=alumno)
             messages.success(request, 'Usuario actualizado correctamente.')
             if request.headers.get('x-requested-with') == 'XMLHttpRequest':
                 return JsonResponse({'success': True, 'redirect': reverse('reportes:usuarios')})
@@ -419,14 +423,16 @@ def usuario_editar(request, pk):
             if request.headers.get('x-requested-with') == 'XMLHttpRequest':
                 return JsonResponse({'success': False, 'errors': form.errors}, status=400)
     else:
-        initial = {'rol': perfil.rol if perfil else Perfil.ROLES[0][0]}
+        initial = {
+            'rol':    perfil.rol    if perfil else Perfil.ROLES[0][0],
+            'alumno': perfil.alumno if perfil else None,
+        }
         form = UsuarioForm(instance=user, initial=initial)
 
     return render(request, 'reportes/usuario_form.html', {'form': form, 'usuario': user, 'nuevo': False})
 
 
-@login_required
-@user_passes_test(lambda u: hasattr(u, 'perfil') and u.perfil.es_admin())
+@solo_admin
 def usuario_eliminar(request, pk):
     user = get_object_or_404(User, pk=pk)
 

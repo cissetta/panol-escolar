@@ -1,0 +1,103 @@
+{% extends 'base.html' %}
+{% block title %}Mis Préstamos{% endblock %}
+{% block page_title %}Mis Préstamos{% endblock %}
+
+{% block content %}
+
+{% if not alumno %}
+  <div class="card card-panol p-5 text-center">
+    <div class="fs-1 mb-3"><i class="bi bi-person-x text-warning"></i></div>
+    <h5 class="mb-2">Sin alumno vinculado</h5>
+    <p class="text-muted mb-0">Tu cuenta no está vinculada a un registro de alumno. Consultá al administrador del sistema.</p>
+  </div>
+
+{% else %}
+
+  <!-- Info del alumno -->
+  <div class="card card-panol mb-4">
+    <div class="card-body d-flex align-items-center gap-3">
+      <div class="avatar" style="width:48px;height:48px;font-size:20px;background:#1e3a5f;border-radius:50%;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;">
+        {{ alumno.nombre|first|upper }}{{ alumno.apellido|first|upper }}
+      </div>
+      <div>
+        <div class="fw-semibold fs-5">{{ alumno.apellido }}, {{ alumno.nombre }}</div>
+        <div class="text-muted small">Legajo: {{ alumno.legajo }} · {{ alumno.get_curso_display }}</div>
+      </div>
+      {% if activos %}
+        <span class="badge badge-activo ms-auto">{{ activos|length }} activo{% if activos|length != 1 %}s{% endif %}</span>
+      {% endif %}
+    </div>
+  </div>
+
+  <!-- Préstamos activos -->
+  <div class="card card-panol mb-4">
+    <div class="card-body">
+      <h6 class="fw-semibold mb-3"><i class="bi bi-clock-history text-primary"></i> Préstamos activos</h6>
+      {% if activos %}
+        <table class="tabla-panol">
+          <thead>
+            <tr>
+              <th>Herramienta</th>
+              <th>Código</th>
+              <th>Docente</th>
+              <th>Desde</th>
+              <th>Estado</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for p in activos %}
+              <tr {% if p.esta_vencido %}class="fila-critica"{% endif %}>
+                <td class="fw-semibold">{{ p.herramienta.nombre }}</td>
+                <td><code>{{ p.herramienta.codigo }}</code></td>
+                <td>{{ p.docente }}</td>
+                <td>{{ p.fecha_prestamo|date:"d/m/Y" }}</td>
+                <td>
+                  {% if p.esta_vencido %}
+                    <span class="badge badge-vencido"><i class="bi bi-exclamation-triangle"></i> Vencido</span>
+                  {% else %}
+                    <span class="badge badge-activo">Activo</span>
+                  {% endif %}
+                </td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      {% else %}
+        <p class="tabla-vacia"><i class="bi bi-check2-circle text-success"></i> No tenés préstamos activos.</p>
+      {% endif %}
+    </div>
+  </div>
+
+  <!-- Historial -->
+  <div class="card card-panol">
+    <div class="card-body">
+      <h6 class="fw-semibold mb-3"><i class="bi bi-arrow-counterclockwise text-muted"></i> Historial (últimas 20 devoluciones)</h6>
+      {% if historial %}
+        <table class="tabla-panol">
+          <thead>
+            <tr>
+              <th>Herramienta</th>
+              <th>Código</th>
+              <th>Fecha préstamo</th>
+              <th>Fecha devolución</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for p in historial %}
+              <tr>
+                <td>{{ p.herramienta.nombre }}</td>
+                <td><code>{{ p.herramienta.codigo }}</code></td>
+                <td>{{ p.fecha_prestamo|date:"d/m/Y" }}</td>
+                <td>{{ p.fecha_devolucion|date:"d/m/Y" }}</td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      {% else %}
+        <p class="tabla-vacia">Sin historial de devoluciones.</p>
+      {% endif %}
+    </div>
+  </div>
+
+{% endif %}
+{% endblock %}

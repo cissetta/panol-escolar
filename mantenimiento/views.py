@@ -1,4 +1,5 @@
 from django.shortcuts import render, redirect, get_object_or_404
+from accounts.decorators import solo_panolero, solo_docente
 from django.contrib import messages
 
 from core.models import (
@@ -10,6 +11,7 @@ from core.models import (
 )
 
 
+@solo_docente
 def index(request):
     herramienta_id = request.GET.get("herramienta")
     mes = request.GET.get("mes")
@@ -69,6 +71,7 @@ def index(request):
         }
     )
 
+@solo_panolero
 def crear_plan(request):
 
     herramientas = Herramienta.objects.filter(activo=True)
@@ -133,6 +136,7 @@ def crear_plan(request):
         },
     )
 
+@solo_panolero
 def ejecutar_plan(request, plan_id):
 
     plan = get_object_or_404(
@@ -195,6 +199,7 @@ def ejecutar_plan(request, plan_id):
     )
 
 
+@solo_docente
 def plan_de_vida(request, herramienta_id):
 
     herramienta = get_object_or_404(
@@ -220,6 +225,7 @@ def plan_de_vida(request, herramienta_id):
         }
     )
 
+@solo_docente
 def detalle_plan(request, plan_id):
 
     plan = get_object_or_404(
@@ -244,6 +250,7 @@ def detalle_plan(request, plan_id):
             "ejecuciones": ejecuciones,
         }
     )
+@solo_panolero
 def editar_plan(request, plan_id):
 
     plan = get_object_or_404(
@@ -408,6 +415,7 @@ def editar_plan(request, plan_id):
             "tareas": tareas,
         }
     )
+@solo_panolero
 def eliminar_plan(request, plan_id):
 
     plan = get_object_or_404(

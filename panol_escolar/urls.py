@@ -18,3 +18,5 @@ urlpatterns = [
     path('mantenimiento/', include('mantenimiento.urls')),
     path('reportes/',      include('reportes.urls')),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+
+handler403 = 'core.views.error_403'

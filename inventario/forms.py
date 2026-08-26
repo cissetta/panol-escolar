@@ -63,6 +63,7 @@ class HerramientaForm(forms.ModelForm):
         model = Herramienta
 
         fields = [
+            "tipo",
             "codigo",
             "nombre",
             "descripcion",
@@ -73,9 +74,11 @@ class HerramientaForm(forms.ModelForm):
             "estado",
             "fecha_compra",
             "costo",
+            "imagen",
         ]
 
         labels = {
+            "tipo": "Tipo",
             "codigo": "Código",
             "nombre": "Nombre",
             "descripcion": "Descripción",
@@ -86,9 +89,14 @@ class HerramientaForm(forms.ModelForm):
             "estado": "Estado",
             "fecha_compra": "Fecha de compra",
             "costo": "Costo",
+            "imagen": "Imagen (foto)",
         }
 
         widgets = {
+
+            "tipo": forms.Select(
+                attrs={"class": "form-select"}
+            ),
 
             "codigo": forms.TextInput(
                 attrs={
@@ -187,6 +195,7 @@ class InsumoForm(forms.ModelForm):
             "unidad",
             "stock_actual",
             "stock_minimo",
+            "imagen",
         ]
 
         labels = {
@@ -197,6 +206,7 @@ class InsumoForm(forms.ModelForm):
             "unidad": "Unidad",
             "stock_actual": "Stock actual",
             "stock_minimo": "Stock mínimo",
+            "imagen": "Imagen (foto)",
         }
 
 
