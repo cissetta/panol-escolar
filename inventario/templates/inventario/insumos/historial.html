@@ -1,0 +1,120 @@
+{% extends 'base.html' %}
+{% block title %}Historial de movimientos{% endblock %}
+{% block page_title %}Historial de movimientos de insumos{% endblock %}
+
+{% block content %}
+
+<!-- Filtros -->
+<div class="card card-panol mb-4">
+  <div class="card-body py-3">
+    <form method="get" class="row g-2 align-items-end">
+
+      <div class="col-md-3">
+        <label class="form-label form-label-sm fw-semibold">Insumo</label>
+        <select name="insumo" class="form-select form-select-sm">
+          <option value="">Todos los insumos</option>
+          {% for i in insumos %}
+            <option value="{{ i.pk }}" {% if filtro_insumo == i.pk|stringformat:"s" %}selected{% endif %}>
+              {{ i.nombre }}
+            </option>
+          {% endfor %}
+        </select>
+      </div>
+
+      <div class="col-md-2">
+        <label class="form-label form-label-sm fw-semibold">Tipo</label>
+        <select name="tipo" class="form-select form-select-sm">
+          <option value="">Todos</option>
+          {% for valor, etiqueta in tipos %}
+            <option value="{{ valor }}" {% if filtro_tipo == valor %}selected{% endif %}>{{ etiqueta }}</option>
+          {% endfor %}
+        </select>
+      </div>
+
+      <div class="col-md-2">
+        <label class="form-label form-label-sm fw-semibold">Desde</label>
+        <input type="date" name="fecha_desde" class="form-control form-control-sm" value="{{ filtro_fecha_desde }}">
+      </div>
+
+      <div class="col-md-2">
+        <label class="form-label form-label-sm fw-semibold">Hasta</label>
+        <input type="date" name="fecha_hasta" class="form-control form-control-sm" value="{{ filtro_fecha_hasta }}">
+      </div>
+
+      <div class="col-md-3 d-flex gap-2">
+        <button type="submit" class="btn btn-primary btn-sm">
+          <i class="bi bi-funnel"></i> Filtrar
+        </button>
+        <a href="{% url 'inventario:historial_movimientos' %}" class="btn btn-outline-secondary btn-sm">
+          <i class="bi bi-x-circle"></i> Limpiar
+        </a>
+      </div>
+
+    </form>
+  </div>
+</div>
+
+<!-- Resultado -->
+<div class="card card-panol">
+  <div class="card-body p-0">
+    <div class="px-4 py-3 d-flex justify-content-between align-items-center border-bottom">
+      <h6 class="fw-semibold mb-0">
+        <i class="bi bi-clock-history text-muted"></i> Movimientos
+        <span class="badge bg-secondary ms-1">{{ total }}</span>
+        {% if total > 200 %}<span class="text-muted small">(mostrando últimos 200)</span>{% endif %}
+      </h6>
+    </div>
+
+    {% if movimientos %}
+    <table class="tabla-panol">
+      <thead>
+        <tr>
+          <th>Fecha</th>
+          <th>Insumo</th>
+          <th>Tipo</th>
+          <th>Cantidad</th>
+          <th>Registrado por</th>
+          <th>Observación</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for mov in movimientos %}
+        <tr>
+          <td class="text-nowrap">{{ mov.fecha|date:"d/m/Y H:i" }}</td>
+          <td>
+            <a href="{% url 'inventario:insumo_detalle' mov.insumo.pk %}" class="text-decoration-none fw-semibold">
+              {{ mov.insumo.nombre }}
+            </a>
+            <div class="text-muted small">{{ mov.insumo.codigo }}</div>
+          </td>
+          <td>
+            {% if mov.tipo == 'ENTRADA' %}
+              <span class="badge badge-disponible"><i class="bi bi-box-arrow-in-down"></i> Entrada</span>
+            {% elif mov.tipo == 'ENTREGA' %}
+              <span class="badge badge-prestada"><i class="bi bi-box-arrow-up"></i> Entrega</span>
+            {% else %}
+              <span class="badge badge-reparacion"><i class="bi bi-pencil-square"></i> Ajuste</span>
+            {% endif %}
+          </td>
+          <td class="fw-semibold">
+            {% if mov.tipo == 'ENTRADA' %}
+              <span class="text-success">+{{ mov.cantidad }}</span>
+            {% else %}
+              <span class="text-danger">−{{ mov.cantidad }}</span>
+            {% endif %}
+            <span class="text-muted small">{{ mov.insumo.get_unidad_display }}</span>
+          </td>
+          <td>{{ mov.usuario.get_full_name|default:mov.usuario.username|default:"—" }}</td>
+          <td class="text-muted small">{{ mov.observacion|default:"—" }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    {% else %}
+    <p class="tabla-vacia py-4">No hay movimientos que coincidan con los filtros.</p>
+    {% endif %}
+
+  </div>
+</div>
+
+{% endblock %}

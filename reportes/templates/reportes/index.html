@@ -1,39 +1,42 @@
 {% extends 'base.html' %}
-{% block title %}Grupo 5 – Reportes y Dashboard{% endblock %}
-{% block page_title %}Grupo 5 – Reportes y Dashboard{% endblock %}
+{% block title %}Dashboard{% endblock %}
+{% block page_title %}Dashboard{% endblock %}
+
 {% block content %}
+
+<!-- Tarjetas de indicadores -->
 <div class="row g-3 mb-4">
   <div class="col-sm-6 col-xl-3">
-    <div class="card border-0 shadow-sm h-100">
+    <div class="card card-panol h-100">
       <div class="card-body">
-        <div class="text-muted small">Herramientas disponibles</div>
+        <div class="text-muted small mb-1"><i class="bi bi-check2-circle text-success"></i> Herramientas disponibles</div>
         <div class="fs-2 fw-bold text-success">{{ disponibles }}</div>
       </div>
     </div>
   </div>
   <div class="col-sm-6 col-xl-3">
-    <div class="card border-0 shadow-sm h-100">
+    <div class="card card-panol h-100">
       <div class="card-body">
-        <div class="text-muted small">Préstamos activos</div>
+        <div class="text-muted small mb-1"><i class="bi bi-clock-history text-primary"></i> Préstamos activos</div>
         <div class="fs-2 fw-bold text-primary">{{ prestamos_activos }}</div>
         {% if prestamos_vencidos > 0 %}
-          <div class="text-danger small">⚠ {{ prestamos_vencidos }} vencidos</div>
+          <div class="small mt-1"><span class="badge badge-vencido">{{ prestamos_vencidos }} vencidos</span></div>
         {% endif %}
       </div>
     </div>
   </div>
   <div class="col-sm-6 col-xl-3">
-    <div class="card border-0 shadow-sm h-100">
+    <div class="card card-panol h-100">
       <div class="card-body">
-        <div class="text-muted small">En reparación</div>
+        <div class="text-muted small mb-1"><i class="bi bi-tools text-warning"></i> En reparación</div>
         <div class="fs-2 fw-bold text-warning">{{ reparacion }}</div>
       </div>
     </div>
   </div>
   <div class="col-sm-6 col-xl-3">
-    <div class="card border-0 shadow-sm h-100">
+    <div class="card card-panol h-100">
       <div class="card-body">
-        <div class="text-muted small">Insumos con stock crítico</div>
+        <div class="text-muted small mb-1"><i class="bi bi-exclamation-triangle text-danger"></i> Insumos stock crítico</div>
         <div class="fs-2 fw-bold text-danger">{{ criticos }}</div>
       </div>
     </div>
@@ -41,66 +44,76 @@
 </div>
 
 <div class="row g-3">
-  <!-- Últimos préstamos -->
+
+  <!-- Gráfico préstamos por mes -->
   <div class="col-lg-8">
-    <div class="card border-0 shadow-sm">
-      <div class="card-header bg-white fw-semibold">📤 Préstamos por mes</div>
+    <div class="card card-panol">
       <div class="card-body">
-        <div class="position-relative" style="height: 320px;">
+        <h6 class="fw-semibold mb-3"><i class="bi bi-bar-chart-line"></i> Préstamos por mes (últimos 6 meses)</h6>
+        <div style="position:relative; height:240px;">
           <canvas id="grafico-prestamos"></canvas>
         </div>
       </div>
     </div>
   </div>
 
-  <!-- Mantenimientos -->
+  <!-- Planes de mantenimiento vencidos -->
   <div class="col-lg-4">
-    <div class="card border-0 shadow-sm">
-      <div class="card-header bg-white fw-semibold">🗓️ Mantenimientos Pendientes</div>
-      <div class="card-body p-0">
+    <div class="card card-panol">
+      <div class="card-body">
+        <h6 class="fw-semibold mb-3">
+          <i class="bi bi-calendar-x text-danger"></i> Mantenimientos vencidos
+          {% if planes_vencidos > 0 %}<span class="badge badge-vencido ms-1">{{ planes_vencidos }}</span>{% endif %}
+        </h6>
         {% if lista_vencidos %}
           <ul class="list-group list-group-flush">
             {% for plan in lista_vencidos %}
-            <li class="list-group-item d-flex justify-content-between align-items-start">
-              <div>
-                <div class="fw-semibold small">{{ plan.herramienta.nombre }}</div>
-                <div class="text-muted" style="font-size:.78rem">{{ plan.nombre }}</div>
-              </div>
-              <span class="badge bg-danger">Vencido</span>
-            </li>
+              <li class="list-group-item px-0 py-2">
+                <div class="fw-semibold small">{{ plan.nombre }}</div>
+                <div class="text-muted small">{{ plan.herramienta.nombre }} · {{ plan.proxima_ejecucion|date:"d/m/Y" }}</div>
+              </li>
             {% endfor %}
           </ul>
+          {% if planes_vencidos > 5 %}
+            <a href="{% url 'mantenimiento:index' %}" class="btn btn-sm btn-outline-danger mt-2 w-100">Ver todos</a>
+          {% endif %}
         {% else %}
-          <div class="text-center text-muted py-4" style="font-size:.9rem">
-            ✅ Sin mantenimientos vencidos
+          <p class="text-muted small mb-0">Sin mantenimientos vencidos.</p>
+        {% endif %}
+
+        {% if planes_proximos > 0 %}
+          <div class="mt-3 pt-3 border-top">
+            <span class="badge badge-prestada">{{ planes_proximos }} próximos a vencer</span>
           </div>
         {% endif %}
       </div>
     </div>
   </div>
+
 </div>
+
 {% endblock %}
 
 {% block extra_js %}
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
-    // Los datos vienen del contexto Django como JSON:
-    const datos = { datos_grafico,safe };
-    const labels = { labels_grafico,safe };
-    new Chart(document.getElementById('grafico-prestamos'), {
-      type: 'bar',
-      data: {
-        labels: labels,
-        datasets: [{
-          label: 'Préstamos por mes',
-          data: datos,
-          backgroundColor: '#2e86de',
-        }]
-      },
-      options: {
-        responsive: true,
-        maintainAspectRatio: false
-      }
-    });
+new Chart(document.getElementById('grafico-prestamos'), {
+  type: 'bar',
+  data: {
+    labels: {{ labels_grafico|safe }},
+    datasets: [{
+      label: 'Préstamos',
+      data: {{ datos_grafico|safe }},
+      backgroundColor: '#2e86de',
+      borderRadius: 4,
+    }]
+  },
+  options: {
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: { legend: { display: false } },
+    scales: { y: { beginAtZero: true, ticks: { stepSize: 1 } } }
+  }
+});
 </script>
 {% endblock %}

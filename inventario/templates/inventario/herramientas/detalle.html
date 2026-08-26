@@ -1,0 +1,101 @@
+```html
+{% extends 'base.html' %}
+
+{% block title %}
+Detalle de herramienta
+{% endblock %}
+
+{% block page_title %}
+Detalle de herramienta
+{% endblock %}
+
+{% block content %}
+
+<div class="container mt-4">
+
+    <div class="card shadow">
+
+        <div class="card-header">
+
+            <h3>
+                🔨 Detalle de herramienta
+            </h3>
+
+        </div>
+
+
+        <div class="card-body">
+
+            <h2 class="mb-4">
+                {{ herramienta.nombre }}
+            </h2>
+
+
+            <div class="row">
+
+                <div class="col-md-6">
+
+                    <p>
+                        <strong>Código:</strong>
+
+                        {{ herramienta.codigo }}
+                    </p>
+
+
+                    <p>
+                        <strong>Categoría:</strong>
+
+                        {{ herramienta.categoria }}
+                    </p>
+
+
+                    <p>
+                        <strong>Ubicación:</strong>
+
+                        {{ herramienta.ubicacion }}
+                    </p>
+
+
+                    <p>
+                        <strong>Estado:</strong>
+
+                        {% if herramienta.estado %}
+
+                            {{ herramienta.get_estado_display }}
+
+                        {% else %}
+
+                            Sin estado
+
+                        {% endif %}
+
+                    </p>
+
+                </div>
+
+            </div>
+
+
+            <hr>
+
+
+            <div class="mt-3">
+
+                <a
+                    href="{% url 'inventario:qr_herramienta' herramienta.pk %}"
+                    class="btn btn-primary"
+                >
+                    <i class="bi bi-qr-code"></i>
+                    Ver QR
+                </a>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+{% endblock %}
+```

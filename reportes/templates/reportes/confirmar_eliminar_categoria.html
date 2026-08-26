@@ -1,0 +1,23 @@
+{% extends 'base.html' %}
+{% block title %}Grupo 5 - Categorías{% endblock %}
+{% block page_title %}Eliminar categoría{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="card shadow-sm border-danger">
+        <div class="card-header bg-danger text-white">
+            <h4 class="mb-0">Confirmar eliminación</h4>
+        </div>
+        <div class="card-body">
+            <p>¿Estás seguro de que deseas eliminar la categoría <strong>{{ categoria.nombre }}</strong>?</p>
+            <p class="text-muted small">Esta acción borrará el registro de la categoría de forma permanente.</p>
+
+            <form method="post">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-danger"><i class="bi bi-trash"></i> Sí, eliminar</button>
+                <a href="{% url 'reportes:categorias' %}" class="btn btn-secondary">Cancelar</a>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

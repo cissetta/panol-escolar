@@ -1,69 +1,88 @@
 {% extends "base.html" %}
+{% block title %}Insumos{% endblock %}
+{% block page_title %}Insumos{% endblock %}
 
 {% block content %}
 
-<div class="container mt-4">
-
-    <div class="d-flex justify-content-between align-items-center mb-3">
-        <h2>Lista de Insumos</h2>
-
-        <a href="{% url 'inventario:nuevo_insumo' %}" class="btn btn-primary">
-            Nuevo insumo
-        </a>
-    </div>
-
-    {% if messages %}
-        {% for message in messages %}
-            <div class="alert alert-success">
-                {{ message }}
-            </div>
-        {% endfor %}
-    {% endif %}
-
-    <table class="table table-striped table-bordered">
-
-        <thead class="table-dark">
-            <tr>
-                <th>Nombre</th>
-                <th>Stock</th>
-                <th>Acciones</th>
-            </tr>
-        </thead>
-
-        <tbody>
-
-            {% for insumo in insumos %}
-            <tr>
-                <td>{{ insumo.nombre }}</td>
-                <td>{{ insumo.stock_actual }}</td>
-                <td>
-
-                    <a href="{% url 'inventario:editar_insumo' insumo.pk %}"
-                       class="btn btn-warning btn-sm">
-                        Editar
-                    </a>
-
-                    <a href="{% url 'inventario:eliminar_insumo' insumo.pk %}"
-                       class="btn btn-danger btn-sm"
-                       onclick="return confirm('¿Eliminar este insumo?');">
-                        Eliminar
-                    </a>
-
-                </td>
-            </tr>
-
-            {% empty %}
-            <tr>
-                <td colspan="3" class="text-center">
-                    No hay insumos registrados.
-                </td>
-            </tr>
-            {% endfor %}
-
-        </tbody>
-
-    </table>
-
+{% with rol=user.perfil.rol %}
+<div class="page-header mb-4">
+  <div>
+    <h2 class="h4 mb-1">Stock de insumos</h2>
+    <p class="text-muted mb-0">Materiales y consumibles del pañol.</p>
+  </div>
+  {% if rol == 'ADMIN' or rol == 'PANOLERO' %}
+  <a href="{% url 'inventario:nuevo_insumo' %}" class="btn btn-primary">
+    <i class="bi bi-plus-lg"></i> Nuevo insumo
+  </a>
+  {% endif %}
 </div>
 
+<div class="card card-panol">
+  <div class="card-body p-0">
+    <table class="table tabla-panol mb-0">
+      <thead>
+        <tr>
+          <th>Código</th>
+          <th>Nombre</th>
+          <th>Categoría</th>
+          <th>Stock actual</th>
+          <th>Stock mínimo</th>
+          <th>Estado</th>
+          <th>Acciones</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for insumo in insumos %}
+          {% if insumo.stock_actual <= insumo.stock_minimo %}
+            <tr class="fila-critica">
+          {% else %}
+            <tr>
+          {% endif %}
+            <td><code>{{ insumo.codigo }}</code></td>
+            <td>
+              <a href="{% url 'inventario:insumo_detalle' insumo.pk %}" class="fw-semibold text-decoration-none">
+                {{ insumo.nombre }}
+              </a>
+            </td>
+            <td>{{ insumo.categoria|default:"—" }}</td>
+            <td>{{ insumo.stock_actual }} {{ insumo.get_unidad_display }}</td>
+            <td>{{ insumo.stock_minimo }} {{ insumo.get_unidad_display }}</td>
+            <td>
+              {% if insumo.stock_actual <= 0 %}
+                <span class="badge badge-critico">Sin stock</span>
+              {% elif insumo.stock_actual <= insumo.stock_minimo %}
+                <span class="badge badge-reparacion">Stock bajo</span>
+              {% else %}
+                <span class="badge badge-disponible">Normal</span>
+              {% endif %}
+            </td>
+            <td>
+              <a href="{% url 'inventario:insumo_detalle' insumo.pk %}" class="btn btn-sm btn-outline-secondary" title="Ver detalle">
+                <i class="bi bi-eye"></i>
+              </a>
+              {% if rol == 'ADMIN' or rol == 'PANOLERO' %}
+              <a href="{% url 'inventario:nuevo_movimiento' insumo.pk %}" class="btn btn-sm btn-outline-primary" title="Registrar movimiento">
+                <i class="bi bi-arrow-left-right"></i>
+              </a>
+              <a href="{% url 'inventario:editar_insumo' insumo.pk %}" class="btn btn-sm btn-outline-warning" title="Editar">
+                <i class="bi bi-pencil"></i>
+              </a>
+              <a href="{% url 'inventario:eliminar_insumo' insumo.pk %}" class="btn btn-sm btn-outline-danger"
+                 title="Eliminar" onclick="return confirm('¿Eliminar {{ insumo.nombre }}?');">
+                <i class="bi bi-trash"></i>
+              </a>
+              {% endif %}
+            </td>
+          </tr>
+        {% empty %}
+          <tr>
+            <td colspan="7" class="tabla-vacia py-4">No hay insumos registrados.</td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+{% endwith %}
 {% endblock %}

@@ -1,26 +1,24 @@
-import os
-import csv  # <- Asegurado el import aquí
-import qrcode
 from io import BytesIO
 
-from django.core.files import File
-from django.shortcuts import render, redirect, get_object_or_404
-from django.contrib.auth.decorators import login_required
+import qrcode
 from django.contrib import messages
-from django.db.models import Q
+from django.contrib.auth.decorators import login_required
+from django.core.files import File
 from django.core.paginator import Paginator
-from django.http import HttpResponse
+from django.db.models import Q
+from django.shortcuts import get_object_or_404, redirect, render
 
-# Asegurate de importar Prestamo también para las validaciones
-from core.models import Alumno, Prestamo 
+from accounts.decorators import solo_panolero, solo_docente
+from core.models import Alumno, Prestamo
+
 from .forms import AlumnoForm
 
 
-@login_required
+@solo_docente
 def lista(request):
     q = request.GET.get('q', '').strip()
     alumnos_qs = Alumno.objects.filter(activo=True)
-    
+
     if q:
         alumnos_qs = alumnos_qs.filter(
             Q(nombre__icontains=q) |
@@ -29,181 +27,158 @@ def lista(request):
             Q(curso__icontains=q)
         )
     alumnos_qs = alumnos_qs.order_by('apellido', 'nombre')
-    
+
     paginator = Paginator(alumnos_qs, 10)
-    page_num = request.GET.get('page', 1)
-    page_obj = paginator.get_page(page_num)
-    
+    page_obj  = paginator.get_page(request.GET.get('page', 1))
+
     return render(request, 'alumnos/lista.html', {'page_obj': page_obj, 'q': q})
 
 
-@login_required
+@solo_docente
 def detalle(request, pk):
-    alumno = get_object_or_404(Alumno, pk=pk, activo=True)
+    alumno   = get_object_or_404(Alumno, pk=pk)
     prestamos = alumno.prestamo_set.all().order_by('-fecha_prestamo')
-    
     return render(request, 'alumnos/detalle.html', {
-        'alumno': alumno, 
-        'prestamos': prestamos
+        'alumno': alumno,
+        'prestamos': prestamos,
     })
 
 
-@login_required
+@solo_panolero
 def nuevo(request):
     if request.method == 'POST':
         form = AlumnoForm(request.POST)
         if form.is_valid():
-            alumno = form.save() 
-            
-            # Generar QR automáticamente al guardar
+            alumno = form.save()
+            # Generar QR automáticamente
             qr_img = qrcode.make(alumno.legajo)
             buffer = BytesIO()
             qr_img.save(buffer, format='PNG')
             alumno.qr_code.save(f'qr_{alumno.legajo}.png', File(buffer), save=True)
-            
-            messages.success(request, 'Alumno creado correctamente con su código QR.')
+            messages.success(request, f'Alumno {alumno} creado con código QR.')
             return redirect('alumnos:lista')
     else:
         form = AlumnoForm()
     return render(request, 'alumnos/form.html', {'form': form, 'accion': 'Nuevo Alumno'})
 
 
-@login_required
+@solo_panolero
 def editar(request, pk):
-    alumno = get_object_or_404(Alumno, pk=pk, activo=True)
-    legajo_anterior = alumno.legajo # Guardamos el legajo viejo
+    alumno      = get_object_or_404(Alumno, pk=pk)
+    legajo_prev = alumno.legajo
 
     if request.method == 'POST':
-        # Agregamos request.FILES por si el form tiene subida de archivos manuales
-        form = AlumnoForm(request.POST, request.FILES, instance=alumno)
+        form = AlumnoForm(request.POST, instance=alumno)
         if form.is_valid():
-            alumno_guardado = form.save(commit=False)
-
-            # Si el legajo cambia → eliminar QR viejo y generar uno nuevo
-            if str(alumno_guardado.legajo) != str(legajo_anterior):
-                if alumno.qr_code:
-                    path = alumno.qr_code.path
-                    if os.path.isfile(path):
-                        os.remove(path)
-                
-                qr_img = qrcode.make(alumno_guardado.legajo)
+            alumno = form.save()
+            # Si cambió el legajo, regenerar QR
+            if alumno.legajo != legajo_prev:
+                import os
+                if alumno.qr_code and os.path.isfile(alumno.qr_code.path):
+                    os.remove(alumno.qr_code.path)
+                qr_img = qrcode.make(alumno.legajo)
                 buffer = BytesIO()
                 qr_img.save(buffer, format='PNG')
-                alumno_guardado.qr_code.save(f'qr_{alumno_guardado.legajo}.png', File(buffer), save=False)
-
-            alumno_guardado.save()
-            messages.success(request, 'Alumno actualizado correctamente.')
-            return redirect('alumnos:lista')
+                alumno.qr_code.save(f'qr_{alumno.legajo}.png', File(buffer), save=True)
+            messages.success(request, f'Alumno {alumno} actualizado.')
+            return redirect('alumnos:detalle', pk=alumno.pk)
     else:
         form = AlumnoForm(instance=alumno)
-    return render(request, 'alumnos/form.html', {'form': form, 'accion': 'Editar Alumno'})
+    return render(request, 'alumnos/form.html', {'form': form, 'accion': 'Editar Alumno', 'alumno': alumno})
 
 
-@login_required
-def eliminar(request, pk):
-    alumno = get_object_or_404(Alumno, pk=pk, activo=True)
-    
+@solo_panolero
+def confirmar_eliminar(request, pk):
+    alumno = get_object_or_404(Alumno, pk=pk)
+
     if request.method == 'POST':
-        # Validar que no tenga préstamos activos antes de borrar
-        tiene_prestamos = Prestamo.objects.filter(
-            alumno=alumno,
-            fecha_devolucion__isnull=True
-        ).exists()
-
-        if tiene_prestamos:
+        # Validar que no tenga préstamos activos
+        if Prestamo.objects.filter(alumno=alumno, fecha_devolucion__isnull=True).exists():
             messages.error(request, 'No se puede dar de baja: el alumno tiene préstamos activos.')
             return redirect('alumnos:detalle', pk=alumno.pk)
 
-        # Eliminar archivo físico del QR del disco
+        # Eliminar QR del disco
+        import os
         if alumno.qr_code:
             path = alumno.qr_code.path
             if os.path.isfile(path):
                 os.remove(path)
             alumno.qr_code = None
 
-        # Baja lógica (Soft delete)
         alumno.activo = False
         alumno.save()
-        messages.success(request, 'Alumno dado de baja del sistema.')
+        messages.success(request, f'Alumno {alumno} dado de baja correctamente.')
         return redirect('alumnos:lista')
-        
+
     return render(request, 'alumnos/confirmar_eliminar.html', {'alumno': alumno})
 
 
-@login_required
+from django.http import HttpResponseForbidden
+
+def _generar_qr(alumno):
+    """Genera y guarda el QR de un alumno."""
+    qr_img = qrcode.make(alumno.legajo)
+    buffer = BytesIO()
+    qr_img.save(buffer, format='PNG')
+    alumno.qr_code.save(f'qr_{alumno.legajo}.png', File(buffer), save=True)
+
+
+@solo_panolero
+def reactivar(request, pk):
+    """Solo ADMIN puede reactivar un alumno inactivo."""
+    if getattr(getattr(request.user, 'perfil', None), 'rol', None) != 'ADMIN':
+        return HttpResponseForbidden('Solo los administradores pueden reactivar alumnos.')
+    alumno = get_object_or_404(Alumno, pk=pk, activo=False)
+    if request.method == 'POST':
+        alumno.activo = True
+        alumno.save()
+        if not alumno.qr_code:
+            _generar_qr(alumno)
+        messages.success(request, f'Alumno {alumno} reactivado correctamente.')
+        return redirect('alumnos:detalle', pk=alumno.pk)
+    return render(request, 'alumnos/confirmar_reactivar.html', {'alumno': alumno})
+
+
+@solo_panolero
+def eliminar_definitivo(request, pk):
+    """Solo ADMIN. Solo si el alumno está inactivo y sin historial de préstamos."""
+    if getattr(getattr(request.user, 'perfil', None), 'rol', None) != 'ADMIN':
+        return HttpResponseForbidden('Solo los administradores pueden eliminar alumnos definitivamente.')
+    alumno = get_object_or_404(Alumno, pk=pk, activo=False)
+    if request.method == 'POST':
+        if alumno.prestamo_set.exists():
+            messages.error(request,
+                'No se puede eliminar: el alumno tiene historial de préstamos. '
+                'Solo se pueden eliminar alumnos sin ningún préstamo registrado.')
+            return redirect('alumnos:detalle', pk=alumno.pk)
+        import os
+        if alumno.qr_code:
+            path = alumno.qr_code.path
+            if os.path.isfile(path):
+                os.remove(path)
+        alumno.delete()
+        messages.success(request, 'Alumno eliminado definitivamente del sistema.')
+        return redirect('alumnos:lista')
+    return render(request, 'alumnos/confirmar_eliminar_definitivo.html', {'alumno': alumno})
+
+
+import csv
+from django.http import HttpResponse
+
+@solo_docente
 def exportar_csv(request):
+    """Exporta el listado de alumnos activos a CSV."""
     response = HttpResponse(content_type='text/csv')
-    response['Content-Disposition'] = 'attachment; filename="alumnos_proa.csv"'
-
+    response['Content-Disposition'] = 'attachment; filename="alumnos.csv"'
     writer = csv.writer(response)
-    writer.writerow(['Nombre', 'Apellido', 'DNI', 'Curso', 'Email'])
-
-    alumnos = Alumno.objects.filter(activo=True)
-    for alumno in alumnos:
-        writer.writerow([alumno.nombre, alumno.apellido, alumno.dni, alumno.curso, alumno.email])
-
+    writer.writerow(['Legajo', 'Apellido', 'Nombre', 'DNI', 'Curso', 'Email'])
+    for a in Alumno.objects.filter(activo=True).order_by('apellido', 'nombre'):
+        writer.writerow([a.legajo, a.apellido, a.nombre, a.dni, a.curso, a.email])
     return response
 
 
-@login_required
+@solo_panolero
 def importar_csv(request):
-    if request.method == 'POST' and request.FILES.get('archivo_csv'):
-        csv_file = request.FILES['archivo_csv']
-
-        if not csv_file.name.endswith('.csv'):
-            messages.error(request, 'El archivo debe tener extensión .csv')
-            return redirect('alumnos:lista')
-
-        try:
-            cursos_validos = [curso[0] for curso in Alumno.CURSOS]
-            
-            # Decodificamos el archivo. Manejamos utf-8 por defecto.
-            dataset = csv_file.read().decode('utf-8').splitlines()
-            reader = csv.reader(dataset)
-            next(reader, None) # Saltar el encabezado
-
-            creados = 0
-            errores_curso = 0
-
-            for row in reader:
-                if len(row) >= 4:
-                    nombre = row[0].strip()
-                    apellido = row[1].strip()
-                    dni = row[2].strip()
-                    curso = row[3].strip()
-                    email = row[4].strip() if len(row) > 4 else ''
-
-                    if curso not in cursos_validos:
-                        errores_curso += 1
-                        continue 
-
-                    # Chequeamos que no exista el DNI para evitar duplicados
-                    if not Alumno.objects.filter(dni=dni).exists():
-                        nuevo_alumno = Alumno(
-                            nombre=nombre, 
-                            apellido=apellido, 
-                            dni=dni, 
-                            curso=curso, 
-                            email=email
-                        )
-                        nuevo_alumno.save()
-                        
-                        # Generamos el QR también en la importación masiva
-                        qr_img = qrcode.make(nuevo_alumno.legajo)
-                        buffer = BytesIO()
-                        qr_img.save(buffer, format='PNG')
-                        nuevo_alumno.qr_code.save(f'qr_{nuevo_alumno.legajo}.png', File(buffer), save=True)
-                        
-                        creados += 1
-            
-            if errores_curso > 0:
-                messages.warning(request, f'Se importaron {creados} alumnos. Se omitieron {errores_curso} por tener un curso inválido.')
-            else:
-                messages.success(request, f'Se importaron {creados} alumnos correctamente.')
-                
-        except UnicodeDecodeError:
-            messages.error(request, 'Error de codificación. Asegúrate de guardar el CSV con formato UTF-8.')
-        except Exception as e:
-            messages.error(request, 'Hubo un error al procesar el archivo. Verifica el formato.')
-            
+    """TODO (Grupo 1): implementar importación de alumnos desde CSV."""
+    messages.info(request, 'Importación CSV — funcionalidad pendiente de implementar.')
     return redirect('alumnos:lista')

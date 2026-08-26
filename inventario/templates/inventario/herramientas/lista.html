@@ -1,89 +1,174 @@
 {% extends 'base.html' %}
+{% block title %}Herramientas{% endblock %}
+{% block page_title %}Herramientas{% endblock %}
 
 {% block content %}
 
-<div class="container mt-4">
-
-    <div class="d-flex justify-content-between align-items-center mb-4">
-
-        <h2>Herramientas</h2>
-
-        <a href="{% url 'inventario:nueva_herramienta' %}" class="btn btn-primary">
-            Nueva herramienta
-        </a>
-
-    </div>
-
-    <table class="table table-bordered table-hover">
-
-        <thead class="table-dark">
-
-            <tr>
-                <th>Código</th>
-                <th>Nombre</th>
-                <th>Categoría</th>
-                <th>Ubicación</th>
-                <th>Estado</th>
-                <th>Acciones</th>
-            </tr>
-
-        </thead>
-
-        <tbody>
-
-        {% for herramienta in herramientas %}
-
-            <tr>
-
-                <td>{{ herramienta.codigo }}</td>
-
-                <td>{{ herramienta.nombre }}</td>
-
-                <td>{{ herramienta.categoria }}</td>
-
-                <td>{{ herramienta.ubicacion }}</td>
-
-                <td>{{ herramienta.get_estado_display }}</td>
-
-                <td>
-
-    <a href="{% url 'inventario:editar_herramienta' herramienta.id %}"
-       class="btn btn-warning btn-sm">
-        Editar
-    </a>
-
-
-    <a href="{% url 'inventario:eliminar_herramienta' herramienta.id %}"
-       class="btn btn-danger btn-sm">
-        Baja
-    </a>
-
-    <a href="{% url 'inventario:ver_qr_herramienta' herramienta.id %}"
-       class="btn btn-success btn-sm">
-        QR
-    </a>
-</td>
-
-            </tr>
-
-        {% empty %}
-
-            <tr>
-
-                <td colspan="6" class="text-center">
-
-                    No hay herramientas registradas.
-
-                </td>
-
-            </tr>
-
-        {% endfor %}
-
-        </tbody>
-
-    </table>
-
+{% with rol=user.perfil.rol %}
+<!-- Encabezado -->
+<div class="page-header mb-4">
+  <div>
+    <h2 class="h4 mb-1">Inventario de Herramientas</h2>
+    <p class="text-muted mb-0">Herramientas registradas en el pañol.</p>
+  </div>
+  {% if rol == 'ADMIN' or rol == 'PANOLERO' %}
+  <a href="{% url 'inventario:nueva_herramienta' %}" class="btn btn-primary">
+    <i class="bi bi-plus-lg"></i> Nueva Herramienta
+  </a>
+  {% endif %}
 </div>
 
+<!-- Filtros -->
+<div class="card card-panol mb-3">
+  <div class="card-body py-2">
+    <div class="row g-2 align-items-center">
+      <div class="col-md-4">
+        <input type="text" id="buscarHerramienta" class="form-control form-control-sm"
+          placeholder="Buscar por nombre o código…">
+      </div>
+      <div class="col-md-3">
+        <select id="filtroCategoria" class="form-select form-select-sm">
+          <option value="">Todas las categorías</option>
+          {% for categoria in categorias %}
+            <option value="{{ categoria.nombre|lower }}">{{ categoria.nombre }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="col-md-3">
+        <select id="filtroEstado" class="form-select form-select-sm">
+          <option value="">Todos los estados</option>
+          {% for estado in estados %}
+            <option value="{{ estado|lower }}">{{ estado }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="col-md-2">
+        <button id="limpiarFiltros" class="btn btn-outline-secondary btn-sm w-100">
+          <i class="bi bi-x-circle"></i> Limpiar
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Tabla -->
+<div class="card card-panol">
+  <div class="card-body p-0">
+    <table class="table tabla-panol mb-0" id="tablaHerramientas">
+      <thead>
+        <tr>
+          <th>Código</th>
+          <th>Nombre</th>
+          <th>Categoría</th>
+          <th>Estado</th>
+          <th>Ubicación</th>
+          <th>QR</th>
+          <th>Acciones</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for herramienta in herramientas %}
+        <tr class="fila-herramienta"
+            data-nombre="{{ herramienta.nombre|lower }}"
+            data-codigo="{{ herramienta.codigo|lower }}"
+            data-categoria="{{ herramienta.categoria.nombre|lower|default:'' }}"
+            data-estado="{{ herramienta.get_estado_display|lower }}">
+
+          <td><code>{{ herramienta.codigo }}</code></td>
+          <td>{{ herramienta.nombre }}</td>
+          <td>{{ herramienta.categoria|default:"—" }}</td>
+          <td>
+            {% if herramienta.estado == 'DISPONIBLE' %}
+              <span class="badge badge-disponible">Disponible</span>
+            {% elif herramienta.estado == 'PRESTADA' %}
+              <span class="badge badge-prestada">Prestada</span>
+            {% elif herramienta.estado == 'REPARACION' %}
+              <span class="badge badge-reparacion">En reparación</span>
+            {% elif herramienta.estado == 'BAJA' %}
+              <span class="badge badge-baja">Baja</span>
+            {% else %}
+              <span class="badge bg-secondary">{{ herramienta.get_estado_display }}</span>
+            {% endif %}
+          </td>
+          <td>{{ herramienta.ubicacion|default:"—" }}</td>
+          <td>
+            {% if herramienta.qr_code %}
+              <a href="{% url 'inventario:qr_herramienta' herramienta.pk %}" class="btn btn-sm btn-outline-secondary" title="Ver QR">
+                <i class="bi bi-qr-code"></i>
+              </a>
+            {% else %}
+              <span class="text-muted small">Sin QR</span>
+            {% endif %}
+          </td>
+          <td>
+            <a href="{% url 'inventario:detalle_herramienta' herramienta.pk %}" class="btn btn-sm btn-outline-secondary" title="Ver">
+              <i class="bi bi-eye"></i>
+            </a>
+            {% if rol == 'ADMIN' or rol == 'PANOLERO' %}
+            <a href="{% url 'inventario:editar_herramienta' herramienta.pk %}" class="btn btn-sm btn-outline-warning" title="Editar">
+              <i class="bi bi-pencil"></i>
+            </a>
+            {% if herramienta.estado != 'BAJA' %}
+              <a href="{% url 'inventario:dar_de_baja_herramienta' herramienta.pk %}"
+                 class="btn btn-sm btn-outline-danger" title="Dar de baja"
+                 onclick="return confirm('¿Dar de baja {{ herramienta.nombre }}?');">
+                <i class="bi bi-archive"></i>
+              </a>
+            {% endif %}
+            {% endif %}
+          </td>
+        </tr>
+        {% empty %}
+        <tr>
+          <td colspan="7" class="tabla-vacia py-4">No hay herramientas registradas.</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+{% endwith %}
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+  const buscador       = document.getElementById('buscarHerramienta');
+  const filtroCategoria = document.getElementById('filtroCategoria');
+  const filtroEstado   = document.getElementById('filtroEstado');
+  const filas          = document.querySelectorAll('.fila-herramienta');
+  const btnLimpiar     = document.getElementById('limpiarFiltros');
+
+  function filtrar() {
+    const q  = buscador.value.toLowerCase().trim();
+    const cat = filtroCategoria.value.toLowerCase().trim();
+    const est = filtroEstado.value.toLowerCase().trim();
+
+    filas.forEach(fila => {
+      const nombre   = fila.dataset.nombre;
+      const codigo   = fila.dataset.codigo;
+      const categoria = fila.dataset.categoria;
+      const estado   = fila.dataset.estado;
+
+      const matchQ   = !q  || nombre.includes(q) || codigo.includes(q);
+      const matchCat = !cat || categoria.includes(cat);
+      const matchEst = !est || estado.includes(est);
+
+      fila.style.display = (matchQ && matchCat && matchEst) ? '' : 'none';
+    });
+  }
+
+  buscador.addEventListener('input', filtrar);
+  filtroCategoria.addEventListener('change', filtrar);
+  filtroEstado.addEventListener('change', filtrar);
+
+  btnLimpiar.addEventListener('click', () => {
+    buscador.value = '';
+    filtroCategoria.value = '';
+    filtroEstado.value = '';
+    filtrar();
+  });
+});
+</script>
 {% endblock %}

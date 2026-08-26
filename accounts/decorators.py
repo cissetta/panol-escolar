@@ -40,3 +40,4 @@ def rol_requerido(*roles):
 solo_admin    = rol_requerido('ADMIN')
 solo_panolero = rol_requerido('ADMIN', 'PANOLERO')
 solo_docente  = rol_requerido('ADMIN', 'PANOLERO', 'DOCENTE')
+solo_alumno   = rol_requerido('ADMIN', 'PANOLERO', 'DOCENTE', 'ALUMNO')  # todos los roles

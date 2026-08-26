@@ -111,3 +111,20 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 MEDIA_URL = "/media/"
 MEDIA_ROOT = BASE_DIR / "media"
+
+# ─── EMAIL (alertas de préstamos vencidos e insumos críticos) ─────
+# Para activar: crear panol_escolar/local_settings.py con las credenciales.
+# Ver instrucciones en ese archivo.
+EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'  # imprime en consola por defecto
+EMAIL_HOST          = 'smtp.gmail.com'
+EMAIL_PORT          = 587
+EMAIL_USE_TLS       = True
+EMAIL_HOST_USER     = ''   # se sobreescribe en local_settings.py
+EMAIL_HOST_PASSWORD = ''   # Contraseña de aplicación Gmail (no la contraseña de cuenta)
+DEFAULT_FROM_EMAIL  = EMAIL_HOST_USER
+
+# Importar configuración local si existe (credenciales reales, no versionar)
+try:
+    from .local_settings import *  # noqa
+except ImportError:
+    pass

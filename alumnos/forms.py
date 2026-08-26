@@ -26,6 +26,16 @@ class AlumnoForm(forms.ModelForm):
         # Hacemos que el email sea realmente opcional para que Django no bloquee el guardado
         self.fields['email'].required = False  
 
+    def clean_legajo(self):
+        legajo = self.cleaned_data.get('legajo', '').strip()
+        if legajo:
+            qs = Alumno.objects.filter(legajo=legajo)
+            if self.instance.pk:
+                qs = qs.exclude(pk=self.instance.pk)
+            if qs.exists():
+                raise forms.ValidationError(f'Ya existe un alumno con legajo {legajo}.')
+        return legajo
+
     def clean_dni(self):
         dni = self.cleaned_data.get('dni', '').strip()
         if not dni.isdigit():

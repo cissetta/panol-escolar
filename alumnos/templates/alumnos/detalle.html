@@ -19,18 +19,36 @@
                 <!-- Usamos get_curso_display al igual que en la lista -->
                 <p class="text-muted small mb-3">Legajo {{ alumno.legajo }} • {{ alumno.get_curso_display }}<br>DNI {{ alumno.dni }}</p>
                 
+                {% if not alumno.activo %}
+                <div class="alert alert-warning py-1 px-2 small mb-3">
+                  <i class="bi bi-slash-circle"></i> Alumno inactivo (dado de baja)
+                </div>
+                {% endif %}
+
                 <div class="d-flex flex-column gap-2 align-items-center mt-3">
                     {% if alumno.qr_code %}
                     <a href="{{ alumno.qr_code.url }}" download class="btn btn-outline-primary btn-sm rounded-pill px-4 w-100" style="max-width: 200px;">
                         <i class="bi bi-download"></i> Descargar QR
                     </a>
                     {% endif %}
-                    
-                    <!-- NUEVO BOTÓN DE EDITAR -->
+
+                    {% if alumno.activo %}
                     <a href="{% url 'alumnos:editar' alumno.pk %}" class="btn btn-warning btn-sm rounded-pill px-4 w-100" style="max-width: 200px;">
                         <i class="bi bi-pencil"></i> Editar Alumno
                     </a>
-                    
+                    {% endif %}
+
+                    {% with rol=user.perfil.rol %}
+                    {% if not alumno.activo and rol == 'ADMIN' %}
+                    <a href="{% url 'alumnos:reactivar' alumno.pk %}" class="btn btn-success btn-sm rounded-pill px-4 w-100" style="max-width: 200px;">
+                        <i class="bi bi-arrow-counterclockwise"></i> Reactivar
+                    </a>
+                    <a href="{% url 'alumnos:eliminar_definitivo' alumno.pk %}" class="btn btn-danger btn-sm rounded-pill px-4 w-100" style="max-width: 200px;">
+                        <i class="bi bi-trash3"></i> Eliminar definitivamente
+                    </a>
+                    {% endif %}
+                    {% endwith %}
+
                     <a href="javascript:history.back()" class="btn btn-outline-secondary btn-sm rounded-pill px-4 w-100" style="max-width: 200px;">
                         <i class="bi bi-arrow-left"></i> Volver
                     </a>

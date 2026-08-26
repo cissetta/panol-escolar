@@ -13,8 +13,13 @@ class Perfil(models.Model):
         ('DOCENTE',  'Docente'),
         ('ALUMNO',   'Alumno'),
     ]
-    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='perfil')
-    rol  = models.CharField(max_length=10, choices=ROLES, default='PANOLERO')
+    user   = models.OneToOneField(User, on_delete=models.CASCADE, related_name='perfil')
+    rol    = models.CharField(max_length=10, choices=ROLES, default='PANOLERO')
+    alumno = models.OneToOneField(
+        'core.Alumno', null=True, blank=True,
+        on_delete=models.SET_NULL, related_name='usuario',
+        help_text='Solo para usuarios con rol Alumno'
+    )
 
     class Meta:
         verbose_name        = 'Perfil de Usuario'

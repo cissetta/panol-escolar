@@ -1,89 +1,192 @@
-body {
-    background-color: #f4f6f9;
-    color: #212529;
-    font-family: Arial, Helvetica, sans-serif;
+/* ============================================================
+   estilos.css — Estilos globales del Sistema Pañol PROA 2026
+   Todos los templates que extienden base.html reciben estos estilos.
+   ============================================================ */
+
+/* ── Variables globales ── */
+:root {
+  --color-primary:        #0d6efd;
+  --color-primary-hover:  #0b5ed7;
+  --color-primary-active: #0a58ca;
+  --color-cancel:         #dc3545;
+  --color-cancel-hover:   #bb2d3b;
+  --color-cancel-active:  #b02a37;
+  --color-bg-surface:     #ffffff;
+  --color-border:         #e2e8f0;
+  --color-text-main:      #1e293b;
+  --color-text-muted:     #64748b;
+  --azul:                 #1e3a5f;
+  --azul-claro:           #2e86de;
+  --radius-md:            6px;
+  --radius-lg:            10px;
 }
 
-
-/* ===== TÍTULOS ===== */
-
-h1,
-h2,
-h3,
-h4,
-h5,
-h6 {
-    font-weight: 600;
-    color: #212529;
+/* ── Botones de formulario ── */
+.form-actions {
+  display: flex !important;
+  align-items: center;
+  gap: 12px;
+  margin-top: 24px;
 }
-
-
-/* ===== BOTÓN PRINCIPAL AZUL ===== */
-
-.btn-primary {
-    background-color: #0d6efd;
-    border-color: #0d6efd;
-    color: white;
-}
-
-.btn-primary:hover {
-    background-color: #0b5ed7;
-    border-color: #0b5ed7;
-    color: white;
-}
-
-.btn-primary:active {
-    background-color: #084298 !important;
-    border-color: #084298 !important;
-}
-
-
-/* ===== BOTÓN CANCELAR ROJO ===== */
-
-.btn-cancelar {
-    background-color: #dc3545;
-    border-color: #dc3545;
-    color: white;
-}
-
-.btn-cancelar:hover {
-    background-color: #bb2d3b;
-    border-color: #bb2d3b;
-    color: white;
-}
-
-.btn-cancelar:active {
-    background-color: #842029 !important;
-    border-color: #842029 !important;
-}
-
-
-/* ===== TODOS LOS BOTONES ===== */
 
 .btn {
-    border-radius: 6px;
-    font-weight: 500;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 10px 20px;
+  font-size: 14px;
+  font-weight: 500;
+  border-radius: var(--radius-md);
+  border: none;
+  cursor: pointer;
+  transition: background-color 0.2s ease, transform 0.1s ease;
+  user-select: none;
+  text-decoration: none;
 }
 
+.btn-primary,
+.btn-confirm {
+  order: 1 !important;
+  background-color: var(--color-primary) !important;
+  color: #ffffff !important;
+}
+.btn-primary:hover,
+.btn-confirm:hover  { background-color: var(--color-primary-hover) !important; color: #fff !important; }
+.btn-primary:active,
+.btn-confirm:active { background-color: var(--color-primary-active) !important; transform: translateY(1px); }
 
-/* ===== TEXTO SECUNDARIO ===== */
+.btn-cancel {
+  order: 2 !important;
+  background-color: var(--color-cancel) !important;
+  color: #ffffff !important;
+  border: none !important;
+}
+.btn-cancel:hover  { background-color: var(--color-cancel-hover) !important; color: #fff !important; }
+.btn-cancel:active { background-color: var(--color-cancel-active) !important; transform: translateY(1px); }
 
-.text-muted {
-    color: #6c757d !important;
+/* Botón acción pequeño en tablas */
+.btn-accion {
+  padding: 4px 8px;
+  font-size: 13px;
+  border-radius: var(--radius-md);
 }
 
-
-/* ===== TARJETAS ===== */
-
-.card {
-    background-color: white;
-    border-radius: 8px;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+/* ── Cards ── */
+.card-panol {
+  border: none;
+  border-radius: var(--radius-lg);
+  box-shadow: 0 1px 4px rgba(0, 0, 0, .08);
+  background: #fff;
 }
 
+/* ── Tablas ── */
+.tabla-panol thead th {
+  background-color: var(--azul);
+  color: #fff;
+  font-weight: 500;
+  font-size: 13px;
+  border: none;
+}
+.tabla-panol tbody tr:hover {
+  background-color: #f0f4f8;
+}
+.tabla-panol td, .tabla-panol th {
+  vertical-align: middle;
+  padding: 10px 14px;
+}
 
-/* ===== TABLAS ===== */
+/* ── Badges de estado herramienta ── */
+.badge-disponible {
+  background: #d1fae5;
+  color: #065f46;
+  padding: 3px 10px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 500;
+}
+.badge-prestada {
+  background: #fef3c7;
+  color: #92400e;
+  padding: 3px 10px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 500;
+}
+.badge-reparacion {
+  background: #fee2e2;
+  color: #991b1b;
+  padding: 3px 10px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 500;
+}
+.badge-baja {
+  background: #f3f4f6;
+  color: #6b7280;
+  padding: 3px 10px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 500;
+}
 
-.table {
-    background-color: white;
+/* ── Badge stock crítico ── */
+.badge-critico {
+  background: #fee2e2;
+  color: #991b1b;
+  padding: 3px 10px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+/* ── Badges de estado préstamo ── */
+.badge-activo   { background: #dbeafe; color: #1e40af; padding: 3px 10px; border-radius: 20px; font-size: 12px; }
+.badge-vencido  { background: #fee2e2; color: #991b1b; padding: 3px 10px; border-radius: 20px; font-size: 12px; }
+.badge-devuelto { background: #d1fae5; color: #065f46; padding: 3px 10px; border-radius: 20px; font-size: 12px; }
+
+/* ── Badges de estado mantenimiento ── */
+.badge-al-dia   { background: #d1fae5; color: #065f46; padding: 3px 10px; border-radius: 20px; font-size: 12px; }
+.badge-proximo  { background: #fef3c7; color: #92400e; padding: 3px 10px; border-radius: 20px; font-size: 12px; }
+.badge-vencido-mant { background: #fee2e2; color: #991b1b; padding: 3px 10px; border-radius: 20px; font-size: 12px; }
+
+/* ── Header de página con título + botón ── */
+.page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.25rem;
+}
+.page-header h4 {
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--azul);
+  margin: 0;
+}
+
+/* ── Formularios ── */
+.form-panol {
+  background: #fff;
+  border-radius: var(--radius-lg);
+  padding: 1.5rem;
+  box-shadow: 0 1px 4px rgba(0,0,0,.08);
+  max-width: 680px;
+}
+.form-panol .form-label {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--color-text-main);
+  margin-bottom: 4px;
+}
+
+/* ── Mensajes vacíos en tablas ── */
+.tabla-vacia {
+  text-align: center;
+  color: var(--color-text-muted);
+  padding: 2.5rem 0;
+  font-size: 14px;
+}
+
+/* ── Fila crítica en tabla insumos ── */
+tr.fila-critica td {
+  background-color: #fff1f2;
 }

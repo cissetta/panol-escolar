@@ -1,5 +1,5 @@
 from django.contrib.auth.decorators import login_required
-from django.shortcuts import render
+from django.shortcuts import render, redirect
 from django.db.models import F
 from .models import Herramienta, Insumo, Prestamo, PlanMantenimiento, ConfiguracionSistema
 
@@ -43,6 +43,11 @@ def generar_qr_herramienta(herramienta):
 
 @login_required
 def dashboard(request):
+    # Alumnos tienen su propia vista
+    perfil = getattr(request.user, 'perfil', None)
+    if perfil and perfil.rol == 'ALUMNO':
+        return redirect('prestamos:mis_prestamos')
+
     config = ConfiguracionSistema.get()
 
     # Indicadores de inventario
@@ -79,3 +84,7 @@ def dashboard(request):
         'ultimos_prestamos': ultimos_prestamos,
     }
     return render(request, 'core/dashboard.html', context)
+
+
+def error_403(request, exception=None):
+    return render(request, '403.html', status=403)

@@ -1,0 +1,111 @@
+{% extends 'base.html' %}
+{% block title %}Reporte de préstamos{% endblock %}
+{% block page_title %}Reporte de préstamos{% endblock %}
+
+{% block content %}
+
+<!-- Filtros -->
+<div class="card card-panol mb-3">
+  <div class="card-body py-2">
+    <form method="get" class="row g-2 align-items-end">
+      <div class="col-md-3">
+        <label class="form-label form-label-sm">Categoría</label>
+        <select name="categoria" class="form-select form-select-sm">
+          <option value="">Todas las categorías</option>
+          {% for categoria in categorias %}
+            <option value="{{ categoria.id }}" {% if categoria.id|stringformat:"s" == categoria_actual %}selected{% endif %}>
+              {{ categoria.nombre }}
+            </option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="col-md-2">
+        <label class="form-label form-label-sm">Orden</label>
+        <select name="orden" class="form-select form-select-sm">
+          <option value="desc" {% if orden_actual == 'desc' %}selected{% endif %}>Más reciente</option>
+          <option value="asc" {% if orden_actual == 'asc' %}selected{% endif %}>Más antiguo</option>
+        </select>
+      </div>
+      <div class="col-md-2">
+        <label class="form-label form-label-sm">Estado</label>
+        <select name="estado" class="form-select form-select-sm">
+          <option value="" {% if estado_actual == '' %}selected{% endif %}>Todos</option>
+          <option value="activo" {% if estado_actual == 'activo' %}selected{% endif %}>Activos</option>
+          <option value="vencido" {% if estado_actual == 'vencido' %}selected{% endif %}>Vencidos</option>
+          <option value="devuelto" {% if estado_actual == 'devuelto' %}selected{% endif %}>Devueltos</option>
+        </select>
+      </div>
+      <div class="col-md-3 d-flex gap-2">
+        <button type="submit" class="btn btn-primary btn-sm w-100">
+          <i class="bi bi-funnel"></i> Filtrar
+        </button>
+        <a href="{% url 'reportes:reportes' %}" class="btn btn-outline-secondary btn-sm w-100">
+          <i class="bi bi-x-circle"></i> Limpiar
+        </a>
+        <a href="{% url 'reportes:exportar_reportes_excel' %}?categoria={{ categoria_actual }}&orden={{ orden_actual }}&estado={{ estado_actual }}"
+           class="btn btn-outline-success btn-sm w-100">
+          <i class="bi bi-file-earmark-excel"></i> Excel
+        </a>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Tabla -->
+<div class="card card-panol">
+  <div class="card-body p-0">
+    <table class="table tabla-panol mb-0">
+      <thead>
+        <tr>
+          <th>Alumno</th>
+          <th>Herramienta</th>
+          <th>Categoría</th>
+          <th>Docente</th>
+          <th>Préstamo</th>
+          <th>Devolución</th>
+          <th>Estado</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for p in reporte_prestamos %}
+        <tr {% if p.esta_activo and p.esta_vencido %}class="fila-critica"{% endif %}>
+          <td>{{ p.alumno }}</td>
+          <td>{{ p.herramienta.nombre }}<br><small class="text-muted">{{ p.herramienta.codigo }}</small></td>
+          <td>
+            {% if p.herramienta.categoria %}
+              <span class="d-inline-flex align-items-center gap-1">
+                <span class="rounded-circle" style="width:10px;height:10px;background:{{ p.herramienta.categoria.color_hex|default:'#6c757d' }};display:inline-block;"></span>
+                {{ p.herramienta.categoria.nombre }}
+              </span>
+            {% else %}—{% endif %}
+          </td>
+          <td>{{ p.docente }}</td>
+          <td>{{ p.fecha_prestamo|date:"d/m/Y H:i" }}</td>
+          <td>
+            {% if p.fecha_devolucion %}
+              {{ p.fecha_devolucion|date:"d/m/Y H:i" }}
+            {% else %}—{% endif %}
+          </td>
+          <td>
+            {% if p.esta_activo %}
+              {% if p.esta_vencido %}
+                <span class="badge badge-vencido">Vencido</span>
+              {% else %}
+                <span class="badge badge-activo">Activo</span>
+              {% endif %}
+            {% else %}
+              <span class="badge badge-devuelto">Devuelto</span>
+            {% endif %}
+          </td>
+        </tr>
+        {% empty %}
+        <tr>
+          <td colspan="7" class="tabla-vacia py-4">Sin préstamos registrados.</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+{% endblock %}

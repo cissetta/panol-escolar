@@ -41,4 +41,10 @@ urlpatterns = [
         views.registrar_devolucion,
         name="devolucion_seleccionada"
     ),
+
+    path(
+        "mis-prestamos/",
+        views.mis_prestamos,
+        name="mis_prestamos"
+    ),
 ]

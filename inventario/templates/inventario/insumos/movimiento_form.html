@@ -1,32 +1,158 @@
 {% extends 'base.html' %}
 {% block title %}{{ titulo }}{% endblock %}
 {% block page_title %}{{ titulo }}{% endblock %}
+
 {% block content %}
-<div class="card shadow-sm">
-  <div class="card-body">
-    <h5 class="mb-4">{{ insumo.nombre }}</h5>
-    <form method="post" novalidate>
-      {% csrf_token %}
-      {{ form.non_field_errors }}
-      <div class="row g-3">
-        {% for field in form %}
-          <div class="col-md-6">
-            <label class="form-label" for="id_{{ field.name }}">{{ field.label }}</label>
-            {{ field }}
-            {% if field.help_text %}
-              <div class="form-text">{{ field.help_text }}</div>
-            {% endif %}
-            {% for error in field.errors %}
-              <div class="text-danger small">{{ error }}</div>
-            {% endfor %}
+<div class="row justify-content-center">
+  <div class="col-lg-7">
+    <div class="card card-panol">
+      <div class="card-body p-4">
+
+        <!-- Info del insumo -->
+        <div class="mb-4 p-3 rounded" style="background:#f0f4f8;">
+          <div class="d-flex justify-content-between align-items-center">
+            <div>
+              <div class="fw-semibold">{{ insumo.nombre }}</div>
+              <div class="text-muted small">Código: {{ insumo.codigo }}</div>
+            </div>
+            <div class="text-end">
+              <div class="h4 mb-0">{{ insumo.stock_actual }}</div>
+              <div class="text-muted small">{{ insumo.get_unidad_display }} en stock</div>
+            </div>
           </div>
-        {% endfor %}
+          {% if insumo.stock_actual <= insumo.stock_minimo %}
+            <div class="alert alert-warning mt-2 mb-0 py-1 px-2 small">
+              <i class="bi bi-exclamation-triangle"></i> Stock por debajo del mínimo ({{ insumo.stock_minimo }}).
+            </div>
+          {% endif %}
+        </div>
+
+        <form method="post" novalidate>
+          {% csrf_token %}
+
+          <!-- Tipo de movimiento -->
+          <div class="mb-3">
+            <label class="form-label fw-semibold">Tipo de movimiento</label>
+            <div class="row g-2">
+              {% for valor, etiqueta in tipos %}
+                <div class="col-md-4">
+                  <input type="radio" class="btn-check" name="tipo" id="tipo_{{ valor }}" value="{{ valor }}" required>
+                  <label class="btn btn-outline-secondary w-100" for="tipo_{{ valor }}">
+                    {% if valor == 'ENTRADA' %}
+                      <i class="bi bi-box-arrow-in-down text-success"></i><br>
+                    {% elif valor == 'ENTREGA' %}
+                      <i class="bi bi-box-arrow-up text-primary"></i><br>
+                    {% else %}
+                      <i class="bi bi-pencil-square text-warning"></i><br>
+                    {% endif %}
+                    {{ etiqueta }}
+                  </label>
+                </div>
+              {% endfor %}
+            </div>
+            <div class="form-text mt-1">
+              <strong>Entrada / Compra</strong>: suma al stock. &nbsp;
+              <strong>Entrega</strong>: resta al stock y registra el destinatario.
+            </div>
+          </div>
+
+          <!-- Destinatario (solo para ENTREGA) -->
+          <div id="panel-entrega" style="display:none;">
+            <div class="p-3 mb-3 border rounded bg-light">
+              <div class="fw-semibold small text-primary mb-1"><i class="bi bi-person-check"></i> Destinatario de la entrega</div>
+              <div class="form-text mb-2">Seleccioná alumno, docente o ambos.</div>
+              <div class="row g-2">
+                <div class="col-md-6">
+                  <label for="alumno" class="form-label form-label-sm">Alumno</label>
+                  <select class="form-select form-select-sm" id="alumno" name="alumno">
+                    <option value="">— Sin alumno —</option>
+                    {% for a in alumnos %}
+                      <option value="{{ a.pk }}">{{ a.apellido }}, {{ a.nombre }} ({{ a.get_curso_display }})</option>
+                    {% endfor %}
+                  </select>
+                </div>
+                <div class="col-md-6">
+                  <label for="docente" class="form-label form-label-sm">Docente</label>
+                  <select class="form-select form-select-sm" id="docente" name="docente">
+                    <option value="">— Sin docente —</option>
+                    {% for d in docentes %}
+                      <option value="{{ d.pk }}">{{ d.apellido }}, {{ d.nombre }}</option>
+                    {% endfor %}
+                  </select>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Cantidad -->
+          <div class="mb-3">
+            <label for="cantidad" class="form-label fw-semibold">
+              <span id="label-cantidad">Cantidad</span>
+              <span class="text-muted fw-normal">({{ insumo.get_unidad_display }})</span>
+            </label>
+            <input type="number" class="form-control" id="cantidad" name="cantidad"
+              min="0.01" step="0.01" placeholder="Ej: 5" required>
+            <div id="ayuda-cantidad" class="form-text"></div>
+          </div>
+
+          <!-- Observación -->
+          <div class="mb-4">
+            <label for="observacion" class="form-label fw-semibold">Observación</label>
+            <textarea class="form-control" id="observacion" name="observacion" rows="2"
+              placeholder="Ej: Compra a proveedor X, entrega al curso 3°A…"></textarea>
+          </div>
+
+          <div class="d-flex justify-content-between">
+            <a href="{% url 'inventario:insumo_detalle' insumo.pk %}" class="btn btn-outline-secondary">
+              <i class="bi bi-arrow-left"></i> Volver
+            </a>
+            <button type="submit" class="btn btn-primary">
+              <i class="bi bi-check-lg"></i> Registrar movimiento
+            </button>
+          </div>
+        </form>
+
       </div>
-      <div class="mt-4 d-flex justify-content-between">
-        <a href="{% url 'inventario:insumo_detalle' insumo.pk %}" class="btn btn-outline-secondary">Volver</a>
-        <button type="submit" class="btn btn-primary">Guardar movimiento</button>
-      </div>
-    </form>
+    </div>
   </div>
 </div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+const inputCantidad = document.getElementById('cantidad');
+const labelCantidad = document.getElementById('label-cantidad');
+const ayudaCantidad = document.getElementById('ayuda-cantidad');
+
+function mostrarEntrega(mostrar) {
+  document.getElementById('panel-entrega').style.display = mostrar ? '' : 'none';
+}
+
+function configurarCantidad(tipo) {
+  if (tipo === 'AJUSTE') {
+    inputCantidad.min  = '';       // permite negativos
+    inputCantidad.step = '0.01';
+    labelCantidad.textContent = 'Ajuste (delta)';
+    ayudaCantidad.innerHTML =
+      '<i class="bi bi-info-circle"></i> ' +
+      'Ingresá el <strong>cambio</strong> que querés aplicar: ' +
+      '<strong class="text-success">+5</strong> para sumar 5, ' +
+      '<strong class="text-danger">−3</strong> para restar 3. ' +
+      'Stock actual: <strong>{{ insumo.stock_actual }} {{ insumo.get_unidad_display }}</strong>.';
+  } else {
+    inputCantidad.min  = '0.01';
+    inputCantidad.step = '0.01';
+    labelCantidad.textContent = 'Cantidad';
+    ayudaCantidad.textContent = '';
+    if (inputCantidad.value < 0) inputCantidad.value = '';
+  }
+}
+
+document.querySelectorAll('input[name="tipo"]').forEach(radio => {
+  radio.addEventListener('change', function () {
+    configurarCantidad(this.value);
+    mostrarEntrega(this.value === 'ENTREGA');
+  });
+});
+</script>
 {% endblock %}

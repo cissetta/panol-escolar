@@ -4,10 +4,11 @@ from django.contrib.auth.decorators import login_required
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
 from datetime import timedelta
+from accounts.decorators import solo_panolero, solo_docente, solo_alumno
 from core.models import Alumno, Docente, Herramienta, Prestamo
 
 
-@login_required
+@solo_docente
 def index(request):
     devoluciones = (
         Prestamo.objects.filter(fecha_devolucion__isnull=False)
@@ -17,7 +18,7 @@ def index(request):
     return render(request, "prestamos/index.html", {"devoluciones": devoluciones})
 
 
-@login_required
+@solo_docente
 def activos(request):
     prestamos_activos = (
         Prestamo.objects.filter(fecha_devolucion__isnull=True)
@@ -27,83 +28,61 @@ def activos(request):
     return render(request, "prestamos/activos.html", {"prestamos_activos": prestamos_activos})
 
 
-@login_required
+@solo_panolero
 def registrar_prestamo(request):
     alumnos = Alumno.objects.filter(activo=True).order_by("apellido", "nombre")
-    herramientas = Herramienta.objects.filter(activo=True, estado="DISPONIBLE").order_by("nombre")
+    herramientas = Herramienta.objects.filter(activo=True).order_by("nombre")
     docentes = Docente.objects.filter(activo=True).order_by("apellido", "nombre")
 
     if request.method == "POST":
         try:
             alumno = get_object_or_404(Alumno, legajo=request.POST.get("alumno_qr"))
+            codigos = request.POST.getlist("herramientas")
             docente_id = request.POST.get("docente")
-            selected_codes = request.POST.getlist("herramientas")
-            if not selected_codes:
-                selected_codes = request.POST.getlist("herr_qr")
-            if not selected_codes:
-                messages.error(request, "Seleccioná al menos una herramienta.")
-                return render(
-                    request,
-                    "prestamos/prestamos.html",
-                    {
-                        "alumnos": alumnos,
-                        "herramientas": herramientas,
-                        "docentes": docentes,
-                    },
-                )
+            observaciones = request.POST.get("observaciones", "")
+
+            ctx = {"alumnos": alumnos, "herramientas": herramientas, "docentes": docentes}
 
             if not docente_id:
                 messages.error(request, "Seleccioná un docente.")
-                return render(
-                    request,
-                    "prestamos/prestamos.html",
-                    {
-                        "alumnos": alumnos,
-                        "herramientas": herramientas,
-                        "docentes": docentes,
-                    },
-                )
+                return render(request, "prestamos/prestamos.html", ctx)
 
-            herramientas_seleccionadas = []
-            for codigo in selected_codes:
-                if not codigo:
-                    continue
-                herramienta = get_object_or_404(Herramienta, codigo=codigo)
-                if not herramienta.esta_disponible():
-                    messages.error(request, f"La herramienta {herramienta.nombre} no está disponible.")
-                    return render(
-                        request,
-                        "prestamos/prestamos.html",
-                        {
-                            "alumnos": alumnos,
-                            "herramientas": herramientas,
-                            "docentes": docentes,
-                        },
-                    )
-                herramientas_seleccionadas.append(herramienta)
+            if not codigos:
+                messages.error(request, "Seleccioná al menos una herramienta.")
+                return render(request, "prestamos/prestamos.html", ctx)
 
             if alumno.tiene_prestamo_vencido():
                 messages.warning(request, "Atención: el alumno tiene préstamos vencidos.")
 
-            prestamos_creados = []
-            for herramienta in herramientas_seleccionadas:
-                prestamo = Prestamo.objects.create(
+            registradas = []
+            no_disponibles = []
+            for codigo in codigos:
+                herr = Herramienta.objects.filter(codigo=codigo).first()
+                if herr is None:
+                    continue
+                if not herr.esta_disponible():
+                    no_disponibles.append(herr.nombre)
+                    continue
+                Prestamo.objects.create(
                     alumno=alumno,
-                    herramienta=herramienta,
+                    herramienta=herr,
                     docente_id=docente_id,
                     fecha_prestamo=timezone.now(),
-                    observaciones=request.POST.get("observaciones", ""),
+                    observaciones=observaciones,
                 )
-                prestamos_creados.append(prestamo)
-                herramienta.estado = "PRESTADA"
-                herramienta.save()
+                herr.estado = "PRESTADA"
+                herr.save()
+                registradas.append(herr.nombre)
 
-            messages.success(request, f"Préstamo registrado correctamente para {len(prestamos_creados)} herramienta(s).")
+            if registradas:
+                messages.success(request, f"Préstamo registrado: {', '.join(registradas)}.")
+            if no_disponibles:
+                messages.warning(request, f"No disponibles (omitidas): {', '.join(no_disponibles)}.")
+
             return redirect("prestamos:activos")
         except Exception as e:
             messages.error(request, f"Error al registrar préstamo: {e}")
             import traceback
-
             traceback.print_exc()
 
     return render(
@@ -116,7 +95,32 @@ def registrar_prestamo(request):
         },
     )
 
-@login_required
+@solo_alumno
+def mis_prestamos(request):
+    """Vista para el alumno: muestra sus préstamos activos e historial."""
+    perfil = getattr(request.user, 'perfil', None)
+    alumno = getattr(perfil, 'alumno', None) if perfil else None
+
+    if alumno is None:
+        # Usuario con rol ALUMNO pero sin alumno vinculado
+        return render(request, 'prestamos/mis_prestamos.html', {'alumno': None})
+
+    activos = Prestamo.objects.filter(
+        alumno=alumno, fecha_devolucion__isnull=True
+    ).select_related('herramienta', 'docente').order_by('-fecha_prestamo')
+
+    historial = Prestamo.objects.filter(
+        alumno=alumno, fecha_devolucion__isnull=False
+    ).select_related('herramienta', 'docente').order_by('-fecha_devolucion')[:20]
+
+    return render(request, 'prestamos/mis_prestamos.html', {
+        'alumno': alumno,
+        'activos': activos,
+        'historial': historial,
+    })
+
+
+@solo_panolero
 def registrar_devolucion(request, id=None):
     prestamos_activos = (
         Prestamo.objects.filter(fecha_devolucion__isnull=True)

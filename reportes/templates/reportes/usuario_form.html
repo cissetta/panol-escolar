@@ -1,0 +1,109 @@
+{% extends 'base.html' %}
+{% block title %}{% if nuevo %}Nuevo usuario{% else %}Editar usuario{% endif %}{% endblock %}
+{% block page_title %}{% if nuevo %}Nuevo usuario{% else %}Editar usuario{% endif %}{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+  <div class="col-lg-8">
+    <div class="card card-panol">
+      <div class="card-body p-4">
+
+        <h5 class="fw-semibold mb-4">
+          <i class="bi bi-{% if nuevo %}person-plus{% else %}person-gear{% endif %} text-primary"></i>
+          {% if nuevo %}Nuevo usuario{% else %}Editar usuario — {{ usuario.get_full_name|default:usuario.username }}{% endif %}
+        </h5>
+
+        {% if form.errors %}
+        <div class="alert alert-danger">
+          <strong>Corregí los siguientes errores:</strong>
+          <ul class="mb-0 mt-1">
+            {% for field in form %}{% for e in field.errors %}<li>{{ field.label }}: {{ e }}</li>{% endfor %}{% endfor %}
+            {% for e in form.non_field_errors %}<li>{{ e }}</li>{% endfor %}
+          </ul>
+        </div>
+        {% endif %}
+
+        <form method="post">
+          {% csrf_token %}
+
+          <div class="row g-3 mb-4">
+            <div class="col-md-6">
+              <label class="form-label fw-semibold">Usuario <span class="text-danger">*</span></label>
+              {{ form.username }}
+              {% for e in form.username.errors %}<div class="text-danger small">{{ e }}</div>{% endfor %}
+            </div>
+            <div class="col-md-6">
+              <label class="form-label fw-semibold">Email</label>
+              {{ form.email }}
+            </div>
+            <div class="col-md-6">
+              <label class="form-label fw-semibold">Nombre</label>
+              {{ form.first_name }}
+            </div>
+            <div class="col-md-6">
+              <label class="form-label fw-semibold">Apellido</label>
+              {{ form.last_name }}
+            </div>
+            <div class="col-md-4">
+              <label class="form-label fw-semibold">Rol <span class="text-danger">*</span></label>
+              {{ form.rol }}
+            </div>
+            <div class="col-md-4">
+              <label class="form-label fw-semibold">Contraseña</label>
+              {{ form.password }}
+              {% if not nuevo %}<div class="form-text">Dejar vacío para no cambiar.</div>{% endif %}
+            </div>
+            <div class="col-md-4">
+              <label class="form-label fw-semibold">Estado</label>
+              <div class="form-check mt-2">
+                {{ form.is_active }}
+                <label class="form-check-label" for="{{ form.is_active.id_for_label }}">Activo</label>
+              </div>
+            </div>
+          </div>
+
+          <!-- Alumno vinculado (solo visible para rol Alumno) -->
+          <div class="p-3 mb-4 border rounded" id="panel-alumno">
+            <div class="fw-semibold small text-primary mb-2">
+              <i class="bi bi-person-check"></i> Alumno vinculado
+            </div>
+            {{ form.alumno }}
+            <div class="form-text">Completar solo si el rol es <strong>Alumno</strong>. Permite que el usuario vea sus propios préstamos.</div>
+            {% for e in form.alumno.errors %}<div class="text-danger small">{{ e }}</div>{% endfor %}
+          </div>
+
+          <div class="d-flex justify-content-between">
+            <a href="{% url 'reportes:usuarios' %}" class="btn btn-outline-secondary">
+              <i class="bi bi-arrow-left"></i> Cancelar
+            </a>
+            <button type="submit" class="btn btn-primary">
+              <i class="bi bi-check-lg"></i> Guardar
+            </button>
+          </div>
+        </form>
+
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.querySelectorAll('input:not([type=checkbox]):not([type=radio]):not([type=hidden]), textarea')
+  .forEach(el => el.classList.add('form-control'));
+document.querySelectorAll('select').forEach(el => { el.classList.remove('form-control'); el.classList.add('form-select'); });
+document.querySelectorAll('input[type=checkbox]').forEach(el => el.classList.add('form-check-input'));
+
+// Mostrar/ocultar panel alumno según rol seleccionado
+const rolSelect = document.querySelector('[name="rol"]');
+const panelAlumno = document.getElementById('panel-alumno');
+function actualizarPanelAlumno() {
+  panelAlumno.style.display = rolSelect.value === 'ALUMNO' ? '' : 'none';
+}
+if (rolSelect) {
+  rolSelect.addEventListener('change', actualizarPanelAlumno);
+  actualizarPanelAlumno();
+}
+</script>
+{% endblock %}

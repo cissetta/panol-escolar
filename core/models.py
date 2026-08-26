@@ -71,8 +71,8 @@ class Alumno(models.Model):
         ('3A','3° A'), ('3B','3° B'),
         ('4A','4° A'), ('4B','4° B'),
         ('5A','5° A'), ('5B','5° B'),
-        ('6A','6° A'), ('6B','6° B'), 
-        ('7A','7° A'), ('7B','7° B'), 
+        ('6A','6° A'), ('6B','6° B'), # <-- Agregados 6to año
+        ('7A','7° A'), ('7B','7° B'), # <-- Agregados 7mo año
     ]
     legajo   = models.CharField(max_length=10, unique=True, blank=True)
     nombre   = models.CharField(max_length=50)
@@ -140,6 +140,13 @@ class Herramienta(models.Model):
         ('BAJA',      'Baja'),
     ]
 
+    TIPOS = [
+        ('HERRAMIENTA', 'Herramienta'),
+        ('MAQUINA',     'Máquina'),
+    ]
+
+    tipo   = models.CharField(max_length=12, choices=TIPOS, default='HERRAMIENTA',
+               verbose_name='Tipo')
     codigo = models.CharField(max_length=20, unique=True, blank=True)
     nombre = models.CharField(max_length=100)
     descripcion = models.TextField(blank=True)
@@ -176,6 +183,13 @@ class Herramienta(models.Model):
         upload_to='qr/herramientas/',
         null=True,
         blank=True
+    )
+
+    imagen = models.ImageField(
+        upload_to='herramientas/',
+        null=True,
+        blank=True,
+        verbose_name='Imagen'
     )
 
     fecha_alta = models.DateField(auto_now_add=True)
@@ -289,6 +303,11 @@ class Insumo(models.Model):
     stock_minimo = models.DecimalField(max_digits=10, decimal_places=2, default=0,
                      validators=[MinValueValidator(0)])
     activo       = models.BooleanField(default=True)
+    imagen       = models.ImageField(
+                     upload_to='insumos/',
+                     null=True, blank=True,
+                     verbose_name='Imagen'
+                   )
 
     class Meta:
         ordering = ['nombre']
@@ -316,7 +335,7 @@ class MovimientoInsumo(models.Model):
         ('ENTREGA','Entrega a alumno'),
         ('AJUSTE', 'Ajuste manual'),
     ]
-    insumo      = models.ForeignKey(Insumo, on_delete=models.CASCADE, related_name='movimientos')
+    insumo      = models.ForeignKey(Insumo, on_delete=models.PROTECT, related_name='movimientos')
     tipo        = models.CharField(max_length=10, choices=TIPOS)
     cantidad    = models.DecimalField(max_digits=10, decimal_places=2)
     fecha       = models.DateTimeField(auto_now_add=True)
@@ -334,9 +353,11 @@ class MovimientoInsumo(models.Model):
     def save(self, *args, **kwargs):
         super().save(*args, **kwargs)
         if self.tipo == 'ENTRADA':
-            self.insumo.stock_actual += self.cantidad
-        else:
-            self.insumo.stock_actual -= self.cantidad
+            self.insumo.stock_actual += self.cantidad       # siempre positivo, suma
+        elif self.tipo == 'ENTREGA':
+            self.insumo.stock_actual -= self.cantidad       # siempre positivo, resta
+        else:  # AJUSTE
+            self.insumo.stock_actual += self.cantidad       # puede ser + o -, aplica el delta
         self.insumo.save()
 
 # ══════════════════════════════════════════════════════════════════
