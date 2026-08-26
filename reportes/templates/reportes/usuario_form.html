@@ -1,0 +1,63 @@
+{% extends 'base.html' %}
+{% block title %}{% if nuevo %}Nuevo usuario{% else %}Editar usuario{% endif %}{% endblock %}
+{% block page_title %}{% if nuevo %}Nuevo usuario{% else %}Editar usuario{% endif %}{% endblock %}
+
+{% block content %}
+<div class="card">
+  <div class="card-body">
+    <form method="post" id="usuario-form">
+      {% csrf_token %}
+      <div class="row g-3">
+        <div class="col-md-6">{{ form.username.label_tag }}{{ form.username }}</div>
+        <div class="col-md-6">{{ form.email.label_tag }}{{ form.email }}</div>
+        <div class="col-md-6">{{ form.first_name.label_tag }}{{ form.first_name }}</div>
+        <div class="col-md-6">{{ form.last_name.label_tag }}{{ form.last_name }}</div>
+        <div class="col-md-4">{{ form.is_active.label_tag }}<div class="form-check">{{ form.is_active }}</div></div>
+        <div class="col-md-4">{{ form.rol.label_tag }}{{ form.rol }}</div>
+        <div class="col-md-4">{{ form.password.label_tag }}{{ form.password }}{% if not nuevo %}<div class="form-text">Dejar vacío para mantener la contraseña</div>{% endif %}</div>
+      </div>
+      <div class="mt-3">
+        <button type="submit" class="btn btn-primary">Guardar</button>
+        <a href="{% url 'reportes:usuarios' %}" class="btn btn-secondary">Cancelar</a>
+      </div>
+    </form>
+  </div>
+</div>
+<script>
+document.addEventListener('DOMContentLoaded', function(){
+  const form = document.getElementById('usuario-form');
+  if(!form) return;
+  form.addEventListener('submit', async function(e){
+    e.preventDefault();
+    const data = new FormData(form);
+    try{
+      const resp = await fetch(form.action || window.location.href, {
+        method: 'POST',
+        body: data,
+        headers: {'X-Requested-With': 'XMLHttpRequest'},
+        credentials: 'same-origin'
+      });
+      if(resp.ok){
+        const j = await resp.json();
+        if(j.success && j.redirect){
+          window.location = j.redirect;
+        } else {
+          window.location.reload();
+        }
+      } else {
+        let msg = 'Error al guardar.';
+        try{
+          const j = await resp.json();
+          if(j.errors){
+            msg = Object.values(j.errors).flat().join('\n');
+          }
+        }catch(e){}
+        alert(msg);
+      }
+    }catch(err){
+      alert('Error de red al guardar.');
+    }
+  });
+});
+</script>
+{% endblock %}

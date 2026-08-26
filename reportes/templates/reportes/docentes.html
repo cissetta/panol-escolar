@@ -17,6 +17,7 @@
                   <th>Nombre</th>
                   <th>Email</th>
                   <th>Estado</th>
+                  <th class="text-end">Acciones</th>
                 </tr>
               </thead>
               <tbody>
@@ -31,6 +32,14 @@
                       {% else %}
                         <span class="badge bg-secondary">Inactivo</span>
                       {% endif %}
+                    </td>
+                    <td class="text-end">
+                      <a href="{% url 'reportes:editar_docente' docente.pk %}" class="btn btn-sm btn-outline-primary" title="Editar docente">
+                        <i class="bi bi-pencil-square"></i>
+                      </a>
+                      <a href="{% url 'reportes:eliminar_docente' docente.pk %}" class="btn btn-sm btn-outline-danger" title="Eliminar docente">
+                        <i class="bi bi-trash"></i>
+                      </a>
                     </td>
                   </tr>
                 {% endfor %}

@@ -116,6 +116,7 @@ urlpatterns = [
         views.eliminar_insumo,
         name="eliminar_insumo",
     ),
+<<<<<<< HEAD
 
     path(
         "insumos/registrar-entrada/",
@@ -135,3 +136,6 @@ urlpatterns = [
         name="entregar_insumo",
     ),
 ]
+=======
+]
+>>>>>>> 41e6f197d032950c84346349e01fef3c7079e8f4

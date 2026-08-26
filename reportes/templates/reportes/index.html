@@ -1,6 +1,6 @@
 {% extends 'base.html' %}
-{% block title %}Grupo 5 – Reportes y Dashboard{% endblock %}
-{% block page_title %}Grupo 5 – Reportes y Dashboard{% endblock %}
+{% block title %}Grupo 5 – Dashboard general{% endblock %}
+{% block page_title %}Grupo 5 – Dashboard general{% endblock %}
 {% block content %}
 <div class="row g-3 mb-4">
   <div class="col-sm-6 col-xl-3">
@@ -40,41 +40,12 @@
   </div>
 </div>
 
-<div class="row g-3">
-  <!-- Últimos préstamos -->
-  <div class="col-lg-8">
+<div class="row g-3 mt-1">
+  <div class="col-12">
     <div class="card border-0 shadow-sm">
-      <div class="card-header bg-white fw-semibold">📤 Préstamos por mes</div>
+      <div class="card-header bg-white fw-semibold">📊 Préstamos por mes (últimos 6 meses)</div>
       <div class="card-body">
-        <div class="position-relative" style="height: 320px;">
-          <canvas id="grafico-prestamos"></canvas>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- Mantenimientos -->
-  <div class="col-lg-4">
-    <div class="card border-0 shadow-sm">
-      <div class="card-header bg-white fw-semibold">🗓️ Mantenimientos Pendientes</div>
-      <div class="card-body p-0">
-        {% if lista_vencidos %}
-          <ul class="list-group list-group-flush">
-            {% for plan in lista_vencidos %}
-            <li class="list-group-item d-flex justify-content-between align-items-start">
-              <div>
-                <div class="fw-semibold small">{{ plan.herramienta.nombre }}</div>
-                <div class="text-muted" style="font-size:.78rem">{{ plan.nombre }}</div>
-              </div>
-              <span class="badge bg-danger">Vencido</span>
-            </li>
-            {% endfor %}
-          </ul>
-        {% else %}
-          <div class="text-center text-muted py-4" style="font-size:.9rem">
-            ✅ Sin mantenimientos vencidos
-          </div>
-        {% endif %}
+        <canvas id="grafico-prestamos" height="260"></canvas>
       </div>
     </div>
   </div>
