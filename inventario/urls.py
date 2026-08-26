@@ -116,4 +116,22 @@ urlpatterns = [
         views.eliminar_insumo,
         name="eliminar_insumo",
     ),
+
+    path(
+        "insumos/registrar-entrada/",
+        views.registrar_entrada_insumo,
+        name="registrar_entrada_insumo",
+    ),
+
+    path(
+        "insumos/<int:pk>/registrar-entrada/",
+        views.registrar_entrada_insumo,
+        name="registrar_entrada_insumo_pk",
+    ),
+
+    path(
+        "insumos/<int:pk>/entregar/",
+        views.entregar_insumo,
+        name="entregar_insumo",
+    ),
 ]

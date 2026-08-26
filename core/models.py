@@ -308,6 +308,19 @@ class Insumo(models.Model):
     @property
     def es_critico(self):
         return self.stock_actual <= self.stock_minimo
+    
+    @property
+    def estado(self):
+        """Calcula el estado basado en el stock actual vs mínimo"""
+        if self.stock_actual <= self.stock_minimo:
+            return "BAJO"
+        return "OK"
+    
+    def get_estado_display(self):
+        """Devuelve la descripción del estado para mostrar en la vista"""
+        if self.stock_actual <= self.stock_minimo:
+            return "▲ Bajo"
+        return "OK"
 
 
 class MovimientoInsumo(models.Model):

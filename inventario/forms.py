@@ -1,10 +1,13 @@
 from django import forms
 
 from core.models import (
+    Alumno,
     Categoria,
+    Docente,
     Herramienta,
     Insumo,
     MovimientoInsumo,
+    PrestamoInsumo,
 )
 
 
@@ -183,7 +186,6 @@ class InsumoForm(forms.ModelForm):
             "codigo",
             "nombre",
             "descripcion",
-            "categoria",
             "unidad",
             "stock_actual",
             "stock_minimo",
@@ -193,7 +195,6 @@ class InsumoForm(forms.ModelForm):
             "codigo": "Código",
             "nombre": "Nombre",
             "descripcion": "Descripción",
-            "categoria": "Categoría",
             "unidad": "Unidad",
             "stock_actual": "Stock actual",
             "stock_minimo": "Stock mínimo",
@@ -221,3 +222,109 @@ class MovimientoInsumoForm(forms.ModelForm):
             "cantidad": "Cantidad",
             "observacion": "Observación",
         }
+
+        widgets = {
+            "insumo": forms.Select(
+                attrs={
+                    "class": "form-select",
+                }
+            ),
+            "tipo": forms.Select(
+                attrs={
+                    "class": "form-select",
+                }
+            ),
+            "cantidad": forms.NumberInput(
+                attrs={
+                    "class": "form-control",
+                    "step": "0.01",
+                    "min": "0.01",
+                }
+            ),
+            "observacion": forms.Textarea(
+                attrs={
+                    "class": "form-control",
+                    "rows": 3,
+                }
+            ),
+        }
+
+
+# =========================================================
+# ENTREGA DE INSUMO
+# =========================================================
+
+class EntregaInsumoForm(forms.ModelForm):
+
+    TIPO_ENTREGA = [
+        ('alumno', 'Entrega a alumno'),
+        ('ajuste', 'Ajuste manual'),
+    ]
+
+    tipo_entrega = forms.ChoiceField(
+        choices=TIPO_ENTREGA,
+        label='Tipo de movimiento',
+        widget=forms.Select(attrs={'class': 'form-select', 'id': 'tipo_entrega_select'})
+    )
+
+    class Meta:
+        model = PrestamoInsumo
+        fields = [
+            "alumno",
+            "insumo",
+            "docente",
+            "cantidad",
+            "observacion",
+        ]
+
+        labels = {
+            "alumno": "Alumno",
+            "insumo": "Insumo",
+            "docente": "Docente",
+            "cantidad": "Cantidad",
+            "observacion": "Observación",
+        }
+
+        widgets = {
+            "alumno": forms.Select(
+                attrs={
+                    "class": "form-select",
+                    "id": "alumno_field"
+                }
+            ),
+            "insumo": forms.Select(
+                attrs={
+                    "class": "form-select",
+                }
+            ),
+            "docente": forms.Select(
+                attrs={
+                    "class": "form-select",
+                    "id": "docente_field"
+                }
+            ),
+            "cantidad": forms.NumberInput(
+                attrs={
+                    "class": "form-control",
+                    "step": "0.01",
+                    "min": "0.01",
+                }
+            ),
+            "observacion": forms.Textarea(
+                attrs={
+                    "class": "form-control",
+                    "rows": 3,
+                }
+            ),
+        }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # Agregar clases de Bootstrap a todos los campos
+        for field_name, field in self.fields.items():
+            if hasattr(field.widget, 'attrs'):
+                if 'class' not in field.widget.attrs:
+                    field.widget.attrs['class'] = 'form-control'
+
+        # Hacer el campo de alumno opcional para ajustes manuales
+        self.fields['alumno'].required = False

@@ -16,6 +16,14 @@ SECRET_KEY = 'django-insecure-panol-proa-villa-totoral-2026-cambiar-en-produccio
 DEBUG = True
 ALLOWED_HOSTS = ['*']  # En producción: ['192.168.1.X', 'localhost']
 
+# Orígenes confiables para CSRF (necesario para vista previa del navegador)
+CSRF_TRUSTED_ORIGINS = [
+    'http://127.0.0.1:8000',
+    'http://127.0.0.1:49435',
+    'http://localhost:8000',
+    'http://localhost:49435',
+]
+
 # ─── APPS INSTALADAS ─────────────────────────────────────────────
 # Los grupos deben agregar sus apps aquí al crearlas
 INSTALLED_APPS = [
