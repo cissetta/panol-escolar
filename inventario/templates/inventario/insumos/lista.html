@@ -3,8 +3,9 @@
 {% block page_title %}Insumos{% endblock %}
 
 {% block content %}
-
 {% with rol=user.perfil.rol %}
+
+<!-- Encabezado -->
 <div class="page-header mb-4">
   <div>
     <h2 class="h4 mb-1">Stock de insumos</h2>
@@ -17,9 +18,51 @@
   {% endif %}
 </div>
 
+<!-- Filtros -->
+<div class="card card-panol mb-4">
+  <div class="card-body py-3">
+    <div class="row g-2 align-items-end">
+
+      <div class="col-md-4">
+        <label class="form-label form-label-sm fw-semibold mb-1">Buscar</label>
+        <input type="text" id="buscarInsumo" class="form-control form-control-sm"
+               placeholder="Nombre o código…">
+      </div>
+
+      <div class="col-md-3">
+        <label class="form-label form-label-sm fw-semibold mb-1">Categoría</label>
+        <select id="filtroCategoria" class="form-select form-select-sm">
+          <option value="">Todas las categorías</option>
+          {% for cat in categorias %}
+            <option value="{{ cat.nombre|lower }}">{{ cat.nombre }}</option>
+          {% endfor %}
+        </select>
+      </div>
+
+      <div class="col-md-3">
+        <label class="form-label form-label-sm fw-semibold mb-1">Estado</label>
+        <select id="filtroEstado" class="form-select form-select-sm">
+          <option value="">Todos</option>
+          <option value="normal">Normal</option>
+          <option value="bajo">Stock bajo</option>
+          <option value="sin">Sin stock</option>
+        </select>
+      </div>
+
+      <div class="col-md-2 d-flex gap-2">
+        <button type="button" id="btnLimpiar" class="btn btn-outline-secondary btn-sm w-100">
+          <i class="bi bi-x-circle"></i> Limpiar
+        </button>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- Tabla -->
 <div class="card card-panol">
   <div class="card-body p-0">
-    <table class="table tabla-panol mb-0">
+    <table class="table tabla-panol mb-0" id="tablaInsumos">
       <thead>
         <tr>
           <th>Código</th>
@@ -33,56 +76,114 @@
       </thead>
       <tbody>
         {% for insumo in insumos %}
-          {% if insumo.stock_actual <= insumo.stock_minimo %}
-            <tr class="fila-critica">
-          {% else %}
-            <tr>
-          {% endif %}
-            <td><code>{{ insumo.codigo }}</code></td>
-            <td>
-              <a href="{% url 'inventario:insumo_detalle' insumo.pk %}" class="fw-semibold text-decoration-none">
-                {{ insumo.nombre }}
-              </a>
-            </td>
-            <td>{{ insumo.categoria|default:"—" }}</td>
-            <td>{{ insumo.stock_actual }} {{ insumo.get_unidad_display }}</td>
-            <td>{{ insumo.stock_minimo }} {{ insumo.get_unidad_display }}</td>
-            <td>
-              {% if insumo.stock_actual <= 0 %}
-                <span class="badge badge-critico">Sin stock</span>
-              {% elif insumo.stock_actual <= insumo.stock_minimo %}
-                <span class="badge badge-reparacion">Stock bajo</span>
-              {% else %}
-                <span class="badge badge-disponible">Normal</span>
-              {% endif %}
-            </td>
-            <td>
-              <a href="{% url 'inventario:insumo_detalle' insumo.pk %}" class="btn btn-sm btn-outline-secondary" title="Ver detalle">
-                <i class="bi bi-eye"></i>
-              </a>
-              {% if rol == 'ADMIN' or rol == 'PANOLERO' %}
-              <a href="{% url 'inventario:nuevo_movimiento' insumo.pk %}" class="btn btn-sm btn-outline-primary" title="Registrar movimiento">
-                <i class="bi bi-arrow-left-right"></i>
-              </a>
-              <a href="{% url 'inventario:editar_insumo' insumo.pk %}" class="btn btn-sm btn-outline-warning" title="Editar">
-                <i class="bi bi-pencil"></i>
-              </a>
-              <a href="{% url 'inventario:eliminar_insumo' insumo.pk %}" class="btn btn-sm btn-outline-danger"
-                 title="Eliminar" onclick="return confirm('¿Eliminar {{ insumo.nombre }}?');">
-                <i class="bi bi-trash"></i>
-              </a>
-              {% endif %}
-            </td>
-          </tr>
+        <tr
+          data-nombre="{{ insumo.nombre|lower }}"
+          data-codigo="{{ insumo.codigo|lower }}"
+          data-categoria="{{ insumo.categoria.nombre|lower|default:'' }}"
+          data-estado="{% if insumo.stock_actual <= 0 %}sin{% elif insumo.stock_actual <= insumo.stock_minimo %}bajo{% else %}normal{% endif %}"
+        >
+          <td><code>{{ insumo.codigo }}</code></td>
+          <td>
+            <a href="{% url 'inventario:insumo_detalle' insumo.pk %}" class="fw-semibold text-decoration-none">
+              {{ insumo.nombre }}
+            </a>
+          </td>
+          <td>
+            {% if insumo.categoria %}
+              <span class="d-inline-block rounded me-1"
+                    style="width:12px;height:12px;background:{{ insumo.categoria.color_hex }};vertical-align:middle;"></span>
+              {{ insumo.categoria.nombre }}
+            {% else %}
+              <span class="text-muted">—</span>
+            {% endif %}
+          </td>
+          <td>{{ insumo.stock_actual }} {{ insumo.get_unidad_display }}</td>
+          <td class="text-muted">{{ insumo.stock_minimo }} {{ insumo.get_unidad_display }}</td>
+          <td>
+            {% if insumo.stock_actual <= 0 %}
+              <span class="badge badge-vencido">Sin stock</span>
+            {% elif insumo.stock_actual <= insumo.stock_minimo %}
+              <span class="badge badge-reparacion">Stock bajo</span>
+            {% else %}
+              <span class="badge badge-disponible">Normal</span>
+            {% endif %}
+          </td>
+          <td>
+            <a href="{% url 'inventario:insumo_detalle' insumo.pk %}"
+               class="btn btn-sm btn-outline-secondary" title="Ver detalle">
+              <i class="bi bi-eye"></i>
+            </a>
+            {% if rol == 'ADMIN' or rol == 'PANOLERO' %}
+            <a href="{% url 'inventario:nuevo_movimiento' insumo.pk %}"
+               class="btn btn-sm btn-outline-primary" title="Registrar movimiento">
+              <i class="bi bi-arrow-left-right"></i>
+            </a>
+            <a href="{% url 'inventario:editar_insumo' insumo.pk %}"
+               class="btn btn-sm btn-outline-warning" title="Editar">
+              <i class="bi bi-pencil"></i>
+            </a>
+            <a href="{% url 'inventario:eliminar_insumo' insumo.pk %}"
+               class="btn btn-sm btn-outline-danger" title="Dar de baja"
+               onclick="return confirm('¿Dar de baja {{ insumo.nombre }}?');">
+              <i class="bi bi-trash"></i>
+            </a>
+            {% endif %}
+          </td>
+        </tr>
         {% empty %}
-          <tr>
-            <td colspan="7" class="tabla-vacia py-4">No hay insumos registrados.</td>
-          </tr>
+        <tr>
+          <td colspan="7" class="tabla-vacia py-4">No hay insumos registrados.</td>
+        </tr>
         {% endfor %}
       </tbody>
     </table>
+
+    <p id="sinResultados" class="tabla-vacia py-4" style="display:none;">
+      No hay insumos que coincidan con los filtros.
+    </p>
+
   </div>
 </div>
 
 {% endwith %}
+{% endblock %}
+
+{% block extra_js %}
+<script>
+  const buscar     = document.getElementById('buscarInsumo');
+  const filtCat    = document.getElementById('filtroCategoria');
+  const filtEst    = document.getElementById('filtroEstado');
+  const btnLimpiar = document.getElementById('btnLimpiar');
+  const filas      = document.querySelectorAll('#tablaInsumos tbody tr[data-nombre]');
+  const sinRes     = document.getElementById('sinResultados');
+
+  function filtrar() {
+    const q   = buscar.value.toLowerCase().trim();
+    const cat = filtCat.value.toLowerCase().trim();
+    const est = filtEst.value.toLowerCase().trim();
+    let visibles = 0;
+
+    filas.forEach(fila => {
+      const matchQ   = !q   || fila.dataset.nombre.includes(q) || fila.dataset.codigo.includes(q);
+      const matchCat = !cat || fila.dataset.categoria.includes(cat);
+      const matchEst = !est || fila.dataset.estado === est;
+      const visible  = matchQ && matchCat && matchEst;
+      fila.style.display = visible ? '' : 'none';
+      if (visible) visibles++;
+    });
+
+    sinRes.style.display = visibles === 0 ? 'block' : 'none';
+  }
+
+  buscar.addEventListener('input', filtrar);
+  filtCat.addEventListener('change', filtrar);
+  filtEst.addEventListener('change', filtrar);
+
+  btnLimpiar.addEventListener('click', () => {
+    buscar.value = '';
+    filtCat.value = '';
+    filtEst.value = '';
+    filtrar();
+  });
+</script>
 {% endblock %}

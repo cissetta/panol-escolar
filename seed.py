@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 seed.py – Datos de prueba para el Sistema de Pañol Escolar
 PROA Villa del Totoral – Programación IV 2026

@@ -527,16 +527,12 @@ def detalle_herramienta(request, pk):
 
 @solo_alumno
 def lista_insumos(request):
-
-    insumos = Insumo.objects.all()
-
-    return render(
-        request,
-        "inventario/insumos/lista.html",
-        {
-            "insumos": insumos
-        }
-    )
+    insumos = Insumo.objects.select_related('categoria').all()
+    categorias = Categoria.objects.order_by('nombre')
+    return render(request, "inventario/insumos/lista.html", {
+        "insumos": insumos,
+        "categorias": categorias,
+    })
 
 
 @solo_panolero

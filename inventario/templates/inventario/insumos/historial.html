@@ -104,7 +104,11 @@
             {% endif %}
             <span class="text-muted small">{{ mov.insumo.get_unidad_display }}</span>
           </td>
-          <td>{{ mov.usuario.get_full_name|default:mov.usuario.username|default:"—" }}</td>
+          <td>
+            {% if mov.usuario %}
+              {{ mov.usuario.get_full_name|default:mov.usuario.username }}
+            {% else %}—{% endif %}
+          </td>
           <td class="text-muted small">{{ mov.observacion|default:"—" }}</td>
         </tr>
         {% endfor %}

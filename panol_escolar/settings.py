@@ -125,6 +125,9 @@ DEFAULT_FROM_EMAIL  = EMAIL_HOST_USER
 
 # Importar configuración local si existe (credenciales reales, no versionar)
 try:
-    from .local_settings import *  # noqa
+    from .local_settings import *  # noqa  # type: ignore
 except ImportError:
     pass
+except Exception as _e:
+    import warnings
+    warnings.warn(f'local_settings.py tiene un error y fue ignorado: {_e}')

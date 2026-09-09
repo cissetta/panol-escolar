@@ -76,7 +76,15 @@
 
           <td><code>{{ herramienta.codigo }}</code></td>
           <td>{{ herramienta.nombre }}</td>
-          <td>{{ herramienta.categoria|default:"—" }}</td>
+          <td>
+            {% if herramienta.categoria %}
+              <span class="d-inline-block rounded me-1"
+                    style="width:12px;height:12px;background:{{ herramienta.categoria.color_hex }};vertical-align:middle;"></span>
+              {{ herramienta.categoria.nombre }}
+            {% else %}
+              <span class="text-muted">—</span>
+            {% endif %}
+          </td>
           <td>
             {% if herramienta.estado == 'DISPONIBLE' %}
               <span class="badge badge-disponible">Disponible</span>
