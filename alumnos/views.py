@@ -163,6 +163,9 @@ def eliminar_definitivo(request, pk):
 
 
 import csv
+import io
+import os
+import zipfile
 from django.http import HttpResponse
 
 @solo_docente
@@ -177,8 +180,157 @@ def exportar_csv(request):
     return response
 
 
+# ──────────────────────────────────────────────────────────────────
+# IMPORTAR DESDE EXCEL o CSV
+# ──────────────────────────────────────────────────────────────────
+# Columnas esperadas (en cualquier orden, case-insensitive):
+#   apellido | nombre | dni | curso | email (opcional)
+# El legajo se genera automáticamente.
+# Si el DNI ya existe se omite la fila.
+
+def _normalizar_cabeceras(fila):
+    """Devuelve dict {nombre_col_normalizado: índice} de la fila de cabeceras."""
+    return {str(v).strip().lower(): i for i, v in enumerate(fila)}
+
+COLUMNAS_REQUERIDAS = {'apellido', 'nombre', 'dni', 'curso'}
+
+
 @solo_panolero
 def importar_csv(request):
-    """TODO (Grupo 1): implementar importación de alumnos desde CSV."""
-    messages.info(request, 'Importación CSV — funcionalidad pendiente de implementar.')
+    """Importa alumnos desde archivo CSV (.csv) o Excel (.xlsx)."""
+    if request.method != 'POST':
+        return redirect('alumnos:lista')
+
+    archivo = request.FILES.get('archivo_csv')
+    if not archivo:
+        messages.error(request, 'No se recibió ningún archivo.')
+        return redirect('alumnos:lista')
+
+    nombre = archivo.name.lower()
+    filas = []
+
+    try:
+        if nombre.endswith('.xlsx'):
+            import openpyxl
+            wb = openpyxl.load_workbook(archivo, data_only=True)
+            ws = wb.active
+            for row in ws.iter_rows(values_only=True):
+                filas.append(['' if v is None else str(v).strip() for v in row])
+        else:
+            # CSV: detectar encoding
+            contenido = archivo.read().decode('utf-8-sig', errors='replace')
+            reader = csv.reader(io.StringIO(contenido))
+            for row in reader:
+                filas.append([c.strip() for c in row])
+    except Exception as e:
+        messages.error(request, f'Error al leer el archivo: {e}')
+        return redirect('alumnos:lista')
+
+    if not filas:
+        messages.error(request, 'El archivo está vacío.')
+        return redirect('alumnos:lista')
+
+    cabeceras = _normalizar_cabeceras(filas[0])
+    faltantes = COLUMNAS_REQUERIDAS - cabeceras.keys()
+    if faltantes:
+        messages.error(request,
+            f'Columnas faltantes en el archivo: {", ".join(sorted(faltantes))}. '
+            f'Se esperan: apellido, nombre, dni, curso (y opcionalmente email).')
+        return redirect('alumnos:lista')
+
+    creados = omitidos = errores = 0
+
+    for fila in filas[1:]:
+        try:
+            dni = fila[cabeceras['dni']]
+            if not dni:
+                continue
+            if Alumno.objects.filter(dni=dni).exists():
+                omitidos += 1
+                continue
+
+            alumno = Alumno(
+                apellido=fila[cabeceras['apellido']],
+                nombre=fila[cabeceras['nombre']],
+                dni=dni,
+                curso=fila[cabeceras['curso']].upper().replace('°','').replace(' ',''),
+                email=fila[cabeceras.get('email', -1)] if 'email' in cabeceras else '',
+            )
+            alumno.save()
+            _generar_qr(alumno)
+            creados += 1
+        except Exception:
+            errores += 1
+
+    if creados:
+        messages.success(request, f'✅ {creados} alumnos importados con QR generado.')
+    if omitidos:
+        messages.warning(request, f'{omitidos} filas omitidas (DNI ya registrado).')
+    if errores:
+        messages.error(request, f'{errores} filas con error y no procesadas.')
+
     return redirect('alumnos:lista')
+
+
+# ──────────────────────────────────────────────────────────────────
+# GENERAR QR MASIVO
+# ──────────────────────────────────────────────────────────────────
+
+@solo_panolero
+def generar_qr_masivo(request):
+    """Genera QRs para todos los alumnos activos que aún no tienen código QR."""
+    sin_qr = Alumno.objects.filter(activo=True, qr_code='')
+    # .filter(qr_code='') captura tanto null como blank
+    sin_qr_null = Alumno.objects.filter(activo=True, qr_code__isnull=True)
+    pendientes = (sin_qr | sin_qr_null).distinct()
+
+    if request.method == 'POST':
+        accion = request.POST.get('accion', 'pendientes')
+        if accion == 'todos':
+            alumnos_target = Alumno.objects.filter(activo=True)
+        else:
+            alumnos_target = pendientes
+
+        generados = 0
+        for alumno in alumnos_target:
+            try:
+                _generar_qr(alumno)
+                generados += 1
+            except Exception:
+                pass
+
+        messages.success(request, f'✅ {generados} códigos QR generados correctamente.')
+        return redirect('alumnos:lista')
+
+    total = Alumno.objects.filter(activo=True).count()
+    return render(request, 'alumnos/generar_qr_masivo.html', {
+        'pendientes': pendientes.count(),
+        'total': total,
+        'con_qr': total - pendientes.count(),
+    })
+
+
+# ──────────────────────────────────────────────────────────────────
+# DESCARGAR ZIP CON TODOS LOS QRs
+# ──────────────────────────────────────────────────────────────────
+
+@solo_panolero
+def descargar_qr_zip(request):
+    """Descarga un ZIP con los archivos QR PNG de todos los alumnos activos."""
+    buffer = io.BytesIO()
+    with zipfile.ZipFile(buffer, 'w', zipfile.ZIP_DEFLATED) as zf:
+        for alumno in Alumno.objects.filter(activo=True).order_by('apellido', 'nombre'):
+            if not alumno.qr_code:
+                continue
+            try:
+                qr_path = alumno.qr_code.path
+                if os.path.isfile(qr_path):
+                    nombre_archivo = f'{alumno.apellido}_{alumno.nombre}_{alumno.legajo}.png'
+                    zf.write(qr_path, nombre_archivo)
+            except Exception:
+                pass
+
+    buffer.seek(0)
+    response = HttpResponse(buffer, content_type='application/zip')
+    response['Content-Disposition'] = 'attachment; filename="qr_alumnos.zip"'
+    return response

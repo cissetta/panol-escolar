@@ -14,26 +14,33 @@ from core.models import (
 @solo_docente
 def index(request):
     herramienta_id = request.GET.get("herramienta")
-    mes = request.GET.get("mes")
+    mes = request.GET.get("mes", "").strip()
 
     herramientas = Herramienta.objects.filter(activo=True)
 
-    planes = PlanMantenimiento.objects.select_related(
-        "herramienta"
-    ).all()
-
+    planes = PlanMantenimiento.objects.select_related("herramienta").all()
     historial = EjecucionMantenimiento.objects.select_related(
-        "plan",
-        "plan__herramienta"
+        "plan", "plan__herramienta"
     ).all()
 
     if herramienta_id:
         planes = planes.filter(herramienta_id=herramienta_id)
         historial = historial.filter(plan__herramienta_id=herramienta_id)
 
+    # El input type="month" envía "YYYY-MM"; hay que separar año y mes
     if mes:
-        planes = planes.filter(proxima_ejecucion__month=int(mes))
-        historial = historial.filter(fecha__month=int(mes))
+        try:
+            anio, month = mes.split("-")
+            planes = planes.filter(
+                proxima_ejecucion__year=int(anio),
+                proxima_ejecucion__month=int(month),
+            )
+            historial = historial.filter(
+                fecha__year=int(anio),
+                fecha__month=int(month),
+            )
+        except (ValueError, AttributeError):
+            pass  # valor malformado: ignorar filtro de mes
 
     historial = historial.order_by("-fecha")
 
@@ -46,29 +53,7 @@ def index(request):
             "herramientas": herramientas,
             "herramienta_seleccionada": herramienta_id,
             "mes_seleccionado": mes,
-        }
-    )
-
-    return render(
-        request,
-        "mantenimiento/index.html",
-        {
-            "planes": planes,
-            "historial": historial,
-            "herramientas": herramientas,
-            "herramienta_seleccionada": herramienta_id,
-            "mes_seleccionado": mes,
-        }
-    )
-    return render(
-        request,
-        "mantenimiento/index.html",
-        {
-            "planes": planes,
-            "historial": historial,
-            "herramientas": herramientas,
-            "herramienta_seleccionada": herramienta_id,
-        }
+        },
     )
 
 @solo_panolero

@@ -10,12 +10,15 @@
     <h2 class="h4 mb-1">Gestión de Alumnos</h2>
     <p class="text-muted mb-0">Lista de alumnos registrados en el sistema.</p>
   </div>
-  <div class="d-flex gap-2">
+  <div class="d-flex gap-2 flex-wrap">
     <button class="btn btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#modalImportarCSV">
-      <i class="bi bi-file-earmark-arrow-up"></i> Importar CSV
+      <i class="bi bi-file-earmark-arrow-up"></i> Importar Excel/CSV
     </button>
     <a href="{% url 'alumnos:exportar_csv' %}" class="btn btn-outline-secondary">
       <i class="bi bi-file-earmark-arrow-down"></i> Exportar
+    </a>
+    <a href="{% url 'alumnos:generar_qr_masivo' %}" class="btn btn-outline-info">
+      <i class="bi bi-qr-code"></i> Generar QR masivo
     </a>
     <a href="{% url 'alumnos:nuevo' %}" class="btn btn-primary">
       <i class="bi bi-plus-lg"></i> Nuevo Alumno
@@ -116,20 +119,29 @@
   <div class="modal-dialog">
     <div class="modal-content">
       <div class="modal-header">
-        <h5 class="modal-title"><i class="bi bi-filetype-csv"></i> Importar Alumnos desde CSV</h5>
+        <h5 class="modal-title"><i class="bi bi-file-earmark-spreadsheet"></i> Importar Alumnos desde Excel o CSV</h5>
         <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
       </div>
       <form action="{% url 'alumnos:importar_csv' %}" method="post" enctype="multipart/form-data">
         {% csrf_token %}
         <div class="modal-body">
-          <p class="text-muted small mb-3">
-            Formato esperado: Nombre, Apellido, DNI, Curso, Email
+          <p class="text-muted small mb-2">
+            Aceptá archivos <strong>.xlsx</strong> (Excel) o <strong>.csv</strong>.
+            El sistema genera el QR de cada alumno automáticamente al importar.
           </p>
-          <input type="file" name="archivo_csv" class="form-control" accept=".csv" required>
+          <p class="text-muted small mb-3">
+            Columnas requeridas en la primera fila:
+            <code>apellido</code>, <code>nombre</code>, <code>dni</code>, <code>curso</code>
+            — y opcionalmente <code>email</code>.
+            El legajo se genera solo. Si el DNI ya existe, la fila se omite.
+          </p>
+          <input type="file" name="archivo_csv" class="form-control" accept=".csv,.xlsx" required>
         </div>
         <div class="modal-footer">
           <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancelar</button>
-          <button type="submit" class="btn btn-primary">Subir e Importar</button>
+          <button type="submit" class="btn btn-primary">
+            <i class="bi bi-upload"></i> Importar y generar QR
+          </button>
         </div>
       </form>
     </div>

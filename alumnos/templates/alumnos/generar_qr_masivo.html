@@ -1,0 +1,121 @@
+{% extends 'base.html' %}
+{% block title %}Generar QR Masivo{% endblock %}
+{% block page_title %}Generar QR Masivo{% endblock %}
+
+{% block content %}
+<div class="page-header mb-4">
+  <div>
+    <h2 class="h4 mb-1">Generación masiva de códigos QR</h2>
+    <p class="text-muted mb-0">Genera QR para todos los alumnos sin código, o regenera todos.</p>
+  </div>
+  <a href="{% url 'alumnos:lista' %}" class="btn btn-outline-secondary">
+    <i class="bi bi-arrow-left"></i> Volver
+  </a>
+</div>
+
+<!-- Resumen -->
+<div class="row g-3 mb-4">
+  <div class="col-md-4">
+    <div class="card card-panol text-center py-3">
+      <div class="fs-1 fw-bold text-navy">{{ total }}</div>
+      <div class="text-muted small">Alumnos activos</div>
+    </div>
+  </div>
+  <div class="col-md-4">
+    <div class="card card-panol text-center py-3">
+      <div class="fs-1 fw-bold text-success">{{ con_qr }}</div>
+      <div class="text-muted small">Con QR generado</div>
+    </div>
+  </div>
+  <div class="col-md-4">
+    <div class="card card-panol text-center py-3">
+      <div class="fs-1 fw-bold {% if pendientes > 0 %}text-danger{% else %}text-success{% endif %}">
+        {{ pendientes }}
+      </div>
+      <div class="text-muted small">Sin QR</div>
+    </div>
+  </div>
+</div>
+
+{% if pendientes == 0 %}
+<div class="alert alert-success d-flex align-items-center gap-2">
+  <i class="bi bi-check-circle-fill fs-5"></i>
+  <div>Todos los alumnos activos ya tienen su código QR generado.</div>
+</div>
+{% endif %}
+
+<!-- Acciones -->
+<div class="card card-panol mb-3">
+  <div class="card-body">
+    <h6 class="fw-bold mb-3">¿Qué querés hacer?</h6>
+
+    {% if pendientes > 0 %}
+    <form method="post" class="mb-3">
+      {% csrf_token %}
+      <input type="hidden" name="accion" value="pendientes">
+      <div class="d-flex align-items-center gap-3">
+        <button type="submit" class="btn btn-primary">
+          <i class="bi bi-qr-code"></i> Generar QR para los {{ pendientes }} alumnos sin código
+        </button>
+        <span class="text-muted small">Solo genera los que faltan, no toca los existentes.</span>
+      </div>
+    </form>
+    {% endif %}
+
+    <form method="post" class="mb-3">
+      {% csrf_token %}
+      <input type="hidden" name="accion" value="todos">
+      <div class="d-flex align-items-center gap-3">
+        <button type="submit" class="btn btn-outline-warning"
+                onclick="return confirm('¿Regenerar QR para los {{ total }} alumnos activos? Esto reemplaza los QR existentes.');">
+          <i class="bi bi-arrow-repeat"></i> Regenerar QR para todos los {{ total }} alumnos
+        </button>
+        <span class="text-muted small">Útil si cambiaron legajos o hay QR corruptos.</span>
+      </div>
+    </form>
+
+    <hr>
+
+    <div class="d-flex align-items-center gap-3">
+      <a href="{% url 'alumnos:descargar_qr_zip' %}" class="btn btn-outline-secondary">
+        <i class="bi bi-file-zip"></i> Descargar ZIP con todos los QR
+      </a>
+      <span class="text-muted small">Un archivo PNG por alumno, nombrado con apellido y legajo.</span>
+    </div>
+  </div>
+</div>
+
+<!-- Ayuda formato Excel -->
+<div class="card card-panol">
+  <div class="card-body">
+    <h6 class="fw-bold mb-2"><i class="bi bi-info-circle"></i> Importar desde Excel para generar QRs automáticamente</h6>
+    <p class="text-muted small mb-2">
+      Si importás alumnos desde un archivo Excel o CSV, el sistema genera el QR de cada alumno en el momento de la importación.
+      No necesitás hacer este paso aparte.
+    </p>
+    <p class="text-muted small mb-2">
+      El archivo debe tener estas columnas (en la primera fila como encabezado):
+    </p>
+    <table class="table table-sm table-bordered" style="max-width:500px;">
+      <thead class="table-light">
+        <tr>
+          <th>Columna</th>
+          <th>Requerida</th>
+          <th>Ejemplo</th>
+        </tr>
+      </thead>
+      <tbody class="small">
+        <tr><td><code>apellido</code></td><td>✅ Sí</td><td>González</td></tr>
+        <tr><td><code>nombre</code></td><td>✅ Sí</td><td>María</td></tr>
+        <tr><td><code>dni</code></td><td>✅ Sí</td><td>40123456</td></tr>
+        <tr><td><code>curso</code></td><td>✅ Sí</td><td>4A</td></tr>
+        <tr><td><code>email</code></td><td>No</td><td>maria@ejemplo.com</td></tr>
+      </tbody>
+    </table>
+    <p class="text-muted small mb-0">
+      El legajo se genera automáticamente. Si un DNI ya existe en el sistema, esa fila se omite sin error.
+    </p>
+  </div>
+</div>
+
+{% endblock %}

@@ -1,11 +1,12 @@
 # prestamos/views.py
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
+from django.db.models import Q
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
 from datetime import timedelta
 from accounts.decorators import solo_panolero, solo_docente, solo_alumno
-from core.models import Alumno, Docente, Herramienta, Prestamo
+from core.models import Alumno, ConfiguracionSistema, Docente, Herramienta, Prestamo
 
 
 @solo_docente
@@ -20,19 +21,56 @@ def index(request):
 
 @solo_docente
 def activos(request):
-    prestamos_activos = (
+    qs = (
         Prestamo.objects.filter(fecha_devolucion__isnull=True)
         .select_related("alumno", "herramienta", "docente")
-        .order_by("-fecha_prestamo")
     )
-    return render(request, "prestamos/activos.html", {"prestamos_activos": prestamos_activos})
+
+    # --- filtros ---
+    docente_id    = request.GET.get("docente", "").strip()
+    herramienta_id = request.GET.get("herramienta", "").strip()
+    alumno_q      = request.GET.get("alumno", "").strip()
+    estado_filtro = request.GET.get("estado", "").strip()  # 'activo' | 'vencido'
+
+    if docente_id:
+        qs = qs.filter(docente_id=docente_id)
+
+    if herramienta_id:
+        qs = qs.filter(herramienta_id=herramienta_id)
+
+    if alumno_q:
+        qs = qs.filter(
+            Q(alumno__apellido__icontains=alumno_q) |
+            Q(alumno__nombre__icontains=alumno_q) |
+            Q(alumno__legajo__icontains=alumno_q)
+        )
+
+    if estado_filtro in ("activo", "vencido"):
+        config = ConfiguracionSistema.get()
+        limite = timezone.now() - timedelta(days=config.dias_maximo_prestamo)
+        if estado_filtro == "vencido":
+            qs = qs.filter(fecha_prestamo__lt=limite)
+        else:
+            qs = qs.filter(fecha_prestamo__gte=limite)
+
+    prestamos_activos = qs.order_by("-fecha_prestamo")
+
+    return render(request, "prestamos/activos.html", {
+        "prestamos_activos": prestamos_activos,
+        "docentes":     Docente.objects.filter(activo=True).order_by("apellido", "nombre"),
+        "herramientas": Herramienta.objects.filter(activo=True).order_by("nombre"),
+        "f_docente":     docente_id,
+        "f_herramienta": herramienta_id,
+        "f_alumno":      alumno_q,
+        "f_estado":      estado_filtro,
+    })
 
 
 @solo_panolero
 def registrar_prestamo(request):
     alumnos = Alumno.objects.filter(activo=True).order_by("apellido", "nombre")
-    herramientas = Herramienta.objects.filter(activo=True).order_by("nombre")
     docentes = Docente.objects.filter(activo=True).order_by("apellido", "nombre")
+    herramientas = Herramienta.objects.filter(activo=True).order_by("nombre")
 
     if request.method == "POST":
         try:
@@ -40,6 +78,7 @@ def registrar_prestamo(request):
             codigos = request.POST.getlist("herramientas")
             docente_id = request.POST.get("docente")
             observaciones = request.POST.get("observaciones", "")
+            modulo_clase = request.POST.get("modulo_clase", "")
 
             ctx = {"alumnos": alumnos, "herramientas": herramientas, "docentes": docentes}
 
@@ -69,6 +108,7 @@ def registrar_prestamo(request):
                     docente_id=docente_id,
                     fecha_prestamo=timezone.now(),
                     observaciones=observaciones,
+                    modulo_clase=modulo_clase,
                 )
                 herr.estado = "PRESTADA"
                 herr.save()
